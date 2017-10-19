@@ -15,6 +15,7 @@ public enum Value {
     JACK(7),
     HORSE(8),
     KING(9);
+    private static final String[] valueCharacters={"A","2","3","4","5","6","7","J","H","K"};
     private int value;
 
     private Value(int value) {
@@ -24,4 +25,9 @@ public enum Value {
     public int getValue() {
         return value;
     }
+    @Override
+    public String toString(){
+        return valueCharacters[value];
+    }
+
 }

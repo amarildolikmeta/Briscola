@@ -10,12 +10,17 @@ public enum Suit {
     CUPS(2),
     GOLD(3);
     private int value;
-
+    private static final String[] suitCharacters={"B","S","C","G"};
     private Suit(int value) {
         this.value = value;
     }
 
     public int getValue() {
         return value;
+    }
+
+    @Override
+    public String toString(){
+        return suitCharacters[value];
     }
 }

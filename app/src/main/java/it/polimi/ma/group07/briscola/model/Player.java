@@ -59,4 +59,23 @@ public class Player {
         cardPile.removeAll(cardPile);
         score=0;
     }
+    public String handToString()
+    {
+        String str="";
+        for(Card c :hand){
+            str+=c.toString();
+        }
+        return str;
+    }
+
+    public String pileToString()
+    {
+        String str="";
+        for(Card c :cardPile){
+            str+=c.toString();
+        }
+        return str;
+    }
+
+
 }

@@ -22,24 +22,30 @@ public class Deck {
         }
         shuffleDeck();
     }
+
     public Deck(String desc)
     {
         cards=new ArrayList<Card>();
         //TODO create deck from string description
     }
+
     public ArrayList<Card> getDeck(){
         return cards;
     }
+
     public void shuffleDeck(){
         Collections.shuffle(cards);
     }
+
     public Card drawCard() {
         Card card=cards.remove(0);
         return card;
     }
+
     public void addLastCard(Card card){
         cards.add(card);
     }
+
     @Override
     public String toString()
     {

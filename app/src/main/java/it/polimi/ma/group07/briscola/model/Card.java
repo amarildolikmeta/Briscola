@@ -5,8 +5,7 @@ package it.polimi.ma.group07.briscola.model;
  */
 
 public class Card {
-    private static final String[] suitCharacters={"B","S","C","G"};
-    private static final String[] valueCharacters={"A","2","3","4","5","6","7","J","H","K"};
+
     private  final Suit suit;
     private  final  Value value;
 
@@ -23,6 +22,6 @@ public class Card {
     }
     @Override
     public String toString(){
-        return valueCharacters[suit.getValue()]+suitCharacters[value.getValue()];
+        return suit.toString()+value.toString();
     }
 }
