@@ -13,7 +13,7 @@ public class Briscola {
     private ArrayList<Player> players;
     private Deck deck;
     private int round=0;
-    private String briscola;
+    private Suit briscola;
     private Brain brain;
     private int currentPlayer;
     private ArrayList<Card> surface;
@@ -38,7 +38,7 @@ public class Briscola {
             }
         }
         Card b=deck.drawCard();
-        briscola=b.getSuit().toString();
+        briscola=b.getSuit();
         deck.addLastCard(b);
         currentPlayer= 0;
     }
@@ -50,7 +50,7 @@ public class Briscola {
     public Briscola(String description,int numPlayers) throws InvalidCardDescriptionException, InvalidGameStateException {
         try {
             State state=Parser.parseState(description,numPlayers);
-            briscola=state.trump;
+            briscola=Suit.stringToSuit(state.trump);
             currentPlayer=state.currentPlayer;
             deck=new Deck(state.deck);
             players=new ArrayList<Player>();
