@@ -3,6 +3,8 @@ package it.polimi.ma.group07.briscola.model;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionException;
+
 /**
  * Created by amari on 18-Oct-17.
  */
@@ -23,11 +25,15 @@ public class Deck {
         shuffleDeck();
     }
 
-    public Deck(String desc)
-    {
+    public Deck(String desc) throws InvalidCardDescriptionException {
         cards=new ArrayList<Card>();
-        //TODO create deck from string description
+        //create array of  Strings (Length of Deck divided by 2 Characters for each Card)
+        ArrayList<String> cardStrings=Parser.splitString(desc,2);
+        for(String s:cardStrings){
+            cards.add(new Card(s));
+        }
     }
+
 
     public ArrayList<Card> getDeck(){
         return cards;
@@ -45,6 +51,9 @@ public class Deck {
     public void addLastCard(Card card){
         cards.add(card);
     }
+
+
+
 
     @Override
     public String toString()

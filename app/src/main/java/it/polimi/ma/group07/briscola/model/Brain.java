@@ -15,7 +15,7 @@ public class Brain {
         valueToRank=new HashMap<Value, Integer>();
         valueToScore=new HashMap<Value,Integer>();
 
-        valueToRank.put(Value.Ace,1);
+        valueToRank.put(Value.ACE,1);
         valueToRank.put(Value.THREE,2);
         valueToRank.put(Value.KING,3);
         valueToRank.put(Value.HORSE,4);
@@ -26,7 +26,7 @@ public class Brain {
         valueToRank.put(Value.FOUR,9);
         valueToRank.put(Value.TWO,10);
 
-        valueToScore.put(Value.Ace,11);
+        valueToScore.put(Value.ACE,11);
         valueToScore.put(Value.THREE,10);
         valueToScore.put(Value.KING,4);
         valueToScore.put(Value.HORSE,3);

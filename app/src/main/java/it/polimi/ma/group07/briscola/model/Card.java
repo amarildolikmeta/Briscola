@@ -1,5 +1,7 @@
 package it.polimi.ma.group07.briscola.model;
 
+import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionException;
+
 /**
  * Created by amari on 18-Oct-17.
  */
@@ -13,6 +15,14 @@ public class Card {
         this.suit=suit;
         this.value=value;
     }
+    public Card(String desc) throws InvalidCardDescriptionException {
+        if(desc.length()!=2)
+            throw new InvalidCardDescriptionException("Invalid Length");
+        //extract Value of Card
+        value=Value.stringToValue(desc.substring(0,1));
+        suit=Suit.stringToSuit(desc.substring(1));
+
+    }
     public Suit getSuit()
     {
         return suit;
@@ -20,8 +30,9 @@ public class Card {
     public Value getValue(){
         return value;
     }
+
     @Override
     public String toString(){
-        return suit.toString()+value.toString();
+        return value.toString()+suit.toString();
     }
 }
