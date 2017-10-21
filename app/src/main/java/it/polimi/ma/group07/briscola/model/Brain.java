@@ -1,5 +1,6 @@
 package it.polimi.ma.group07.briscola.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +12,8 @@ public class Brain {
     private Map<Value,Integer> valueToScore ;
     private Map<Value,Integer> valueToRank;
 
+
+    private Suit trumpSuit;
     public Brain(){
         valueToRank=new HashMap<Value, Integer>();
         valueToScore=new HashMap<Value,Integer>();
@@ -45,5 +48,44 @@ public class Brain {
 
     public int getRankFromValue(Value value){
         return valueToRank.get(value);
+    }
+
+    public void setTrumpSuit(Suit trumpSuit) {
+        this.trumpSuit = trumpSuit;
+    }
+
+    public int determineWinner(ArrayList<Card> surface,int Briscolaplayed) {
+        int max=11;
+        int winner=0;
+        Suit winnerSuit;
+        if(Briscolaplayed==0)
+        {
+            max=getRankFromValue(surface.get(0).getValue());
+            winner=0;
+            winnerSuit=surface.get(0).getSuit();
+
+        }
+        else
+        {
+            winnerSuit=trumpSuit;
+        }
+        for(int i =0;i<surface.size();i++){
+            int rank=getRankFromValue(surface.get(i).getValue());
+            Suit s=surface.get(i).getSuit();
+            if(rank<max && s.toString().equals(winnerSuit.toString()))
+            {
+                max=rank;
+                winner=i;
+            }
+        }
+        return winner;
+    }
+
+    public  int calculatePoints(ArrayList<Card> surface) {
+        int count=0;
+        for(Card c:surface){
+            count+=getScoreFromValue(c.getValue());
+        }
+        return count;
     }
 }

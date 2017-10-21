@@ -122,7 +122,7 @@ public class Parser {
                     throw new InvalidGameStateException("Invalid Player Pile State");
                 count+=piles[i].length();
             }
-            
+
             if(count!=80)
                 throw new InvalidGameStateException("Incorrect Card Encoding");
 

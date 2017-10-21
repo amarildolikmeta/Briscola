@@ -1,9 +1,12 @@
 package it.polimi.ma.group07.briscola.model;
 
+import android.icu.lang.UCharacter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionException;
+import it.polimi.ma.group07.briscola.model.Exceptions.NoCardInDeckException;
 
 /**
  * Created by amari on 18-Oct-17.
@@ -43,7 +46,9 @@ public class Deck {
         Collections.shuffle(cards);
     }
 
-    public Card drawCard() {
+    public Card drawCard() throws NoCardInDeckException {
+        if(cards.size()==0)
+            throw new NoCardInDeckException("Deck Finished");
         Card card=cards.remove(0);
         return card;
     }
@@ -62,5 +67,15 @@ public class Deck {
         for(Card c:cards)
             str+=c.toString();
         return str;
+    }
+
+    public Card getLastCard() {
+        return cards.get(cards.size()-1);
+    }
+
+    public boolean hasMoreCards() {
+        if(cards.size()>0)
+            return true;
+        return false;
     }
 }

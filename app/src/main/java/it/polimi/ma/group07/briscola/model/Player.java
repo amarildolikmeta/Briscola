@@ -68,13 +68,13 @@ public class Player {
         hand.add(card);
     }
 
-    public Card placeCardAtIndex(int index){
+    public Card placeCardAtIndex(int index) throws ArrayIndexOutOfBoundsException{
         return hand.remove(index);
     }
 
     public void reset() {
-        hand.removeAll(hand);
-        cardPile.removeAll(cardPile);
+        hand.clear();
+        cardPile.clear();
         score=0;
     }
     public String handToString()
@@ -96,4 +96,7 @@ public class Player {
     }
 
 
+    public void incrementScore(int points) {
+        score+=points;
+    }
 }
