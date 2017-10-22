@@ -8,7 +8,7 @@ import java.util.Map;
  * Created by amari on 18-Oct-17.
  */
 
-public class Brain {
+public class Brain implements RuleApplier {
     private Map<Value,Integer> valueToScore ;
     private Map<Value,Integer> valueToRank;
 

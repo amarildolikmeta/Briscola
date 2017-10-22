@@ -6,6 +6,8 @@ import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionExce
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidGameStateException;
 import it.polimi.ma.group07.briscola.model.Exceptions.NoCardInDeckException;
 
+import static it.polimi.ma.group07.briscola.model.GameState.WON;
+
 /**
  * Created by amari on 18-Oct-17.
  */
@@ -80,8 +82,11 @@ public class Briscola {
                     briscolaPlayed++;
             }
             //create players and distribute card in hand and pile
+            //brain implements the RuleApplier interface
+            //which declares a calculatePoints(ArrayList<Card> cards) method
+            //that will be called inside the constructor of a player to calculate the points
             for(int i=0;i<state.hands.length;i++){
-                players.add(new Player(state.hands[i],state.piles[i],"P"+(i+1)));
+                players.add(new Player(state.hands[i],state.piles[i],"P"+(i+1),brain));
             }
             //place cards in surface
             for(String s:Parser.splitString(state.surface,2)){
@@ -109,7 +114,7 @@ public class Briscola {
         for(int i=0;i<players.size();i++)
             players.get(i).reset();
     }
-    
+
     public String moveTest(String configuration,String moves) throws InvalidCardDescriptionException, InvalidGameStateException {
         try {
             setState(configuration,2);
@@ -118,15 +123,23 @@ public class Briscola {
         }
         for(int i=0;i<moves.length();i++){
 
-            boolean finished= onPerformMove(moves.charAt(i)-'0');
+            GameState s= onPerformMove(moves.charAt(i)-'0');
             //OnPerform move return 1 if >60 points are reached
-            if(finished)
-                return "WINNER "+currentPlayer+" "+players.get(currentPlayer).getScore();
+            switch(s){
+                case WON:
+                {
+                    return "WINNER "+currentPlayer+" "+players.get(currentPlayer).getScore();
+                }
+                case DRAW:
+                {
+                    if(i<players.size()-1)
+                        return "ERROR: More moves than possible are specified";
+                        return "DRAW";
+                }
+                default:
+                {
 
-            if(players.get(currentPlayer).getHand().size()==0){
-                if(i<players.size()-1)
-                    return "ERROR: More moves than possible are specified";
-                return "DRAW";
+                }
             }
         }
         //In this case the moves are finished so we just return the state
@@ -142,8 +155,8 @@ public class Briscola {
             }
         }
     }
-
-    public boolean onPerformMove(int index) throws ArrayIndexOutOfBoundsException{
+    //return true if the game finishes
+    public GameState onPerformMove(int index) throws ArrayIndexOutOfBoundsException{
         Card c=players.get(currentPlayer).placeCardAtIndex(index);
         surface.add(c);
         if (c.getSuit().toString().equals(briscola.toString()))
@@ -162,7 +175,7 @@ public class Briscola {
             players.get(currentPlayer).incrementScore(points);
             //check if game is Finished
             if(players.get(currentPlayer).getScore()>60){
-                return true;
+                return WON;
             }
             //empty surface
             surface.clear();
@@ -171,8 +184,12 @@ public class Briscola {
             if (deck.hasMoreCards()) {
                 dealCards();
             }
+            else if(players.get(currentPlayer).getHand().size()==0)
+            {
+                return GameState.DRAW;
+            }
         }
-        return false;
+        return GameState.CONTINUE;
     }
     public void incrementCurrentPlayer()
     {
@@ -221,5 +238,9 @@ public class Briscola {
     //get a string representation of the Bricola card
     public String getBriscolaCard(){
         return deck.getLastCard().toString();
+    }
+
+    public int getCurrentPlayer() {
+        return currentPlayer;
     }
 }

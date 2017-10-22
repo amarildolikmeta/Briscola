@@ -22,11 +22,10 @@ public class Player {
     }
 
 
-    public Player(String hand, String pile,String name) throws InvalidCardDescriptionException {
+    public Player(String hand, String pile,String name,RuleApplier rules) throws InvalidCardDescriptionException {
         this.name=name;
         this.hand=new ArrayList<Card>();
         this.cardPile=new ArrayList<Card>();
-        this.score=0;
         //split hand and pile strings
         ArrayList<String> handStrings=Parser.splitString(hand,2);
         ArrayList<String> pileStrings=Parser.splitString(pile,2);
@@ -35,6 +34,7 @@ public class Player {
         for(int i=0;i<pileStrings.size();i++){
             this.cardPile.add(new Card(pileStrings.get(i)));
         }
+        this.score=rules.calculatePoints(this.cardPile);
     }
 
     public int getScore(){
