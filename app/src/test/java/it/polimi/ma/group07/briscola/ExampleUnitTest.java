@@ -21,40 +21,19 @@ public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() throws Exception {
 
-        String state="0C4G4SHC2G6S2SJS4B7B2BKG5G6G7C3C3S1G7GKS6B3BHB5C3GJG1C..4CJB2C.KC6CJC.KB1BHS5B.5S1SHG7S";
+        /*String state="0C4G4SHC2G6S2SJS4B7B2BKG5G6G7C3C3S1G7GKS6B3BHB5C3GJG1C..4CJB2C.KC6CJC.KB1BHS5B.5S1SHG7S";
         String[] moves={"22122222202212222212220022110000"};
         String[] results={
                           "WINNER 1 70"
-                         };
-         Briscola b=new Briscola();
-        for(int i=0;i<moves.length;i++) {
-            String res=b.moveTest(state, moves[i]);
+                         };*/
+        Briscola b=new Briscola("0C..7S5CJG.KB3G1C.5B1B6CJB6G7C7G1G6BKS3BHB.4CKC1S5SHGHS2CJC4S4GHC2G6S2SJS4B7B2BKG5G3S3C");
+        System.out.println(b.getGameState());
+        String res=b.moveTest("0C..7S5CJG.KB3G1C.5B1B6CJB6G7C7G1G6BKS3BHB.4CKC1S5SHGHS2CJC4S4GHC2G6S2SJS4B7B2BKG5G3S3C", "111");
+        /*for(int i=0;i<moves.length;i++) {
+
             System.out.println(res);
             assertEquals(res, results[i]);
-        }
-
+        }*/
+        System.out.println(b.toString());
     }
-   /* private void askMove(){
-        System.out.print("Player"+b.getCurrentPlayer()+" move:");
-        int index = sc.nextInt();
-        GameState s=b.onPerformMove(index);
-        if(s== WON)
-        {
-            System.out.println("Game finished with a winner");
-        }
-        else if(s==DRAW)
-        {
-            System.out.println("DRAW");
-        }
-        else
-        {
-            System.out.flush();
-            System.out.println("Player0 hand:"+b.getPlayerHand(0)+"\t Player 0 Pile:"+b.getPlayerCardPile(0));
-            System.out.println("Briscola:"+b.getBriscolaCard());
-            System.out.println("Surface:"+b.getSurface());
-            System.out.println("Player1 hand:"+b.getPlayerHand(1)+"\t Player 1 Pile:"+b.getPlayerCardPile(1));
-            askMove();
-        }
-
-    }*/
 }

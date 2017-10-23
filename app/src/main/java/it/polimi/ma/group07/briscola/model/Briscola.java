@@ -21,6 +21,7 @@ public class Briscola {
     private int currentPlayer;
     private ArrayList<Card> surface;
     private int briscolaPlayed;
+    private StateBundle gameState;
     //if number of players not specified
     public Briscola(){
         this(2);
@@ -62,6 +63,7 @@ public class Briscola {
     }
 
     public Briscola(String description,int numPlayers) throws InvalidCardDescriptionException, InvalidGameStateException {
+        brain=new Brain();
         setState(description, numPlayers);
 
     }
@@ -166,27 +168,26 @@ public class Briscola {
         {
             //determine winning card
             int winner =brain.determineWinner(surface,briscolaPlayed);
-
             int points=brain.calculatePoints(surface);
             //addcards to the winner pile (winner will be first player of next round)
             currentPlayer+=winner;
             currentPlayer=currentPlayer%players.size();
             players.get(currentPlayer).addCardsinPile(surface);
+            surface.clear();
             players.get(currentPlayer).incrementScore(points);
             //check if game is Finished
             if(players.get(currentPlayer).getScore()>60){
                 return WON;
             }
             //empty surface
-            surface.clear();
             briscolaPlayed=0;
             //deal next batch of cards
             if (deck.hasMoreCards()) {
                 dealCards();
             }
-            else if(players.get(currentPlayer).getHand().size()==0)
-            {
-                return GameState.DRAW;
+            else{
+                if(players.get(currentPlayer).getHand().size()==0)
+                    return GameState.DRAW;
             }
         }
         return GameState.CONTINUE;
@@ -219,28 +220,46 @@ public class Briscola {
     }
 
     //return a string representing the hand of a player with index
-    //the hand is represanted as a coma separated cards of 2 characters
     public String getPlayerHand(int index){
-        return players.get(index).getHand().toString().replace("[","").replace(" ","").replace("]","");
+        return players.get(index).getHand().toString().replace("[","").replace(" ","").replace("]","").replace(",","");
+    }
+    public ArrayList<Card> getPlayerHandCards(int index){
+        return players.get(index).getHand();
     }
     //return a string representing the surface
-    //the surface is represanted as a coma separated cards of 2 characters
     public String getSurface(){
-        return surface.toString().replace("[","").replace(" ","").replace("]","");
+        return surface.toString().replace("[","").replace(" ","").replace("]","").replace(",","");
     }
 
     //return a string representing the pile of a player with index
-    //the pile is represanted as a coma separated cards of 2 characters
     public String getPlayerCardPile(int index){
-        return players.get(index).getCardPile().toString().replace("[","").replace(" ","").replace("]","");
+        return players.get(index).getCardPile().toString().replace("[","").replace(" ","").replace("]","").replace(",","");
     }
 
     //get a string representation of the Bricola card
     public String getBriscolaCard(){
-        return deck.getLastCard().toString();
+        //return BricolaCard if in deck
+        try {
+            return deck.getLastCard().toString();
+        } catch (ArrayIndexOutOfBoundsException e)
+        {
+            return briscola.toString();
+        }
     }
 
     public int getCurrentPlayer() {
         return currentPlayer;
+    }
+
+    public StateBundle getGameState(){
+        ArrayList<String> hand1=Parser.splitString(getPlayerHand(0),2);
+        ArrayList<String> hand2=Parser.splitString(getPlayerHand(1),2);
+        ArrayList<String> pile1=Parser.splitString(getPlayerCardPile(0),2);
+        ArrayList<String> pile2=Parser.splitString(getPlayerCardPile(1),2);
+        ArrayList<String> surface=Parser.splitString(getSurface(),2);
+        int score1=players.get(0).getScore();
+        int score2=players.get(1).getScore();
+        String briscola=getBriscolaCard();
+        return new StateBundle(hand1,hand2,surface,briscola,currentPlayer,pile1,pile2,score1,score2);
     }
 }

@@ -94,8 +94,9 @@ public class Parser {
             deck=tokens[0];
 
             //Check that last card has trump suit
-            if(!trump.equals(deck.substring(deck.length()-1)))
-                throw new InvalidGameStateException("Invalid Trump Suit");
+            if(deck.length()>0)
+                if((!trump.equals(deck.substring(deck.length()-1))))
+                    throw new InvalidGameStateException("Invalid Trump Suit");
 
             if(deck.length()%2!=0)
                 throw new InvalidGameStateException("Invalid Deck Encoding");
