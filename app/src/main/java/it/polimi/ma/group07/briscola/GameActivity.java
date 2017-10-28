@@ -96,10 +96,10 @@ public class GameActivity extends AppCompatActivity {
             }
             Button b=(Button) v;
             int index=((LinearLayout)b.getParent()).indexOfChild(b);
-            GameState s=game.onPerformMove(index);
+            boolean s=game.onPerformMove(index);
             movesPerformed+=index;
             state=game.getGameState();
-            if(s==WON || s==DRAW)
+            if(game.isGameFinished())
             {
                 gameFinished=true;
                 AlertDialog alertDialog = new AlertDialog.Builder(GameActivity.this).create();
@@ -113,6 +113,23 @@ public class GameActivity extends AppCompatActivity {
                             }
                         });
                 alertDialog.show();
+            }
+            if(game.isRoundFinished()){
+                game.finishRound();
+                //state=game.getGameState();
+                playerViews[state.currentPlayer].setBackgroundResource(R.drawable.custom_border);
+                playerViews[(state.currentPlayer+1)%2].setBackgroundResource(R.drawable.no_border);
+                
+                    flushInterface();
+                    buildInterface(state);
+
+                    game.dealCard();
+                    state=game.getGameState();
+                    flushInterface();
+                    buildInterface(state);
+                    game.dealCard();
+                    state=game.getGameState();
+
             }
             flushInterface();
             buildInterface(state);

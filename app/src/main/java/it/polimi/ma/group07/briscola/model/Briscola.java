@@ -22,6 +22,8 @@ public class Briscola {
     private ArrayList<Card> surface;
     private int briscolaPlayed;
     private StateBundle gameState;
+    private boolean roundFinished;
+    private boolean gameFinished;
     //if number of players not specified
     public Briscola(){
         this(2);
@@ -56,6 +58,8 @@ public class Briscola {
         deck.addLastCard(b);
         currentPlayer= 0;
         briscolaPlayed=0;
+        roundFinished=false;
+        gameFinished=false;
     }
 
     public Briscola(String description) throws InvalidGameStateException, InvalidCardDescriptionException {
@@ -94,7 +98,18 @@ public class Briscola {
             for(String s:Parser.splitString(state.surface,2)){
                 surface.add(new Card(s));
             }
-
+            if(surface.size()==players.size())
+                roundFinished=true;
+            else
+                roundFinished=false;
+            gameFinished=true;
+            for (Player p :players){
+                if(p.getHand().size()>0)
+                {
+                    gameFinished=false;
+                    break;
+                }
+            }
         } catch (InvalidGameStateException | InvalidCardDescriptionException e) {
                 System.out.println(e.getMessage());
                 throw e;
@@ -109,6 +124,12 @@ public class Briscola {
         return str;
     }
 
+    public boolean isRoundFinished(){
+        return roundFinished;
+    }
+    public boolean isGameFinished(){
+        return gameFinished;
+    }
     public void resetGame(){
         deck=new Deck();
         surface.clear();
@@ -123,31 +144,36 @@ public class Briscola {
         } catch (InvalidGameStateException |InvalidCardDescriptionException e) {
             return "ERROR: "+e.getMessage();
         }
+
         for(int i=0;i<moves.length();i++){
-
-            GameState s= onPerformMove(moves.charAt(i)-'0');
-            //OnPerform move return 1 if >60 points are reached
-            switch(s){
-                case WON:
-                {
-                    return "WINNER "+currentPlayer+" "+players.get(currentPlayer).getScore();
+            if(isGameFinished())
+                return "ERROR: More Moves than possible are specified";
+            boolean res= onPerformMove(moves.charAt(i)-'0');
+            if(!res){
+                    return "ERROR: Wrong Sequence of moves";
                 }
-                case DRAW:
+            if(isRoundFinished()){
+                finishRound();
+                dealCards();
+            }
+            }
+        if(isGameFinished()){
+            String message="DRAW";
+            for(int i=0;i<players.size();i++){
+                Player p=players.get(i);
+                if(p.getScore()>60)
                 {
-                    if(i<players.size()-1)
-                        return "ERROR: More moves than possible are specified";
-                        return "DRAW";
-                }
-                default:
-                {
-
+                    message="WINNER "+i+" "+p.getScore();
+                    break;
                 }
             }
+            return message;
         }
         //In this case the moves are finished so we just return the state
         return this.toString();
     }
-    private void dealCards(){
+
+    public void dealCards(){
         for (int j = 0; j < players.size(); j++) {
             try {
                 players.get((currentPlayer + j) % players.size()).addCardToHand(deck.drawCard());
@@ -157,14 +183,43 @@ public class Briscola {
             }
         }
     }
-    //return true if the game finishes
-    public GameState onPerformMove(int index) throws ArrayIndexOutOfBoundsException{
-        Card c=players.get(currentPlayer).placeCardAtIndex(index);
-        surface.add(c);
-        if (c.getSuit().toString().equals(briscola.toString()))
-            briscolaPlayed++;
-        incrementCurrentPlayer();
-        if(surface.size()==players.size())
+    //returns true if card was dealed
+    public boolean dealCard(){
+            try {
+                players.get((currentPlayer ) ).addCardToHand(deck.drawCard());
+                incrementCurrentPlayer();
+                return true;
+            } catch (NoCardInDeckException e) {
+                //if cards finish don't deal
+                return false;
+            }
+    }
+    //return true if move performed
+    public boolean onPerformMove(int index) throws ArrayIndexOutOfBoundsException{
+        if(roundFinished)
+            return false;
+        try{
+            Card c=players.get(currentPlayer).placeCardAtIndex(index);
+            surface.add(c);
+            if (c.getSuit().toString().equals(briscola.toString()))
+                briscolaPlayed++;
+            if(surface.size()==players.size())
+            {
+                roundFinished=true;
+                if(players.get(currentPlayer).getHand().size()==0)
+                    gameFinished=true;
+            }
+            incrementCurrentPlayer();
+            return true;
+        }
+        catch (ArrayIndexOutOfBoundsException e)
+        {
+            return false;
+        }
+
+    }
+    public boolean finishRound(){
+        if(roundFinished)
         {
             //determine winning card
             int winner =brain.determineWinner(surface,briscolaPlayed);
@@ -175,22 +230,12 @@ public class Briscola {
             players.get(currentPlayer).addCardsinPile(surface);
             surface.clear();
             players.get(currentPlayer).incrementScore(points);
-            //check if game is Finished
-            if(players.get(currentPlayer).getScore()>60){
-                return WON;
-            }
-            //empty surface
+            roundFinished=false;
             briscolaPlayed=0;
-            //deal next batch of cards
-            if (deck.hasMoreCards()) {
-                dealCards();
-            }
-            else{
-                if(players.get(currentPlayer).getHand().size()==0)
-                    return GameState.DRAW;
-            }
+            return true;
         }
-        return GameState.CONTINUE;
+        else
+            return false;
     }
     public void incrementCurrentPlayer()
     {
