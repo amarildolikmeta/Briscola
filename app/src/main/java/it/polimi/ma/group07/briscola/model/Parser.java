@@ -35,9 +35,11 @@ public class Parser {
         //2 dots after the surface cards and deck +
         //2 dots for each players hand and pile of cards -
         // the last players pile needs no separation
-        if(desc.length()!=80+1+1+2+2*numPlayers-1)
-            throw new InvalidGameStateException("Invalid String Length");
+
+
         try {
+            if(desc.length()!=80+1+1+2+2*numPlayers-1)
+                throw new InvalidGameStateException("Invalid String Length");
             hands=new String[numPlayers];
             piles=new String[numPlayers];
 
@@ -136,6 +138,10 @@ public class Parser {
         catch (InvalidGameStateException e)
         {
             throw e;
+        }
+        catch (NullPointerException e)
+        {
+            throw new InvalidGameStateException("No state specified");
         }
 
     }

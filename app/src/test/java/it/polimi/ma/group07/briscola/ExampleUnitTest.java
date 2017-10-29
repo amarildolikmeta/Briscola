@@ -71,6 +71,16 @@ public class ExampleUnitTest {
             }
         }
     }
-
-
+    @Test
+    public void MONKEY_TEST() throws Exception {
+        Briscola b=new Briscola();
+        String moves="02120112";
+        state="1S1BKB1CHB3B5G2GHC2C7SHG1S5SJG1GKG3G5CJBKC6B4S6CJC4B2B7BKS7GJS..3C4CHS.2S4G5B.6G7C.6S3S";
+        String result="0S2C7SHG1S5SJG1GKG3G5CJBKC6B4S6CJC4B2B7BKS7GJS..1B3B2G.4GHBHC.6G7C2SHS4CKB3C5B1C5G.6S3S";
+        String res=b.moveTest(state, moves);
+        System.out.println(res);
+        assertEquals(result, res);
     }
+
+
+}

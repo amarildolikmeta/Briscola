@@ -98,6 +98,10 @@ public class Briscola {
             for(String s:Parser.splitString(state.surface,2)){
                 surface.add(new Card(s));
             }
+            //check correctness of hands
+            if(!handSizeCorrect()){
+                throw new InvalidGameStateException("Hand sizes don't reflect state of game");
+            }
             if(surface.size()==players.size())
                 roundFinished=true;
             else
@@ -114,6 +118,29 @@ public class Briscola {
                 System.out.println(e.getMessage());
                 throw e;
             }
+    }
+
+    private boolean handSizeCorrect() {
+        int index=currentPlayer;
+        //return to starting index of the round
+        for(int i=0;i<surface.size();i++)
+        {
+            currentPlayer--;
+            if(currentPlayer==-1)
+                currentPlayer=players.size()-1;
+        }
+        int currentSize=players.get(currentPlayer).getHand().size();
+        for(int i=0;i<surface.size();i++)
+        {
+            int handSize=players.get(index).getHand().size();
+            if(handSize>2||handSize!=currentSize-1)
+                return false;
+            index++;
+            if(index==players.size())
+                index=0;
+
+        }
+        return true;
     }
 
     public String surfaceToString(){

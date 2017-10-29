@@ -119,7 +119,7 @@ public class GameActivity extends AppCompatActivity {
                 //state=game.getGameState();
                 playerViews[state.currentPlayer].setBackgroundResource(R.drawable.custom_border);
                 playerViews[(state.currentPlayer+1)%2].setBackgroundResource(R.drawable.no_border);
-                
+
                     flushInterface();
                     buildInterface(state);
 
