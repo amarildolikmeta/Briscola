@@ -1,18 +1,11 @@
 package it.polimi.ma.group07.briscola;
 
-import android.util.Log;
-
 import org.junit.Test;
 
-import java.net.URLEncoder;
-import java.util.Scanner;
-
 import it.polimi.ma.group07.briscola.model.Briscola;
-import it.polimi.ma.group07.briscola.model.GameState;
+import it.polimi.ma.group07.briscola.model.Exceptions.InvalidGameStateException;
 import it.polimi.ma.group07.briscola.model.StateBundle;
-import it.polimi.ma.group07.briscola.model.helper.HttpRequest;
 
-import static it.polimi.ma.group07.briscola.model.GameState.*;
 import static org.junit.Assert.*;
 
 /**
@@ -74,13 +67,34 @@ public class ExampleUnitTest {
     @Test
     public void MONKEY_TEST() throws Exception {
         Briscola b=new Briscola();
-        String moves="02120112";
-        state="1S1BKB1CHB3B5G2GHC2C7SHG1S5SJG1GKG3G5CJBKC6B4S6CJC4B2B7BKS7GJS..3C4CHS.2S4G5B.6G7C.6S3S";
-        String result="0S2C7SHG1S5SJG1GKG3G5CJBKC6B4S6CJC4B2B7BKS7GJS..1B3B2G.4GHBHC.6G7C2SHS4CKB3C5B1C5G.6S3S";
+        String moves="1111111111111111112010010112211022200100";
+        state="0SJG1GKB7C3G6C2BKC2GJB5B2CHG2S6S4B6G3S1C4G1B6B7SHCJS4CJCKG5CHS3C3B1S4S..5G5SHB.7GKS7B..";
+        String result="DRAW";
         String res=b.moveTest(state, moves);
         System.out.println(res);
         assertEquals(result, res);
     }
+    @Test
+    public void invalid_configurations_test() throws Exception {
+        Briscola b;
+        String[] states={"1B5S4G2C5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B.JC.KG2B6S.1CKS3G..",
+                "1B6S2C5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B..KG2B4G.KS3G5S..JC1C",
+                "0B6S2C5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B.3G.KG2B4G.KS5S..JC1C",
+                "0B5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B..KG4G6S.KS5S2C.3G2B.JC1C",
+                "1B5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B.KG.4G6S.KS5S2C.3G2B.JC1C"};
+        for(int i=0;i<states.length;i++) {
+            try {
+                b=new Briscola(states[i]);
+                fail( "Failed in test number "+(i+1) );
+            } catch (InvalidGameStateException expectedException) {
+            }
+        }
+    }
 
 
+    private String generateState(){
+        Briscola b=new Briscola();
+        state=b.toString();
+        return state;
+    }
 }

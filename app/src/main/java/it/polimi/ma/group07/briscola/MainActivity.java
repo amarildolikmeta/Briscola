@@ -7,17 +7,29 @@ import android.view.View;
 import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
-    private Button playButton;
+    private Button testButton;
+    private Button singlePlayerButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        playButton=(Button) findViewById(R.id.playButton);
 
-        playButton.setOnClickListener(new View.OnClickListener() {
+        testButton=(Button) findViewById(R.id.testButton);
+        singlePlayerButton=(Button) findViewById(R.id.singlePlayerButton);
+
+        testButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent  intent=new Intent(MainActivity.this,GameActivity.class);
+                intent.putExtra("singlePlayer",false);
+                startActivity(intent);
+            }
+        });
+        singlePlayerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent  intent=new Intent(MainActivity.this,GameActivity.class);
+                intent.putExtra("singlePlayer",true);
                 startActivity(intent);
             }
         });

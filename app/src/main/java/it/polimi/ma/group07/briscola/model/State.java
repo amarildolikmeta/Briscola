@@ -14,7 +14,6 @@ public class State {
     public String[] hands;
     public String[] piles;
 
-
     public State(int currentPlayer, String trump, String deck, String surface, String[] hands, String[] piles) {
         this.currentPlayer=currentPlayer;
         this.trump=trump;

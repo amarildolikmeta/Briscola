@@ -9,6 +9,11 @@ import it.polimi.ma.group07.briscola.model.Exceptions.InvalidGameStateException;
  */
 
 public class Parser {
+    private  static int DECK_SIZE=80;
+    private static int CURRENT_PLAYER=1;
+    private static int TRUMP_SUIT=1;
+    private static int DECK_SURFACE_DOTS=2;
+    private static int DOTS_PER_PLAYER=2;
     public static ArrayList<String> splitString(String text,int size) {
 
         ArrayList<String> ret = new ArrayList<String>((text.length() + size - 1) / size);
@@ -27,7 +32,6 @@ public class Parser {
         String surface;
         String[] hands;
         String[] piles;
-
         //Check that the description has the correct format
         //40 cards*2 characters +
         //1 character for the current player +
@@ -38,7 +42,7 @@ public class Parser {
 
 
         try {
-            if(desc.length()!=80+1+1+2+2*numPlayers-1)
+            if(desc.length()!=DECK_SIZE+CURRENT_PLAYER+TRUMP_SUIT+DECK_SURFACE_DOTS+DOTS_PER_PLAYER*numPlayers-1)
                 throw new InvalidGameStateException("Invalid String Length");
             hands=new String[numPlayers];
             piles=new String[numPlayers];
@@ -90,6 +94,11 @@ public class Parser {
             }
             //split the string saving also empty strings between dots
             String[] tokens=desc.split("\\.",-1);
+            //the state should have :
+            //The deck and the surface+
+            //2 sections for each players : Hand and Pile
+            if(tokens.length!=DECK_SURFACE_DOTS+DOTS_PER_PLAYER*numPlayers)
+                throw new InvalidGameStateException("Configuration Parts Are Missing");
             //initialize the counter of characters reserved for cards
             int count=0;
             //extract deck
@@ -108,26 +117,26 @@ public class Parser {
             if(surface.length()%2!=0)
                 throw new InvalidGameStateException("Invalid Surface Encoding");
             count+=surface.length();
-            if(surface.length()>numPlayers*2)
+            if(surface.length()>=numPlayers*2)
                 throw new InvalidGameStateException("Invalid Number of Cards on the surface");
             //extract player hands
             for(int i=0;i<numPlayers;i++)
             {
                 hands[i]=tokens[2+i];
                 if(hands[i].length()>6 || hands[i].length()%2!=0)
-                    throw new InvalidGameStateException("Invalid Hand State");
+                    throw new InvalidGameStateException("Invalid Hand State For Player "+(i+1));
                 count+=hands[i].length();
             }
             for(int i=0;i<numPlayers;i++)
             {
                 piles[i]=tokens[2+numPlayers+i];
                 if(piles[i].length()%2!=0)
-                    throw new InvalidGameStateException("Invalid Player Pile State");
+                    throw new InvalidGameStateException("Invalid Player Pile Encoding For Player "+(i+1));
                 count+=piles[i].length();
             }
 
             if(count!=80)
-                throw new InvalidGameStateException("Incorrect Card Encoding");
+                throw new InvalidGameStateException("Incorrect Card Encoding:Cards Are Missing");
 
             return new State(currentPlayer,trump,deck,surface,hands,piles);
         }

@@ -6,17 +6,20 @@ import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionExce
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidGameStateException;
 import it.polimi.ma.group07.briscola.model.Exceptions.NoCardInDeckException;
 
-import static it.polimi.ma.group07.briscola.model.GameState.WON;
 
 /**
  * Created by amari on 18-Oct-17.
  */
 
 public class Briscola {
+
+    private static Briscola Instance=null;
+
     private ArrayList<Player> players;
     private Deck deck;
     private int round=0;
     private Suit briscola;
+    private Card briscolaCard;
     private Brain brain;
     private int currentPlayer;
     private ArrayList<Card> surface;
@@ -24,7 +27,37 @@ public class Briscola {
     private StateBundle gameState;
     private boolean roundFinished;
     private boolean gameFinished;
+    private boolean playableState;   //true if in the current state moves can be made
+    private int dealingIndex;       //index used when dealing cards
     //if number of players not specified
+
+    public static Briscola createInstance(){
+        Instance=new Briscola();
+        return Instance;
+    }
+
+    public static Briscola createInstance(int numPlayers){
+        Instance=new Briscola(numPlayers);
+        return Instance;
+    }
+
+    public static Briscola createInstance(String configuration) throws InvalidCardDescriptionException, InvalidGameStateException {
+        Instance=new Briscola(configuration);
+        return Instance;
+    }
+
+    public static Briscola createInstance(String configuration, int numpPlayers) throws InvalidGameStateException, InvalidCardDescriptionException {
+        Instance=new Briscola(configuration,numpPlayers);
+        return Instance;
+    }
+
+    public static Briscola getInstance(){
+        if(Instance==null){
+            Instance=new Briscola();
+        }
+        return Instance;
+    }
+
     public Briscola(){
         this(2);
     }
@@ -54,12 +87,14 @@ public class Briscola {
             e.printStackTrace();
         }
         briscola=b.getSuit();
+        briscolaCard=b;
         brain.setTrumpSuit(briscola);
         deck.addLastCard(b);
         currentPlayer= 0;
         briscolaPlayed=0;
         roundFinished=false;
         gameFinished=false;
+        playableState=true;
     }
 
     public Briscola(String description) throws InvalidGameStateException, InvalidCardDescriptionException {
@@ -79,6 +114,11 @@ public class Briscola {
             brain.setTrumpSuit(briscola);
             currentPlayer=state.currentPlayer;
             deck=new Deck(state.deck);
+            if(deck.getSize()>0){
+                briscolaCard=deck.getLastCard();
+            }
+            else
+                briscolaCard=null;
             players=new ArrayList<Player>();
             surface=new ArrayList<Card>();
             //count briscola cards present in surface
@@ -111,9 +151,13 @@ public class Briscola {
                 if(p.getHand().size()>0)
                 {
                     gameFinished=false;
-                    break;
                 }
+                if(p.getCardPile().size()%2!=0)
+                    throw new InvalidGameStateException("Invalid card piles");
             }
+            if(getDeckSize()%2!=0)
+                throw new InvalidGameStateException("Invalid Deck");
+
         } catch (InvalidGameStateException | InvalidCardDescriptionException e) {
                 System.out.println(e.getMessage());
                 throw e;
@@ -122,6 +166,7 @@ public class Briscola {
 
     private boolean handSizeCorrect() {
         int index=currentPlayer;
+
         //return to starting index of the round
         for(int i=0;i<surface.size();i++)
         {
@@ -212,15 +257,24 @@ public class Briscola {
     }
     //returns true if card was dealed
     public boolean dealCard(){
+            if(isPlayableState()||roundFinished)
+                return false;
             try {
-                players.get((currentPlayer ) ).addCardToHand(deck.drawCard());
-                incrementCurrentPlayer();
+                players.get((dealingIndex ) ).addCardToHand(deck.drawCard());
+                incrementDealingIndexPlayer();
+                if(dealingIndex==currentPlayer)
+                    playableState=true;
                 return true;
             } catch (NoCardInDeckException e) {
                 //if cards finish don't deal
                 return false;
             }
     }
+
+    private void incrementDealingIndexPlayer() {
+        dealingIndex=(dealingIndex+1)%players.size();
+    }
+
     //return true if move performed
     public boolean onPerformMove(int index) throws ArrayIndexOutOfBoundsException{
         if(roundFinished)
@@ -233,6 +287,7 @@ public class Briscola {
             if(surface.size()==players.size())
             {
                 roundFinished=true;
+                playableState=false;
                 if(players.get(currentPlayer).getHand().size()==0)
                     gameFinished=true;
             }
@@ -256,6 +311,7 @@ public class Briscola {
             currentPlayer=currentPlayer%players.size();
             players.get(currentPlayer).addCardsinPile(surface);
             surface.clear();
+            dealingIndex=currentPlayer;
             players.get(currentPlayer).incrementScore(points);
             roundFinished=false;
             briscolaPlayed=0;
@@ -319,6 +375,15 @@ public class Briscola {
         }
     }
 
+    public Briscola restart(){
+        Instance=new Briscola(players.size());
+        return Instance;
+    }
+    public Briscola startFromConfiguration(String configuration) throws InvalidCardDescriptionException, InvalidGameStateException {
+        Instance=new Briscola(configuration);
+        return Instance;
+    }
+
     public int getCurrentPlayer() {
         return currentPlayer;
     }
@@ -332,6 +397,38 @@ public class Briscola {
         int score1=players.get(0).getScore();
         int score2=players.get(1).getScore();
         String briscola=getBriscolaCard();
-        return new StateBundle(hand1,hand2,surface,briscola,currentPlayer,pile1,pile2,score1,score2);
+        int deckSize=getDeckSize();
+        boolean playableState=isPlayableState();
+        return new StateBundle(hand1,hand2,surface,briscola,currentPlayer,pile1,pile2,score1,score2,deckSize,playableState);
+    }
+
+    public PlayerState getCurrentPlayerState(){
+        ArrayList<Card> hand=getPlayerHandCards(currentPlayer);
+        ArrayList<Card> surface=getSurfaceCards();
+        ArrayList<Card> ownPile=getPlayerCardsPile(currentPlayer);
+        ArrayList<ArrayList<Card>> opponentPiles=new ArrayList<ArrayList<Card>>();
+        Card briscola=briscolaCard;
+
+        int index=currentPlayer;
+        for(int i=1;i<players.size();i++){
+            index=(index+1)%players.size();
+            opponentPiles.add(getPlayerCardsPile(index));
+        }
+
+        return new PlayerState(hand,surface,ownPile,opponentPiles,briscola);
+    }
+    public int getDeckSize(){
+        return deck.getSize();
+    }
+    public boolean isPlayableState(){
+        return playableState;
+    }
+
+    public ArrayList<Card> getSurfaceCards() {
+        return surface;
+    }
+
+    public ArrayList<Card> getPlayerCardsPile(int index) {
+        return players.get(index).getCardPile();
     }
 }

@@ -21,14 +21,24 @@
         />
 
     <Button
-        android:id="@+id/playButton"
+        android:id="@+id/testButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="100dp"
         android:gravity="center"
         android:layout_gravity="center"
-        android:text="Play"
+        android:text="Test"
         />
+    <Button
+        android:id="@+id/singlePlayerButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:text="Single Player"
+        />
+
 
 </LinearLayout>
 

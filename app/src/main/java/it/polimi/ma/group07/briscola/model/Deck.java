@@ -78,4 +78,8 @@ public class Deck {
             return true;
         return false;
     }
+
+    public int getSize() {
+        return getDeck().size();
+    }
 }

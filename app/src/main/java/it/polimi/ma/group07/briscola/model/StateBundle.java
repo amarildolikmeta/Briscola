@@ -16,9 +16,10 @@ public class StateBundle {
     public ArrayList<String> surface;
     public String briscola;
     public int currentPlayer;
-
+    public int deckSize;
+    public boolean playableState;
     public StateBundle(ArrayList<String> hand1,ArrayList<String> hand2,ArrayList<String> surface,String briscola,int currentPlayer,
-                       ArrayList<String> pile1,ArrayList<String> pile2,int score1,int score2) {
+                       ArrayList<String> pile1,ArrayList<String> pile2,int score1,int score2,int deckSize,boolean playableState) {
         this.hand1 = hand1;
         this.briscola = briscola;
         this.hand2 = hand2;
@@ -28,5 +29,7 @@ public class StateBundle {
         this.pile2=pile2;
         this.score1=score1;
         this.score2=score2;
+        this.deckSize=deckSize;
+        this.playableState=playableState;
     }
 }
