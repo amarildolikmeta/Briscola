@@ -17,6 +17,8 @@ public class Briscola {
 
     private ArrayList<Player> players;
     private Deck deck;
+    //will hold all the cards no matter where they are
+    private ArrayList<Card> cardList;
     private int round=0;
     private Suit briscola;
     private Card briscolaCard;
@@ -68,6 +70,9 @@ public class Briscola {
         brain=new Brain();
         players=new ArrayList<Player>();
         surface=new ArrayList<Card>();
+        //duplicate the pointers now the deck holds all the 40 cards
+        cardList=new ArrayList<Card>(deck.getDeck());
+
         for(int i=0;i<numPlayers;i++)
             players.add(new Player("P"+(i+1)));
         round=1;
@@ -114,6 +119,7 @@ public class Briscola {
             brain.setTrumpSuit(briscola);
             currentPlayer=state.currentPlayer;
             deck=new Deck(state.deck);
+            cardList=new ArrayList<Card>(deck.getDeck());
             if(deck.getSize()>0){
                 briscolaCard=deck.getLastCard();
             }
@@ -123,23 +129,31 @@ public class Briscola {
             surface=new ArrayList<Card>();
             //count briscola cards present in surface
             briscolaPlayed=0;
-            for(Card c:surface){
-                if(c.getSuit().toString().equals(briscola.toString()))
-                    briscolaPlayed++;
-            }
             //create players and distribute card in hand and pile
             //brain implements the RuleApplier interface
             //which declares a calculatePoints(ArrayList<Card> cards) method
             //that will be called inside the constructor of a player to calculate the points
+            //savecards also in the total list of cards
             for(int i=0;i<state.hands.length;i++){
                 players.add(new Player(state.hands[i],state.piles[i],"P"+(i+1),brain));
+                for(Card c:players.get(i).getCardPile())
+                    cardList.add(c);
+                for(Card c:players.get(i).getHand())
+                    cardList.add(c);
             }
             //place cards in surface
             for(String s:Parser.splitString(state.surface,2)){
-                surface.add(new Card(s));
+                Card c=new Card(s);
+                surface.add(c);
+                cardList.add(c);
+            }
+            for(Card c:surface){
+                if(c.getSuit().toString().equals(briscola.toString()))
+                    briscolaPlayed++;
             }
             //check correctness of hands
             if(!handSizeCorrect()){
+                System.out.println(toString());
                 throw new InvalidGameStateException("Hand sizes don't reflect state of game");
             }
             if(surface.size()==players.size())
@@ -157,7 +171,9 @@ public class Briscola {
             }
             if(getDeckSize()%2!=0)
                 throw new InvalidGameStateException("Invalid Deck");
-
+            //check that there are right number of cards
+            if(cardList.size()!=Suit.values().length*Value.values().length)
+                throw new InvalidGameStateException("Invalid Number Of Cards In Game");
         } catch (InvalidGameStateException | InvalidCardDescriptionException e) {
                 System.out.println(e.getMessage());
                 throw e;
@@ -170,9 +186,9 @@ public class Briscola {
         //return to starting index of the round
         for(int i=0;i<surface.size();i++)
         {
-            currentPlayer--;
-            if(currentPlayer==-1)
-                currentPlayer=players.size()-1;
+            index--;
+            if(index==-1)
+                index=players.size()-1;
         }
         int currentSize=players.get(currentPlayer).getHand().size();
         for(int i=0;i<surface.size();i++)
@@ -430,5 +446,9 @@ public class Briscola {
 
     public ArrayList<Card> getPlayerCardsPile(int index) {
         return players.get(index).getCardPile();
+    }
+
+    public ArrayList<Card> getCardList() {
+        return cardList;
     }
 }

@@ -67,9 +67,9 @@ public class ExampleUnitTest {
     @Test
     public void MONKEY_TEST() throws Exception {
         Briscola b=new Briscola();
-        String moves="1111111111111111112010010112211022200100";
-        state="0SJG1GKB7C3G6C2BKC2GJB5B2CHG2S6S4B6G3S1C4G1B6B7SHCJS4CJCKG5CHS3C3B1S4S..5G5SHB.7GKS7B..";
-        String result="DRAW";
+        String moves="1";
+        state="1SJG1GKB7C3G6C2BKC2GJB5B2CHG2S6S4B6G3S1C4G1B6B7SHCJS4CJCKG5CHS3C3B1S4S.5S.5GHB.7GKS7B..";
+        String result="1SKB7C3G6C2BKC2GJB5B2CHG2S6S4B6G3S1C4G1B6B7SHCJS4CJCKG5CHS3C3B1S4S..5GHB1G.7G7BJG..5SKS";
         String res=b.moveTest(state, moves);
         System.out.println(res);
         assertEquals(result, res);
