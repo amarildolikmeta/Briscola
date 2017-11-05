@@ -1,7 +1,8 @@
 package it.polimi.ma.group07.briscola.model.Exceptions;
 
 /**
- * Created by amari on 20-Oct-17.
+ * Represents an exception thrown when
+ * we try to draw a card when the deck is empty
  */
 
 public class NoCardInDeckException extends BriscolaException {

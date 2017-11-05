@@ -5,15 +5,29 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by amari on 18-Oct-17.
+ * Represents on object that will apply the rules of the game
+ * {@inheritDoc }
  */
 
 public class Brain implements RuleApplier {
+    /**
+     * Dictionaries to translate the value of cards into a rank
+     * and a score. In this way the Cards themselves are decoupled
+     * from the rules of the briscola game
+     */
     private Map<Value,Integer> valueToScore ;
     private Map<Value,Integer> valueToRank;
 
-
+    /**
+     * Each game has a trump suit that doesnt change throughout the game
+     * is used to determine the winner of each round
+     */
     private Suit trumpSuit;
+
+    /**
+     * Creates the Brain object and initializes the
+     * Maps
+     */
     public Brain(){
         valueToRank=new HashMap<Value, Integer>();
         valueToScore=new HashMap<Value,Integer>();
@@ -54,12 +68,29 @@ public class Brain implements RuleApplier {
         this.trumpSuit = trumpSuit;
     }
 
-    public int determineWinner(ArrayList<Card> surface,int Briscolaplayed) {
+    public int determineWinner(ArrayList<Card> surface) {
+        int briscolaplayed=0;
+        /**
+         * count the number of cards that have the trump suit
+         * this number affects the way the winner of the round is determined
+         */
+        for(int i=0;i<surface.size();i++)
+            if(surface.get(i).getSuit().toString().equals(trumpSuit.toString()))
+                briscolaplayed++;
         int max=11;
         int winner=0;
         Suit winnerSuit;
-        if(Briscolaplayed==0)
+        /**
+         * Case when no trump suit cards are played
+         */
+        if(briscolaplayed==0)
         {
+            /**
+             * Winner suit is the suit of the first card
+             * in the surface
+             * and the maximum value rank in the field is
+             * the rank of that card
+             */
             max=getRankFromValue(surface.get(0).getValue());
             winner=0;
             winnerSuit=surface.get(0).getSuit();
@@ -67,8 +98,16 @@ public class Brain implements RuleApplier {
         }
         else
         {
+            /**
+             * if any briscola cards were played
+             * the trump suit is the winner suit
+             */
             winnerSuit=trumpSuit;
         }
+        /**
+         * find the winner by comparing each card's suit with the winner suit
+         * and their values with the maximun rank
+         */
         for(int i =0;i<surface.size();i++){
             int rank=getRankFromValue(surface.get(i).getValue());
             Suit s=surface.get(i).getSuit();

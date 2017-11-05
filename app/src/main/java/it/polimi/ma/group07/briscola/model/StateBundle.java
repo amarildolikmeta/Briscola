@@ -3,7 +3,7 @@ package it.polimi.ma.group07.briscola.model;
 import java.util.ArrayList;
 
 /**
- * Created by amari on 23-Oct-17.
+ * Represents full state of the game for a 2 player case
  */
 
 public class StateBundle {

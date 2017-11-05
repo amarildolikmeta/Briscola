@@ -9,12 +9,18 @@ import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionExce
 import it.polimi.ma.group07.briscola.model.Exceptions.NoCardInDeckException;
 
 /**
- * Created by amari on 18-Oct-17.
+ * Represents a deck of Cards
  */
 
 public class Deck {
+    /**
+     * Array of the cards in the deck
+     */
     private ArrayList<Card> cards;
 
+    /**
+     * Creates a new deck and shuffles it
+     */
     public Deck()
     {
         cards=new ArrayList<Card>();
@@ -28,6 +34,11 @@ public class Deck {
         shuffleDeck();
     }
 
+    /**
+     * Creates a deck of cards from a string representation
+     * @param desc  string representation of deck
+     * @throws InvalidCardDescriptionException {@link InvalidCardDescriptionException}
+     */
     public Deck(String desc) throws InvalidCardDescriptionException {
         cards=new ArrayList<Card>();
         //create array of  Strings (Length of Deck divided by 2 Characters for each Card)
@@ -42,10 +53,18 @@ public class Deck {
         return cards;
     }
 
+    /**
+     * shuffles the cards in the deck
+     */
     public void shuffleDeck(){
         Collections.shuffle(cards);
     }
 
+    /**
+     * Draws next card
+     * @return Reference to the topmost card in the deck
+     * @throws NoCardInDeckException {@link NoCardInDeckException}
+     */
     public Card drawCard() throws NoCardInDeckException {
         if(cards.size()==0)
             throw new NoCardInDeckException("Deck Finished");
@@ -57,9 +76,10 @@ public class Deck {
         cards.add(card);
     }
 
-
-
-
+    /**
+     *
+     * @return String representation of the deck
+     */
     @Override
     public String toString()
     {
@@ -73,6 +93,10 @@ public class Deck {
         return cards.get(cards.size()-1);
     }
 
+    /**
+     *
+     * @return true if the deck is not empty
+     */
     public boolean hasMoreCards() {
         if(cards.size()>0)
             return true;

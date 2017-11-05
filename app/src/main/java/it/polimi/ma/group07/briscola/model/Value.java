@@ -3,7 +3,7 @@ package it.polimi.ma.group07.briscola.model;
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionException;
 
 /**
- * Created by amari on 18-Oct-17.
+ * Enumeration of the possible values of a card
  */
 
 public enum Value {
@@ -27,6 +27,11 @@ public enum Value {
     public int getValue() {
         return value;
     }
+
+    /**
+     * String representation of a value
+     * @return
+     */
     @Override
     public String toString(){
         return valueCharacters[value];

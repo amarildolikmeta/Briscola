@@ -3,7 +3,8 @@ package it.polimi.ma.group07.briscola.model;
 import java.util.ArrayList;
 
 /**
- * Created by amari on 31-Oct-17.
+ * Represents a visible state of the player
+ * Thought to be used by the AI
  */
 
 public class PlayerState {

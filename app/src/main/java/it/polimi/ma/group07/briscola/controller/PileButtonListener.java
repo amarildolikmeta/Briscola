@@ -31,11 +31,11 @@ public class PileButtonListener implements View.OnClickListener {
         StateBundle state=Coordinator.getInstance().getState();
         if(((LinearLayout)playerView.getParent()).indexOfChild(playerView)==0)
         {
-            pile=state.pile1;
+            pile=state.pile2;
         }
         else
         {
-            pile=state.pile2;
+            pile=state.pile1;
         }
         if(pile.size()>0)
             message=pile.toString();

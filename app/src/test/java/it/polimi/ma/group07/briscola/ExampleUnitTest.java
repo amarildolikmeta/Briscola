@@ -1,5 +1,6 @@
 package it.polimi.ma.group07.briscola;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import it.polimi.ma.group07.briscola.model.Briscola;
@@ -17,6 +18,7 @@ public class ExampleUnitTest {
 
     String state;
     String res;
+    //@Ignore
     @Test
     public void example_moves_isCorrect() throws Exception {
         String state="0B5S4G6S2C5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B..JCKG2B.1CKS3G..";
@@ -40,6 +42,7 @@ public class ExampleUnitTest {
         System.out.println(res);
         assertEquals(res, result);
     }
+    //@Ignore
     @Test
     public void state_isCorrect() throws Exception {
         Briscola b=new Briscola();
@@ -64,16 +67,18 @@ public class ExampleUnitTest {
             }
         }
     }
+    //@Ignore
     @Test
     public void MONKEY_TEST() throws Exception {
         Briscola b=new Briscola();
-        String moves="1";
-        state="1SJG1GKB7C3G6C2BKC2GJB5B2CHG2S6S4B6G3S1C4G1B6B7SHCJS4CJCKG5CHS3C3B1S4S.5S.5GHB.7GKS7B..";
-        String result="1SKB7C3G6C2BKC2GJB5B2CHG2S6S4B6G3S1C4G1B6B7SHCJS4CJCKG5CHS3C3B1S4S..5GHB1G.7G7BJG..5SKS";
+        String moves="00";
+        state="0S..HS.5C.7BHB1GJGKB7C3G6C2BKC2GJB5B2C4B6S3S1C4G6B7S4C7G4S.5SKSHG2S6G5GJCHCKG1B3C3B1SJS";
+        String result="DRAW";
         String res=b.moveTest(state, moves);
         System.out.println(res);
         assertEquals(result, res);
     }
+    //@Ignore
     @Test
     public void invalid_configurations_test() throws Exception {
         Briscola b;
@@ -90,11 +95,57 @@ public class ExampleUnitTest {
             }
         }
     }
+    @Test
+    public void randomTests() throws Exception {
+        int count=0;
+        for(int i=0;i<100000;i++){
+            Briscola game=new Briscola();
+            String startState=game.toString();
+            String moves=generateMoves();
+            try{
+                game.moveTest(startState,moves);
+            }
+            catch(Exception e){
+                e.printStackTrace();
+                System.out.println("Error in test number:"+(i+1));
+                System.out.println("Start Configuration:"+startState);
+                System.out.println("Moves:"+moves);
+                fail("Error in applying moves");
+            }
+            String invalidState=game.shuffleState();
+            try{
+                game=new Briscola(invalidState);
+                System.out.println("State Number "+(i+1)+" considered valid!");
+                System.out.println(invalidState);
+                count++;
 
+            }
+            catch (InvalidGameStateException e){
+
+            }
+        }
+        System.out.println("Total valid States:"+count);
+    }
 
     private String generateState(){
         Briscola b=new Briscola();
         state=b.toString();
         return state;
+    }
+    private String generateMoves(){
+        int moveLength= (int) (Math.floor(Math.random()*10)+10);
+        String moves="";
+        for(int i=0;i<moveLength;i++){
+            if(i<=38)
+            {
+                moves+=(int)(Math.floor(Math.random()*3));
+            }
+            else
+                if(i==39)
+                    moves+=(int)(Math.floor(Math.random()*2));
+                else
+                    moves+=0;
+        }
+        return moves;
     }
 }

@@ -5,15 +5,26 @@ import java.util.ArrayList;
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidGameStateException;
 
 /**
- * Created by amari on 19-Oct-17.
+ * Helper class to parse strings representing the state of a game
  */
 
 public class Parser {
+    /**
+     * Constants used to validate length of the string
+     */
     private  static int DECK_SIZE=80;
     private static int CURRENT_PLAYER=1;
     private static int TRUMP_SUIT=1;
     private static int DECK_SURFACE_DOTS=2;
     private static int DOTS_PER_PLAYER=2;
+
+    /**
+     * Splits a string in an array of string of length size
+     * used to split spring representations of diferent fields of the game
+     * @param text string to be split
+     * @param size length of chunks
+     * @return array of chunks of length size
+     */
     public static ArrayList<String> splitString(String text,int size) {
 
         ArrayList<String> ret = new ArrayList<String>((text.length() + size - 1) / size);
@@ -24,24 +35,32 @@ public class Parser {
         return ret;
     }
 
+    /**
+     * Parses the configuration string of the game
+     * @param desc configuration string
+     * @param numPlayers number of player the game represents
+     * @return Object containing the parsed information
+     * @throws InvalidGameStateException {@link InvalidGameStateException}
+     */
     public static State parseState(String desc,int numPlayers) throws InvalidGameStateException {
-        //State cariables that will be extracted from the description string
+        /**State variables that will be extracted from the description string
+         */
         int currentPlayer;
         String trump;
         String deck;
         String surface;
         String[] hands;
         String[] piles;
-        //Check that the description has the correct format
-        //40 cards*2 characters +
-        //1 character for the current player +
-        //1 character for the trump suit +
-        //2 dots after the surface cards and deck +
-        //2 dots for each players hand and pile of cards -
-        // the last players pile needs no separation
-
 
         try {
+            /**Check that the description has the correct length
+             *0 cards*2 characters +
+             *1 character for the current player +
+             *1 character for the trump suit +
+             *2 dots after the surface cards and deck +
+             *2 dots for each players hand and pile of cards -
+             *the last players pile needs no separation
+             */
             if(desc.length()!=DECK_SIZE+CURRENT_PLAYER+TRUMP_SUIT+DECK_SURFACE_DOTS+DOTS_PER_PLAYER*numPlayers-1)
                 throw new InvalidGameStateException("Invalid String Length");
             hands=new String[numPlayers];
@@ -56,7 +75,12 @@ public class Parser {
             //extract trump suit
             trump=desc.substring(0,1);
             desc=desc.substring(1);
-
+            /**
+             * We check that each value and each suit is repeated the right amount of time
+             * this alone doesn't guarantee that each card is repeated once but
+             * since later only valid cards will be created the condition is enough to guarantee
+             * that each card is present only once in the game
+             */
             // Check that the cards in the state are valid concerning the suits
             for(Suit s:Suit.values())
             {
@@ -94,9 +118,10 @@ public class Parser {
             }
             //split the string saving also empty strings between dots
             String[] tokens=desc.split("\\.",-1);
-            //the state should have :
-            //The deck and the surface+
-            //2 sections for each players : Hand and Pile
+            /**the state should have :
+             *The deck and the surface+
+             *2 sections for each players : Hand and Pile
+             */
             if(tokens.length!=DECK_SURFACE_DOTS+DOTS_PER_PLAYER*numPlayers)
                 throw new InvalidGameStateException("Configuration Parts Are Missing");
             //initialize the counter of characters reserved for cards
@@ -117,7 +142,7 @@ public class Parser {
             if(surface.length()%2!=0)
                 throw new InvalidGameStateException("Invalid Surface Encoding");
             count+=surface.length();
-            if(surface.length()>=numPlayers*2)
+            if(surface.length()>numPlayers*2)
                 throw new InvalidGameStateException("Invalid Number of Cards on the surface");
             //extract player hands
             for(int i=0;i<numPlayers;i++)
@@ -127,6 +152,7 @@ public class Parser {
                     throw new InvalidGameStateException("Invalid Hand State For Player "+(i+1));
                 count+=hands[i].length();
             }
+            //extract player piles
             for(int i=0;i<numPlayers;i++)
             {
                 piles[i]=tokens[2+numPlayers+i];
@@ -134,7 +160,10 @@ public class Parser {
                     throw new InvalidGameStateException("Invalid Player Pile Encoding For Player "+(i+1));
                 count+=piles[i].length();
             }
-
+            /**
+             * In the end 80 characters representing cards
+             * must be in the state
+             */
             if(count!=80)
                 throw new InvalidGameStateException("Incorrect Card Encoding:Cards Are Missing");
 

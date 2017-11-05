@@ -3,7 +3,7 @@ package it.polimi.ma.group07.briscola.model;
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionException;
 
 /**
- * Created by amari on 18-Oct-17.
+ * Enumeration of the Suits of the cards
  */
 
 public enum Suit {
@@ -21,6 +21,10 @@ public enum Suit {
         return value;
     }
 
+    /**
+     *
+     * @return String Representation of the suits
+     */
     @Override
     public String toString(){
         return suitCharacters[value];

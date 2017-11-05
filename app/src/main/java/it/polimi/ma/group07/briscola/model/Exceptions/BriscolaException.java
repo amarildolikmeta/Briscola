@@ -1,7 +1,7 @@
 package it.polimi.ma.group07.briscola.model.Exceptions;
 
 /**
- * Created by amari on 19-Oct-17.
+ * Represents custom exceptions thrown in the game
  */
 
 public class BriscolaException extends Exception {

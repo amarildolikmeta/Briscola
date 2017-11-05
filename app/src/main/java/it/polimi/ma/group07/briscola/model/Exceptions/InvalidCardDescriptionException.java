@@ -3,7 +3,9 @@ package it.polimi.ma.group07.briscola.model.Exceptions;
 import it.polimi.ma.group07.briscola.model.Briscola;
 
 /**
- * Created by amari on 19-Oct-17.
+ * Exception thrown in case the 2 string encoding for
+ * any of the cards in not a valid one.
+ * The suit or the value of the cards are not in the range of possible values.
  */
 
 public class InvalidCardDescriptionException extends BriscolaException {

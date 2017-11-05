@@ -2,6 +2,7 @@ package it.polimi.ma.group07.briscola;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import it.polimi.ma.group07.briscola.controller.CardPressedListener;
@@ -84,6 +85,7 @@ public class GameActivity extends AppCompatActivity {
         }
         piles[0].setText(state.score1+"");
         piles[1].setText(state.score2+"");
+        Log.i("Briscola Scores","Score 1:"+state.score1+"\tScore2:"+state.score2);
         briscolaCard.setText(state.briscola+"\n"+state.deckSize);
         for(int j=0;j<state.hand1.size();j++)
         {

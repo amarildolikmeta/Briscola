@@ -3,7 +3,10 @@ package it.polimi.ma.group07.briscola.model;
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidGameStateException;
 
 /**
- * Created by amari on 19-Oct-17.
+ * Represents an object representing the different
+ * fields of the game in String representation
+ * Returned by the parser class after parsing a representation
+ * {@link Parser}
  */
 
 public class State {
