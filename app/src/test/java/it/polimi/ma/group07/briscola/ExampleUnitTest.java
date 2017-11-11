@@ -3,6 +3,10 @@ package it.polimi.ma.group07.briscola;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 import it.polimi.ma.group07.briscola.model.Briscola;
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidGameStateException;
 import it.polimi.ma.group07.briscola.model.StateBundle;
@@ -71,9 +75,9 @@ public class ExampleUnitTest {
     @Test
     public void MONKEY_TEST() throws Exception {
         Briscola b=new Briscola();
-        String moves="00";
-        state="0S..HS.5C.7BHB1GJGKB7C3G6C2BKC2GJB5B2C4B6S3S1C4G6B7S4C7G4S.5SKSHG2S6G5GJCHCKG1B3C3B1SJS";
-        String result="DRAW";
+        String moves="0";
+        state="0B.JB.JS..3G2G1S4S1GHSHB6S3B6B2B4GKS7G7C2S4B1C5C3CHG5SJG7S4C5GHC3S1BKCJC2C.6GKGKB7B6C5B";
+        String result="WINNER 0 108";
         String res=b.moveTest(state, moves);
         System.out.println(res);
         assertEquals(result, res);
@@ -93,6 +97,38 @@ public class ExampleUnitTest {
                 fail( "Failed in test number "+(i+1) );
             } catch (InvalidGameStateException expectedException) {
             }
+        }
+    }
+    @Test
+    public void remo_test() throws Exception {
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream("test.csv");
+        BufferedReader file=new BufferedReader(new InputStreamReader(in));
+        String str;
+        str=file.readLine();
+        String[] strings;
+        String state="",result;
+        Briscola b=new Briscola();
+        int counter=0;
+        int row=0;
+        while((str=file.readLine())!=null)
+        {
+            strings=str.split(",",-1);
+            if(strings[0].equals("start")||strings[0].equals("-")){
+                System.out.println("Testing state number "+(++counter));
+                System.out.println(strings[1]);
+                state=strings[1];
+                row=0;
+            }
+            else
+                if(!strings[0].equals("")){
+                    row++;
+                    result=b.moveTest(state,strings[0]);
+                    if(!strings[1].equals(result)){
+                        System.out.println("Failed in row "+row);
+                        System.out.println("Expected:"+strings[1] );
+                        System.out.println("Actual:"+result );
+                    }
+                }
         }
     }
     @Test

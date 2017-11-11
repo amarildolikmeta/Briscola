@@ -2,6 +2,7 @@ package it.polimi.ma.group07.briscola.controller;
 
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -23,6 +24,7 @@ public class PileButtonListener implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+
         AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
         alertDialog.setTitle("Pile");
         String message="No cards in Pile";
@@ -46,6 +48,7 @@ public class PileButtonListener implements View.OnClickListener {
                         dialog.dismiss();
                     }
                 });
+        Log.i("briscola","Listener called");
         alertDialog.show();
     }
 }

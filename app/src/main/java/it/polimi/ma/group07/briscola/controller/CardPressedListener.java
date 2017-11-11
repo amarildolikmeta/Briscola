@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import it.polimi.ma.group07.briscola.GameActivity;
@@ -35,7 +36,7 @@ public class CardPressedListener implements View.OnClickListener {
         if(playerIndex==0&&state.currentPlayer==0 || playerIndex==2 && state.currentPlayer==1){
             return ;
         }
-        Button b=(Button) v;
+        ImageView b=(ImageView) v;
         int index=((LinearLayout)b.getParent()).indexOfChild(b);
         Coordinator.getInstance().onPerformMove(activity,index);
 

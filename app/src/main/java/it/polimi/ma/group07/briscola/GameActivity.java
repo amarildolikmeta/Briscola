@@ -1,9 +1,13 @@
 package it.polimi.ma.group07.briscola;
 
+import android.app.Activity;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import it.polimi.ma.group07.briscola.controller.CardPressedListener;
 import it.polimi.ma.group07.briscola.controller.Coordinator;
@@ -15,8 +19,10 @@ import it.polimi.ma.group07.briscola.model.Briscola;
 
 import it.polimi.ma.group07.briscola.model.StateBundle;
 
+import static java.security.AccessController.getContext;
 
-public class GameActivity extends AppCompatActivity {
+
+public class GameActivity extends Activity {
 
     LinearLayout gameView;
     LinearLayout[] players;
@@ -69,7 +75,7 @@ public class GameActivity extends AppCompatActivity {
         surface=(LinearLayout) findViewById(R.id.surface);
         briscolaCard=(Button) findViewById(R.id.briscolaCard);
 
-        Briscola game=Briscola.createInstance();
+        Briscola game=Briscola.getInstance();
         cardPressedListener=new CardPressedListener(GameActivity.this);
         StateBundle state=game.getGameState();
         buildInterface(state);
@@ -77,7 +83,16 @@ public class GameActivity extends AppCompatActivity {
         Coordinator.getInstance().setState(GameActivity.this,state);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        // Save UI state changes to the savedInstanceState.
+        // This bundle will be passed to onCreate if the process is
+        // killed and restarted.
 
+        savedInstanceState.putString("configuration",Briscola.getInstance().toString());
+        // etc.
+    }
     public void buildInterface(StateBundle state){
         if(state.playableState) {
             playerViews[state.currentPlayer].setBackgroundResource(R.drawable.custom_border);
@@ -89,23 +104,33 @@ public class GameActivity extends AppCompatActivity {
         briscolaCard.setText(state.briscola+"\n"+state.deckSize);
         for(int j=0;j<state.hand1.size();j++)
         {
-            Button b=new Button(this);
-            b.setText(state.hand1.get(j));
+            ImageView b=new ImageView(this);
+            String name="c"+state.hand1.get(j).toLowerCase();
+            int resourceId = getResources().getIdentifier(name, "drawable",
+                    getPackageName());
+            b.setImageResource(resourceId);
+            //b.setText(state.hand1.get(j));
             players[0].addView(b);
             b.setOnClickListener(cardPressedListener);
         }
         for(int j=0;j<state.hand2.size();j++)
         {
-            Button b=new Button(this);
-            b.setText(state.hand2.get(j));
+            ImageView b=new ImageView(this);
+            String name="back1";
+            int resourceId = getResources().getIdentifier(name, "drawable",
+                    getPackageName());
+            b.setImageResource(resourceId);
             players[1].addView(b);
             if(!singlePlayer)
                 b.setOnClickListener(cardPressedListener);
         }
         for(int j=0;j<state.surface.size();j++)
-        {
-            Button b=new Button(this);
-            b.setText(state.surface.get(j));
+        {ImageView b=new ImageView(this);
+            String name="c"+state.surface.get(j).toLowerCase();
+            int resourceId = getResources().getIdentifier(name, "drawable",
+                    getPackageName());
+            b.setImageResource(resourceId);
+            //b.setText(state.surface.get(j));
             surface.addView(b);
         }
     }

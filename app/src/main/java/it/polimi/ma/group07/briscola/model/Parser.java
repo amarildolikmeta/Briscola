@@ -116,7 +116,10 @@ public class Parser {
                 if(count!=4)
                     throw new InvalidGameStateException("Impossible Card State :Value");
             }
-            //split the string saving also empty strings between dots
+            /**split the string saving also empty strings between dots
+             * The second parameter of split saves also the empty parts
+             * like empty surface or empty piles
+             */
             String[] tokens=desc.split("\\.",-1);
             /**the state should have :
              *The deck and the surface+
