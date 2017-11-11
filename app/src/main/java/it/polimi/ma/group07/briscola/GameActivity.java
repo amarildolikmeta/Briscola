@@ -80,6 +80,7 @@ public class GameActivity extends Activity {
         StateBundle state=game.getGameState();
         buildInterface(state);
         Coordinator.createInstance(game.toString(),singlePlayer);
+
         Coordinator.getInstance().setState(GameActivity.this,state);
     }
 
