@@ -56,18 +56,35 @@ public class Brain implements RuleApplier {
 
     }
 
+    /**
+     * return the numeric score of the card's Value
+     * @param value of the card
+     * @return integer in range [0:11]
+     */
     public int getScoreFromValue(Value value){
         return valueToScore.get(value);
     }
 
+    /**
+     * return the numeric rank of the card's Value
+     * @param value of the Cards
+     * @return integer in range [0:11]
+     */
     public int getRankFromValue(Value value){
         return valueToRank.get(value);
     }
 
-    public void setTrumpSuit(Suit trumpSuit) {
-        this.trumpSuit = trumpSuit;
-    }
+    /**
+     * set the trum Suit of the game
+     * @param trumpSuit ArrayList of Cards\
+     */
+    public void setTrumpSuit(Suit trumpSuit) { this.trumpSuit = trumpSuit; }
 
+    /**
+     * return the index of the winning card in range from 0 to the number of players - 1
+     * @param surface ArrayList of Cards
+     * @return integer included in [0:numberOfPlayers-1]
+     */
     public int determineWinner(ArrayList<Card> surface) {
         int briscolaplayed=0;
         /**
@@ -120,6 +137,11 @@ public class Brain implements RuleApplier {
         return winner;
     }
 
+    /**
+     * return an integer count of points in the the provided Card Pile
+     * @param surface ArrayList of Cards from a Card Pile
+     * @return integer included in [0:120]
+     */
     public  int calculatePoints(ArrayList<Card> surface) {
         int count=0;
         for(Card c:surface){

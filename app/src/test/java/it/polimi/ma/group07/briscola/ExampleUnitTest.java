@@ -6,10 +6,19 @@ import org.junit.Test;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 
+import it.polimi.ma.group07.briscola.model.Brain;
 import it.polimi.ma.group07.briscola.model.Briscola;
+import it.polimi.ma.group07.briscola.model.Card;
+import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionException;
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidGameStateException;
+import it.polimi.ma.group07.briscola.model.Parser;
+import it.polimi.ma.group07.briscola.model.State;
 import it.polimi.ma.group07.briscola.model.StateBundle;
+import it.polimi.ma.group07.briscola.model.Suit;
+import it.polimi.ma.group07.briscola.model.Value;
 
 import static org.junit.Assert.*;
 
@@ -82,7 +91,7 @@ public class ExampleUnitTest {
         System.out.println(res);
         assertEquals(result, res);
     }
-    //@Ignore
+    @Ignore
     @Test
     public void invalid_configurations_test() throws Exception {
         Briscola b;
@@ -99,6 +108,7 @@ public class ExampleUnitTest {
             }
         }
     }
+    @Ignore
     @Test
     public void remo_test() throws Exception {
         InputStream in = this.getClass().getClassLoader().getResourceAsStream("test.csv");
@@ -156,11 +166,100 @@ public class ExampleUnitTest {
                 count++;
 
             }
-            catch (InvalidGameStateException e){
-
-            }
+            catch (InvalidGameStateException e){}
         }
         System.out.println("Total valid States:"+count);
+    }
+
+    @Test
+    public void checkDeterminedCardWinner() throws InvalidCardDescriptionException {
+        Brain br = new Brain();
+
+        String[] surfaces={"4B5B","4S4B","5GHG","6SKB","3G1G"};
+        String[] suits = {"B","S","C","G","G"};
+        int[] results={1,0,1,0,1};
+
+        for(int i=0;i<surfaces.length;i++){
+            ArrayList<String> cardStrings = Parser.splitString(surfaces[i],2);
+            ArrayList<Card> surface = new ArrayList<Card>();
+
+            for(String s:cardStrings){
+                surface.add(new Card(s));
+            }
+
+            br.setTrumpSuit(Suit.stringToSuit(suits[i]));
+            int result = br.determineWinner(surface);
+
+            assertEquals(results[i],result);
+        }
+    }
+
+    @Test
+    public void checkCalculatedPoints() throws InvalidCardDescriptionException {
+        Brain br = new Brain();
+
+        String[] surfaces={"4B5B","4S4B","5GHG","6SKB","3G1G"};
+        int[] results={0,0,3,4,21};
+
+        for(int i=0;i<surfaces.length;i++){
+            ArrayList<String> cardStrings = Parser.splitString(surfaces[i],2);
+            ArrayList<Card> surface = new ArrayList<Card>();
+
+            for(String s:cardStrings){
+                surface.add(new Card(s));
+            }
+
+            int result = br.calculatePoints(surface);
+
+            assertEquals(results[i],result);
+        }
+    }
+
+    @Test
+    public void checkCard() throws Exception {
+        Brain br = new Brain();
+        Character alpha = 'A';
+        ArrayList<String> cards = new ArrayList<String>();
+        ArrayList<String> valid=new ArrayList<String>();
+
+        /**
+         * Create a pile of valid cards
+         */
+        for(Suit s:Suit.values())
+            for(Value v:Value.values())
+                valid.add(v.toString()+s.toString());
+
+        /**
+         * Create all possible Numerical/Alphabetical+Alphabetical combinations
+         * and clean from valid pairs to leave only the Invalid ones
+         */
+        for (int j=0; j < 25; j++) {
+            Character beta = 'A';
+            Character number = '1';
+
+            for (int k=0; k < 10; k++) {
+                String s=""+number + alpha;
+                if(!valid.contains(s))
+                    cards.add(s);
+                number++;
+            }
+
+            for (int y=0; y < 25; y++) {
+                String s = "" + beta + alpha;
+                if(!valid.contains(s))
+                    cards.add(s);
+                beta++;
+            }
+            alpha++;
+        }
+
+        for (String c:cards){
+            try{
+                Card card = new Card(c);
+                fail("Failed to create a Card number " + c);
+            }
+            catch(Exception e){}
+        }
     }
 
     private String generateState(){
