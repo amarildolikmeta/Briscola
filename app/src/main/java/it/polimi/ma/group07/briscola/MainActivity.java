@@ -8,7 +8,9 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 
-public class MainActivity extends FragmentActivity {
+import it.polimi.ma.group07.briscola.model.Briscola;
+
+public class MainActivity extends AppCompatActivity {
     private Button testButton;
     private Button singlePlayerButton;
     @Override
@@ -20,9 +22,11 @@ public class MainActivity extends FragmentActivity {
         testButton=(Button) findViewById(R.id.testButton);
         singlePlayerButton=(Button) findViewById(R.id.singlePlayerButton);
 
+
         testButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Briscola.deleteInstance();
                 Intent  intent=new Intent(MainActivity.this,GameActivity.class);
                 intent.putExtra("singlePlayer",false);
                 startActivity(intent);
@@ -31,6 +35,7 @@ public class MainActivity extends FragmentActivity {
         singlePlayerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Briscola.deleteInstance();
                 Intent  intent=new Intent(MainActivity.this,GameActivity.class);
                 intent.putExtra("singlePlayer",true);
                 startActivity(intent);

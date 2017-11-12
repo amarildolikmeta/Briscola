@@ -3,6 +3,7 @@ package it.polimi.ma.group07.briscola.controller;
 import android.content.DialogInterface;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.widget.LinearLayout;
 
 import it.polimi.ma.group07.briscola.GameActivity;
@@ -46,9 +47,10 @@ public class Coordinator {
         boolean s=Briscola.getInstance().onPerformMove(index);
         movesPerformed+=""+index;
         state=Briscola.getInstance().getGameState();
+        activity.flushInterface();
+        activity.buildInterface(state);
         if(Briscola.getInstance().isGameFinished())
         {
-
             AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
             alertDialog.setTitle("Congratulations");
             String message="Game Finished";
@@ -60,64 +62,60 @@ public class Coordinator {
                         }
                     });
             alertDialog.show();
+            return;
         }
         if(Briscola.getInstance().isRoundFinished()){
-            Briscola.getInstance().finishRound();
-            //state=game.getGameState();
-            LinearLayout[] playerViews=activity.getPlayerViews();
-            playerViews[state.currentPlayer].setBackgroundResource(R.drawable.custom_border);
-            playerViews[(state.currentPlayer+1)%2].setBackgroundResource(R.drawable.no_border);
+            finishRound(activity);
+        }
+        else {
+            //AIPlays
+            if (Briscola.getInstance().getCurrentPlayer() == 1 && singlePlayer) {
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        onPerformMove(activity, AIPlayer.getMoveFromState(Briscola.getInstance().getCurrentPlayerState()));
+                    }
+                }, 1500);
 
-            activity.flushInterface();
-            activity.buildInterface(state);
-            //deal a card after a second
+                    }
+            }
+        }
+
+    private void finishRound(final GameActivity activity) {
+        Briscola.getInstance().finishRound();
+        state=Briscola.getInstance().getGameState();
+        //deal a card after a second
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                activity.flushInterface();
+                activity.buildInterface(state);
+            }
+        }, 1500);
             handler.postDelayed(new Runnable() {
                 public void run() {
-                    // Actions to do after 10 seconds
-                    Briscola.getInstance().dealCard();
-                    state=Briscola.getInstance().getGameState();
-                    activity.flushInterface();
-                    activity.buildInterface(state);
-                }
-            }, 1500);
-            //deal second card   a second later
-            handler.postDelayed(new Runnable() {
-                public void run() {
-                    // Actions to do after 10 seconds
                     Briscola.getInstance().dealCard();
                     state=Briscola.getInstance().getGameState();
                     activity.flushInterface();
                     activity.buildInterface(state);
                 }
             }, 3000);
-            //make AI Play
-            if (Briscola.getInstance().getCurrentPlayer() == 1 && singlePlayer) {
-
-                handler.postDelayed(new Runnable() {
-                    public void run() {
-                        // Actions to do after 10 seconds
-                        onPerformMove(activity, AIPlayer.getMoveFromState(Briscola.getInstance().getCurrentPlayerState()));
-                    }
-                }, 4500);
-
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                Briscola.getInstance().dealCard();
+                state=Briscola.getInstance().getGameState();
+                activity.flushInterface();
+                activity.buildInterface(state);
             }
+        }, 4500);
 
+        //make AI Play
+        if (Briscola.getInstance().getCurrentPlayer() == 1 && singlePlayer) {
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    onPerformMove(activity, AIPlayer.getMoveFromState(Briscola.getInstance().getCurrentPlayerState()));
+                }
+            },6000);
         }
-        else {
-            activity.flushInterface();
-            activity.buildInterface(state);
-            //AIPlays
-            if (Briscola.getInstance().getCurrentPlayer() == 1 && singlePlayer) {
 
-                handler.postDelayed(new Runnable() {
-                    public void run() {
-                        // Actions to do after 10 seconds
-                        onPerformMove(activity, AIPlayer.getMoveFromState(Briscola.getInstance().getCurrentPlayerState()));
-                    }
-                }, 1500);
-
-            }
-        }
     }
 
     public void onRestart(GameActivity activity){

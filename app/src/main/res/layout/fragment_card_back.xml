@@ -1,0 +1,7 @@
+<ImageView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/card_hidden_width"
+    android:layout_height="@dimen/card_hidden_height"
+    android:src="@drawable/back1">
+
+</ImageView>

@@ -2,4 +2,10 @@
 <resources>
     <dimen name="image_width">50dp</dimen>
     <dimen name="image_height">100dp</dimen>
+    <dimen name="card_width">75dp</dimen>
+    <dimen name="card_height">150dp</dimen>
+    <dimen name="card_hidden_width">50dp</dimen>
+    <dimen name="card_hidden_height">100dp</dimen>
+    <dimen name="surface_width">250dp</dimen>
+    <dimen name="surface_height">300dp</dimen>
 </resources>

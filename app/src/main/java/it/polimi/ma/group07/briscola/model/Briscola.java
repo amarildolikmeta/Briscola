@@ -87,7 +87,10 @@ public class Briscola {
         Instance=new Briscola();
         return Instance;
     }
+    public static void  deleteInstance(){
 
+        Instance=null;
+    }
     /**
      * Creates a new game of Briscola
      * @param numPlayers number of players in the game
