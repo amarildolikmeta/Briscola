@@ -110,6 +110,12 @@ public class ExampleUnitTest {
         System.out.println("Total valid States:"+count);
     }
 
+    /**
+     * Check of the determineWinner() method in the Brain class
+     * that determines the winning card on the surface
+     * @throws InvalidCardDescriptionException
+     */
+
     @Test
     public void checkDeterminedCardWinner() throws InvalidCardDescriptionException {
         Brain br = new Brain();
@@ -133,6 +139,11 @@ public class ExampleUnitTest {
         }
     }
 
+    /**
+     * Check of the calculatePoints() method in the Brain class
+     * that calculates total points of cards on the surfaceee
+     * @throws InvalidCardDescriptionException
+     */
     @Test
     public void checkCalculatedPoints() throws InvalidCardDescriptionException {
         Brain br = new Brain();
@@ -199,6 +210,11 @@ public class ExampleUnitTest {
         }
     }
 
+    /**
+     * Check the Card constructor in the Card class
+     * by providing it a set of all possible Invalid pairs of characters for card creation
+     * @throws Exception
+     */
     @Test
     public void checkCard() throws Exception {
         Brain br = new Brain();
@@ -244,6 +260,23 @@ public class ExampleUnitTest {
             }
             catch(Exception e){}
         }
+    }
+
+    /**
+     * Check drawCard() method from the Deck class
+     * and pass an Empty Deck to it and check if you can draw a Card from it.
+     * @throws NoCardInDeckException
+     */
+    @Test
+    public void checkDrawCard() throws NoCardInDeckException, InvalidCardDescriptionException {
+        Deck d = new Deck("");
+        ArrayList<Card> cards = new ArrayList<Card>();
+
+        try{
+            d.drawCard();
+            fail("Drew a card from an empty Deck");
+        }
+        catch(Exception e){}
     }
 
     private String generateState(){
