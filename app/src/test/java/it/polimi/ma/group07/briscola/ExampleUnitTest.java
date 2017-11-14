@@ -6,15 +6,19 @@ import org.junit.Test;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import it.polimi.ma.group07.briscola.model.Brain;
 import it.polimi.ma.group07.briscola.model.Briscola;
 import it.polimi.ma.group07.briscola.model.Card;
+import it.polimi.ma.group07.briscola.model.Deck;
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionException;
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidGameStateException;
+import it.polimi.ma.group07.briscola.model.Exceptions.NoCardInDeckException;
 import it.polimi.ma.group07.briscola.model.Parser;
+import it.polimi.ma.group07.briscola.model.Player;
 import it.polimi.ma.group07.briscola.model.State;
 import it.polimi.ma.group07.briscola.model.StateBundle;
 import it.polimi.ma.group07.briscola.model.Suit;
@@ -55,96 +59,32 @@ public class ExampleUnitTest {
         System.out.println(res);
         assertEquals(res, result);
     }
-    //@Ignore
-    @Test
-    public void state_isCorrect() throws Exception {
-        Briscola b=new Briscola();
-        StateBundle state=b.getGameState();
-        System.out.println("Start:Hand 1:"+state.hand1+"; Hand 2:"+state.hand2+";Surface:"+state.surface+";Briscola:"+state.briscola);
-        int[] moves={0,0,0,0};
-        for(int i=0;i<moves.length;i++){
-            b.onPerformMove(moves[i]);
-            state=b.getGameState();
-            System.out.println("Move "+(i+1)+":Hand 1:"+state.hand1+"; Hand 2:"+state.hand2+";Surface:"+state.surface);
-            if(b.isRoundFinished())
-            {
-                b.finishRound();
-                state=b.getGameState();
-                System.out.println("Move "+(i+1)+":Hand 1:"+state.hand1+"; Hand 2:"+state.hand2+";Surface:"+state.surface);
-                b.dealCard();
-                state=b.getGameState();
-                System.out.println("Move "+(i+1)+":Hand 1:"+state.hand1+"; Hand 2:"+state.hand2+";Surface:"+state.surface);
-                b.dealCard();
-                state=b.getGameState();
-                System.out.println("Move "+(i+1)+":Hand 1:"+state.hand1+"; Hand 2:"+state.hand2+";Surface:"+state.surface);
-            }
-        }
-    }
-    //@Ignore
-    @Test
-    public void MONKEY_TEST() throws Exception {
-        Briscola b=new Briscola();
-        String moves="0";
-        state="0B.JB.JS..3G2G1S4S1GHSHB6S3B6B2B4GKS7G7C2S4B1C5C3CHG5SJG7S4C5GHC3S1BKCJC2C.6GKGKB7B6C5B";
-        String result="WINNER 0 108";
-        String res=b.moveTest(state, moves);
-        System.out.println(res);
-        assertEquals(result, res);
-    }
-    @Ignore
+
+
     @Test
     public void invalid_configurations_test() throws Exception {
-        Briscola b;
-        String[] states={"1B5S4G2C5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B.JC.KG2B6S.1CKS3G..",
-                "1B6S2C5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B..KG2B4G.KS3G5S..JC1C",
-                "0B6S2C5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B.3G.KG2B4G.KS5S..JC1C",
-                "0B5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B..KG4G6S.KS5S2C.3G2B.JC1C",
-                "1B5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B.KG.4G6S.KS5S2C.3G2B.JC1C"};
-        for(int i=0;i<states.length;i++) {
-            try {
-                b=new Briscola(states[i]);
-                fail( "Failed in test number "+(i+1) );
-            } catch (InvalidGameStateException expectedException) {
-            }
-        }
-    }
-    @Ignore
-    @Test
-    public void remo_test() throws Exception {
-        InputStream in = this.getClass().getClassLoader().getResourceAsStream("test.csv");
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream("invalidConfigurations");
         BufferedReader file=new BufferedReader(new InputStreamReader(in));
-        String str;
-        str=file.readLine();
-        String[] strings;
-        String state="",result;
-        Briscola b=new Briscola();
-        int counter=0;
-        int row=0;
-        while((str=file.readLine())!=null)
+        String state;
+        Briscola b;
+
+        while((state=file.readLine())!=null)
         {
-            strings=str.split(",",-1);
-            if(strings[0].equals("start")||strings[0].equals("-")){
-                System.out.println("Testing state number "+(++counter));
-                System.out.println(strings[1]);
-                state=strings[1];
-                row=0;
+            try{
+                b=new Briscola(state);
+                fail("Failed recognizing invalid state");
+            }catch (InvalidGameStateException e){
+
             }
-            else
-                if(!strings[0].equals("")){
-                    row++;
-                    result=b.moveTest(state,strings[0]);
-                    if(!strings[1].equals(result)){
-                        System.out.println("Failed in row "+row);
-                        System.out.println("Expected:"+strings[1] );
-                        System.out.println("Actual:"+result );
-                    }
-                }
+
         }
+
     }
+
     @Test
-    public void randomTests() throws Exception {
+    public void randomInvalidConfigurationTests() throws Exception {
         int count=0;
-        for(int i=0;i<100000;i++){
+        for(int i=0;i<10000;i++){
             Briscola game=new Briscola();
             String startState=game.toString();
             String moves=generateMoves();
@@ -161,12 +101,11 @@ public class ExampleUnitTest {
             String invalidState=game.shuffleState();
             try{
                 game=new Briscola(invalidState);
-                System.out.println("State Number "+(i+1)+" considered valid!");
-                System.out.println(invalidState);
                 count++;
 
             }
-            catch (InvalidGameStateException e){}
+            catch (InvalidGameStateException e){
+            }
         }
         System.out.println("Total valid States:"+count);
     }
@@ -198,8 +137,8 @@ public class ExampleUnitTest {
     public void checkCalculatedPoints() throws InvalidCardDescriptionException {
         Brain br = new Brain();
 
-        String[] surfaces={"4B5B","4S4B","5GHG","6SKB","3G1G"};
-        int[] results={0,0,3,4,21};
+        String[] surfaces={"4B5B","4S4B","5GHG","6SKB","3G1G","KCHC","3G3S","2S3B"};
+        int[] results={0,0,3,4,21,7,20,10};
 
         for(int i=0;i<surfaces.length;i++){
             ArrayList<String> cardStrings = Parser.splitString(surfaces[i],2);
@@ -212,6 +151,51 @@ public class ExampleUnitTest {
             int result = br.calculatePoints(surface);
 
             assertEquals(results[i],result);
+        }
+    }
+    @Test
+    public void checkDeck() throws NoCardInDeckException {
+        Deck deck=new Deck();
+        for(int i =0;i<40;i++)
+        {
+            deck.drawCard();
+        }
+        try{
+            deck.drawCard();
+            //supposed to throw exception
+            fail("Drawing card didn't fail");
+        }
+        catch (NoCardInDeckException e)
+        {
+            //Supposed to happen
+        }
+    }
+    @Test
+    public void checkPlayer() throws IndexOutOfBoundsException, InvalidCardDescriptionException {
+        Brain brain=new Brain();
+        String[] hands={"4B5B","4S4B","5GHG3C","6SKBJG","3G1G","KCHC","3G3S","2S3B"};
+        int[] indexes= {0,1,2,2,1,0,0,0};
+        int[] outBoundIndexes={2,2,3,3,2,2,-1,-2};
+        String[] cards={"4B","4B","3C","JG","1G","KC","3G","2S"};
+
+        for(int i=0;i<hands.length;i++)
+        {
+            Player p=new Player(hands[i],"","player",brain);
+            Card c =p.placeCardAtIndex(indexes[i]);
+            assertEquals(cards[i],c.toString());
+        }
+        for(int i=0;i<hands.length;i++)
+        {
+            Player p=new Player(hands[i],"","player",brain);
+            try{
+                Card c =p.placeCardAtIndex(outBoundIndexes[i]);
+                //code shouldn't reach here
+                fail("Should have failed");
+            }
+            catch (IndexOutOfBoundsException e){
+                //supposed to happen
+            }
+
         }
     }
 
