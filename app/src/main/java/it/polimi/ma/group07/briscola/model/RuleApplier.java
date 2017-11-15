@@ -20,4 +20,12 @@ public interface RuleApplier {
      * @return points the surface is worth
      */
     public  int calculatePoints(ArrayList<Card> surface);
+    /**
+     * determine the winner player by taking into account also special cases as
+     * Game finishes in draw :return -1
+     * Game isn't finished yet :return -2
+     * @param players ArrayList of Players
+     * @return index of winning player or {-1;-2}
+     */
+    public int determineWinningPlayer(ArrayList<Player> players);
 }

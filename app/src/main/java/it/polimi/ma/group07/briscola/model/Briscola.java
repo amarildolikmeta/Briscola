@@ -390,9 +390,9 @@ public class Briscola {
 
         /**
          * if none of the previous cases are true
-         * the round isnt finished and cards have been played
+         * the round isn't finished and cards have been played
          * in this case
-         * we check that players that havent played yet have one more cards that those that have already played
+         * we check that players that haven't played yet have one more cards that those that have already played
          */
         for(int i=0;i<surface.size();i++)
         {
@@ -682,7 +682,17 @@ public class Briscola {
     {
         currentPlayer=(currentPlayer+1)%players.size();
     }
-
+    /**
+     * Get the index of the winner taking into account also special cases as
+     * Game finishes in draw :return -1
+     * Game isn't finished yet :return -2
+     * @return index of winning player or {-1;-2}
+     */
+    public int getWinner(){
+        if(!isGameFinished())
+            return -2;
+        return brain.determineWinningPlayer(players);
+    }
     /**
      *
      * @return returns string representation of the current game
@@ -851,7 +861,8 @@ public class Briscola {
     }
 
     /**
-     * Method to create randomly states to test for invalid states
+     * Method to create randomly states starting from the current state
+     * of the game to test for invalid states
      * @return string representation of the shuffled state
      */
     public String shuffleState(){
@@ -891,5 +902,9 @@ public class Briscola {
      */
     private int random(int range){
         return (int)(Math.floor(Math.random()*range));
+    }
+
+    public ArrayList<Player> getPlayers() {
+        return players;
     }
 }

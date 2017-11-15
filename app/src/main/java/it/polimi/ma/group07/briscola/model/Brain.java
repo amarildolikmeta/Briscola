@@ -10,6 +10,7 @@ import java.util.Map;
  */
 
 public class Brain implements RuleApplier {
+    private static final int TOTAL_POINTS=120;
     /**
      * Dictionaries to translate the value of cards into a rank
      * and a score. In this way the Cards themselves are decoupled
@@ -148,5 +149,40 @@ public class Brain implements RuleApplier {
             count+=getScoreFromValue(c.getValue());
         }
         return count;
+    }
+    /**
+     * determine the winner player by taking into account also special cases as
+     * Game finishes in draw :return -1
+     * Game isn't finished yet :return -2
+     * @param players ArrayList of Players
+     * @return index of winning player or {-1;-2}
+     */
+    @Override
+    public int determineWinningPlayer(ArrayList<Player> players) {
+        //assume first player wins;
+        int maxPoints=players.get(0).getScore();
+        int index=0;
+        //count total points to see if game finished
+        int sum=maxPoints;
+        boolean draw=false;
+        for(int i=1;i<players.size();i++){
+            int score= players.get(i).getScore();
+            sum+=score;
+            if(score>maxPoints){
+                maxPoints=score;
+                index=i;
+                draw=false;
+            }
+            else if(score==maxPoints){
+                draw=true;
+            }
+        }
+        //means that game is not yet finished
+        if(sum!=TOTAL_POINTS)
+            return -2;
+        if(draw){
+            return -1;
+        }
+        return index;
     }
 }

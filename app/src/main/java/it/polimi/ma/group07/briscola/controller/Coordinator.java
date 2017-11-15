@@ -51,9 +51,14 @@ public class Coordinator {
         activity.buildInterface(state);
         if(Briscola.getInstance().isGameFinished())
         {
+
             AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
-            alertDialog.setTitle("Congratulations");
-            String message="Game Finished";
+            alertDialog.setTitle("Game Finished");
+            String message="You Won";
+            if(Briscola.getInstance().getWinner()==-1)
+                message="Draw";
+            else if(Briscola.getInstance().getWinner()==1)
+                message="You Lost";
             alertDialog.setMessage(message);
             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                     new DialogInterface.OnClickListener() {

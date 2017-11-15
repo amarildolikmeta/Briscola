@@ -89,10 +89,17 @@ public class GameActivity extends AppCompatActivity  {
             card.setImageId(resourceId);
             fragmentManager.beginTransaction().add(briscolaCard.getId(),card).commit();
         }
-        buildInterface(state);
         Coordinator.createInstance(game.toString(),singlePlayer);
         Coordinator.getInstance().setState(GameActivity.this,state);
+        //game just started
+        if(savedInstanceState != null){
+            startGame(state);
+        }
+        else
+            buildInterface(state);
     }
+
+
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -105,62 +112,110 @@ public class GameActivity extends AppCompatActivity  {
         // etc.
     }
 
-    public void buildInterface(StateBundle state){
+    public void buildInterface(StateBundle state) {
 
-        for(int j=0;j<state.hand1.size();j++)
-        {
-            String name="c"+state.hand1.get(j).toLowerCase();
+        for (int j = 0; j < state.hand1.size(); j++) {
+            String name = "c" + state.hand1.get(j).toLowerCase();
             int resourceId = getResources().getIdentifier(name, "drawable",
                     getPackageName());
-            CardViewFragment card=new CardViewFragment();
+            CardViewFragment card = new CardViewFragment();
             card.setImageId(resourceId);
             card.setOnCardSelectedListener(cardPressedListener);
-            fragmentManager.beginTransaction().add(playerViews[0].getId(),card).commitNow();
+            fragmentManager.beginTransaction().add(playerViews[0].getId(), card).commitNow();
         }
 
-        for(int j=0;j<state.hand2.size();j++)
-        {
-            if(singlePlayer){
-                CardBackFragment card=new CardBackFragment();
-                fragmentManager.beginTransaction().add(playerViews[1].getId(),card).commitNow();
+        for (int j = 0; j < state.hand2.size(); j++) {
+            if (singlePlayer) {
+                CardBackFragment card = new CardBackFragment();
+                fragmentManager.beginTransaction().add(playerViews[1].getId(), card).commitNow();
+            } else {
+                String name = "c" + state.hand2.get(j).toLowerCase();
+                ;
+                int resourceId = getResources().getIdentifier(name, "drawable",
+                        getPackageName());
+                CardViewFragment card = new CardViewFragment();
+                card.setImageId(resourceId);
+                card.setOnCardSelectedListener(cardPressedListener);
+                fragmentManager.beginTransaction().add(playerViews[1].getId(), card).commitNow();
             }
+        }
 
-            else{
-                String name="c"+state.hand2.get(j).toLowerCase();;
+        for (int j = 0; j < state.surface.size(); j++) {
+            String name = "c" + state.surface.get(j).toLowerCase();
+            int resourceId = getResources().getIdentifier(name, "drawable",
+                    getPackageName());
+            CardViewFragment card = new CardViewFragment();
+            card.setImageId(resourceId);
+            fragmentManager.beginTransaction().add(surface.getId(), card).commitNow();
+        }
+        if (state.deckSize > 1) {
+            CardBackFragment card = new CardBackFragment();
+            fragmentManager.beginTransaction().add(deck.getId(), card).commitNow();
+            Log.i("Build interfaace", "Deck");
+        }
+
+        if (state.deckSize > 0) {
+            String name = "c" + state.briscola.toLowerCase();
+            int resourceId = getResources().getIdentifier(name, "drawable",
+                    getPackageName());
+            CardViewFragment card = new CardViewFragment();
+            card.setOnCardSelectedListener(null);
+            card.setImageId(resourceId);
+            fragmentManager.beginTransaction().add(briscolaCard.getId(), card).commitNow();
+            Log.i("Build interfaace", "Briscola");
+        }
+    }
+        private void startGame(StateBundle state) {
+            CardBackFragment c=new CardBackFragment();
+            fragmentManager.beginTransaction().add(deck.getId(),c).commitNow();
+
+            for(int j=0;j<state.hand1.size();j++)
+            {
+                String name="c"+state.hand1.get(j).toLowerCase();
                 int resourceId = getResources().getIdentifier(name, "drawable",
                         getPackageName());
                 CardViewFragment card=new CardViewFragment();
                 card.setImageId(resourceId);
                 card.setOnCardSelectedListener(cardPressedListener);
-                fragmentManager.beginTransaction().add(playerViews[1].getId(),card).commitNow();
+                fragmentManager.beginTransaction().setCustomAnimations(R.anim.move,R.anim.move).add(playerViews[0].getId(),card).commitNow();
             }
-        }
 
-        for(int j=0;j<state.surface.size();j++)
-        {
-            String name="c"+state.surface.get(j).toLowerCase();
-            int resourceId = getResources().getIdentifier(name, "drawable",
-                    getPackageName());
-            CardViewFragment card=new CardViewFragment();
-            card.setImageId(resourceId);
-            fragmentManager.beginTransaction().add(surface.getId(),card).commitNow();
-        }
-        if(state.deckSize>1){
-            CardBackFragment card=new CardBackFragment();
-            fragmentManager.beginTransaction().add(deck.getId(),card).commitNow();
-            Log.i("Build interfaace","Deck");
-        }
+            for(int j=0;j<state.hand2.size();j++)
+            {
+                if(singlePlayer){
+                    CardBackFragment card=new CardBackFragment();
+                    fragmentManager.beginTransaction().add(playerViews[1].getId(),card).commitNow();
+                }
 
-        if(state.deckSize>0) {
-            String name="c"+state.briscola.toLowerCase();
-            int resourceId = getResources().getIdentifier(name, "drawable",
-                    getPackageName());
-            CardViewFragment card=new CardViewFragment();
-            card.setOnCardSelectedListener(null);
-            card.setImageId(resourceId);
-            fragmentManager.beginTransaction().add(briscolaCard.getId(),card).commitNow();
-            Log.i("Build interfaace","Briscola");
-        }
+                else{
+                    String name="c"+state.hand2.get(j).toLowerCase();;
+                    int resourceId = getResources().getIdentifier(name, "drawable",
+                            getPackageName());
+                    CardViewFragment card=new CardViewFragment();
+                    card.setImageId(resourceId);
+                    card.setOnCardSelectedListener(cardPressedListener);
+                    fragmentManager.beginTransaction().add(playerViews[1].getId(),card).commitNow();
+                }
+            }
+
+            for(int j=0;j<state.surface.size();j++)
+            {
+                String name="c"+state.surface.get(j).toLowerCase();
+                int resourceId = getResources().getIdentifier(name, "drawable",
+                        getPackageName());
+                CardViewFragment card=new CardViewFragment();
+                card.setImageId(resourceId);
+                fragmentManager.beginTransaction().add(surface.getId(),card).commitNow();
+            }
+
+                String name="c"+state.briscola.toLowerCase();
+                int resourceId = getResources().getIdentifier(name, "drawable",
+                        getPackageName());
+                CardViewFragment card=new CardViewFragment();
+                card.setOnCardSelectedListener(null);
+                card.setImageId(resourceId);
+                fragmentManager.beginTransaction().add(briscolaCard.getId(),card).commitNow();
+
 
     }
     public void flushInterface(){
