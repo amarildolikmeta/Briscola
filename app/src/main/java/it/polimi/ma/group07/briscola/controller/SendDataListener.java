@@ -9,7 +9,7 @@ import java.net.URLEncoder;
 
 import it.polimi.ma.group07.briscola.GameActivity;
 import it.polimi.ma.group07.briscola.model.Briscola;
-import it.polimi.ma.group07.briscola.model.helper.HttpRequest;
+import it.polimi.ma.group07.briscola.controller.helper.HttpRequest;
 
 /**
  * Created by amari on 31-Oct-17.

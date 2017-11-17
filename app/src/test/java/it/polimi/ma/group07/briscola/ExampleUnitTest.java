@@ -32,37 +32,79 @@ import static org.junit.Assert.*;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 public class ExampleUnitTest {
+    /**
+     *Test the {@link Briscola} constructor to start from a known configuration
+     * that corrects the correct game and returns the same configuration after created
+     */
+    @Test
+    public void checkBriscolaConstructor() throws InvalidCardDescriptionException, InvalidGameStateException {
+        String startingStates[]={"0B5S4G6S2C5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B..JCKG2B.1CKS3G..",
+                "0C7G3S4SHS5G7CJSKCKS2S2C3C4B5C1CJGKGHBHG1G6BJC1B4C6S4G5BJB1S3GHCKB3B6C..2G6G7B.7S2B5S..",
+                "0GKS6B3GHC5B2B7BHB5G4G6G1S1BKC1C4C3B2S4B1GJBJCKB3C6C7C4SJS7SHG5S5CHSKG..2G3S7G.6S2CJG..",
+                "0S4G4SHG2SHB5B1C4B1S7S3B3C7B7CKGJS4C6C7GHC1G6BKB3GJBKS6GJC2B5GKC3S6SHS..5S5C1B.2C2GJG..",
+                "0S3C3GHG4SKCJG7SHSJC7B3BHB6BKS5CJSJB1CKB2C7G2G5S2S4C4B5B4GHC6C1G7C6S3S..5GKG1B.6G1S2B..",
+                "0G1SHS5GKC2B6C1CJS4SJG2G6S7GHB1G1B5S5B3S3B4B6B2CHG3C7C4C7B2SKGJC6GKS4G..7S5CKB.JBHC3G..",
+                "0S4G1CJS6C2CKS4C2S2B4B2G3G5BKG3S5C5GJG4S7C1SHB1BKC6BHS7GKB1G6GJCHG3C7S..5S6S3B.JBHC7B..",
+                "0G4C2G2SKC2BKBJC1B1S6G1G7S3CHS6B6SJS2C5SHB7G6C4B7CKS1CKG3G5C4G4SJGJB5G..3S3BHC.HG7B5B..",
+                "0SJG1GKB7C3G6C2BKC2GJB5B2CHG2S6S4B6G3S1C4G1B6B7SHCJS4CJCKG5CHS3C3B1S4S..5G5SHB.7GKS7B..",
+                "0C4G4SHC2G6S2SJS4B7B2BKG5G6G7C3C3S1G7GKS6B3BHB5C3GJG1C..4CJB2C.KC6CJC.KB1BHS5B.5S1SHG7S"};
+        Briscola game;
+        for(int i=0;i<startingStates.length;i++) {
+            game=new Briscola(startingStates[i]);
+            assertEquals(startingStates[i],game.toString());
+        }
 
-    String state;
-    String res;
+    }
 
     /**
      * Testing some sequences of moves and the resulting state of the game
-     * the tests are taken form the project presentation slides
-     * @throws Exception
+     * the tests are taken form the project presentation slides and also from
+     * real games played and include
+     * games that don't finish ,
+     * games that finish with a winner,
+     * gmes that finish in a draw
+     * @throws InvalidGameStateException
+     * @throws InvalidCardDescriptionException
      */
     @Test
-    public void example_moves_isCorrect() throws Exception {
-        String state="0B5S4G6S2C5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B..JCKG2B.1CKS3G..";
-        Briscola b=new Briscola(state);
-        assertEquals(state,b.toString());
-        String[] moves={"0","00","001","0011","00110"};
-        String[] results={"1B5S4G6S2C5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B.JC.KG2B.1CKS3G..",
-                "1B6S2C5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B..KG2B4G.KS3G5S..JC1C",
-                "0B6S2C5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B.3G.KG2B4G.KS5S..JC1C",
-                "0B5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B..KG4G6S.KS5S2C.3G2B.JC1C",
-                "1B5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B.KG.4G6S.KS5S2C.3G2B.JC1C"};
+    public void example_moves_isCorrect() throws InvalidCardDescriptionException, InvalidGameStateException {
+        String startingStates[]={"0B5S4G6S2C5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B..JCKG2B.1CKS3G..",
+                                 "0C7G3S4SHS5G7CJSKCKS2S2C3C4B5C1CJGKGHBHG1G6BJC1B4C6S4G5BJB1S3GHCKB3B6C..2G6G7B.7S2B5S..",
+                                 "0GKS6B3GHC5B2B7BHB5G4G6G1S1BKC1C4C3B2S4B1GJBJCKB3C6C7C4SJS7SHG5S5CHSKG..2G3S7G.6S2CJG..",
+                                 "0S4G4SHG2SHB5B1C4B1S7S3B3C7B7CKGJS4C6C7GHC1G6BKB3GJBKS6GJC2B5GKC3S6SHS..5S5C1B.2C2GJG..",
+                                 "0S3C3GHG4SKCJG7SHSJC7B3BHB6BKS5CJSJB1CKB2C7G2G5S2S4C4B5B4GHC6C1G7C6S3S..5GKG1B.6G1S2B..",
+                                 "0G1SHS5GKC2B6C1CJS4SJG2G6S7GHB1G1B5S5B3S3B4B6B2CHG3C7C4C7B2SKGJC6GKS4G..7S5CKB.JBHC3G..",
+                                 "0S4G1CJS6C2CKS4C2S2B4B2G3G5BKG3S5C5GJG4S7C1SHB1BKC6BHS7GKB1G6GJCHG3C7S..5S6S3B.JBHC7B..",
+                                 "0G4C2G2SKC2BKBJC1B1S6G1G7S3CHS6B6SJS2C5SHB7G6C4B7CKS1CKG3G5C4G4SJGJB5G..3S3BHC.HG7B5B..",
+                                 "0SJG1GKB7C3G6C2BKC2GJB5B2CHG2S6S4B6G3S1C4G1B6B7SHCJS4CJCKG5CHS3C3B1S4S..5G5SHB.7GKS7B..",
+                                 "0C4G4SHC2G6S2SJS4B7B2BKG5G6G7C3C3S1G7GKS6B3BHB5C3GJG1C..4CJB2C.KC6CJC.KB1BHS5B.5S1SHG7S"};
+        Briscola b=new Briscola();
+        String[] moves={"00110",
+                        "1111",
+                        "111111112102",
+                        "2110",
+                        "2000020001020100000201000200100002010000",
+                        "22111212012022021220",
+                        "0210122112220221022120212022202220220100",
+                        "2022201120101212222222222022112222221100",
+                        "1111111111111111112010010112211022200100",
+                        "22122222202212222212220022110000",
+                       };
+        String[] results={"1B5GKB7B6CHCHB1GKC5C4B1BHG7C6BJS6G7G4C3C7SJBHS2S3S4S1S2G3BJG5B.KG.4G6S.KS5S2C.3G2B.JC1C",
+                "0C5G7CJSKCKS2S2C3C4B5C1CJGKGHBHG1G6BJC1B4C6S4G5BJB1S3GHCKB3B6C..2G7G4S.7S3SHS.6G2B7B5S.",
+                "0G1BKC1C4C3B2S4B1GJBJCKB3C6C7C4SJS7SHG5S5CHSKG..2GHB6G.5B5G1S.3S2C6S4G.7GJG6BKS3GHC7B2B",
+                "0SHB5B1C4B1S7S3B3C7B7CKGJS4C6C7GHC1G6BKB3GJBKS6GJC2B5GKC3S6SHS..5S4GHG.JG4S2S.1B2G5C2C.",
+                "WINNER 1 80",
+                "0G4B6B2CHG3C7C4C7B2SKGJC6GKS4G..JG1G3S.1C5B3B.4S7S2G6SJSHB7G1B5S2B.KB3GHC5C1SKC5G6CJBHS",
+                "WINNER 1 69",
+                "WINNER 1 66",
+                "DRAW",
+                "WINNER 1 70"};
         for(int i=0;i<moves.length;i++) {
-            String res=b.moveTest(state, moves[i]);
-            System.out.println(res);
-            assertEquals(res, results[i]);
+            String res=b.moveTest(startingStates[i], moves[i]);
+            assertEquals(results[i],res);
         }
-        state="0C4G4SHC2G6S2SJS4B7B2BKG5G6G7C3C3S1G7GKS6B3BHB5C3GJG1C..4CJB2C.KC6CJC.KB1BHS5B.5S1SHG7S";
-        String move="22122222202212222212220022110000";
-        String result="WINNER 1 70";
-        String res=b.moveTest(state, move);
-        System.out.println(res);
-        assertEquals(res, result);
+
     }
 
     /**
@@ -240,7 +282,7 @@ public class ExampleUnitTest {
     }
 
     /**
-     * Checks that the deck thorws an exception when trying to draw cards
+     * Checks that the deck throws an exception when trying to draw cards
      * when there are none to draw
      * @throws NoCardInDeckException
      */
@@ -261,7 +303,39 @@ public class ExampleUnitTest {
             //Supposed to happen
         }
     }
-
+    /**
+     * Creates decks starting from a list of cards and
+     * checks that cards are drawn in that order
+     * and catches an exception after the cards finish
+     * @throws NoCardInDeckException
+     */
+    @Test
+    public void checkDrawDeck() throws NoCardInDeckException, InvalidCardDescriptionException {
+        String cards[]={"6B6G5S6C2S3B7G7C5GKBKC2C3C6S7S4B5CJS",
+                        "KC7S2G6CJS4G5G3G4S3S3CKG6S3BKS1GHBJC",
+                        "2C6GKC6CKB5CKSJB6S7C7G3S5G5B2B1B5SJG4CJS",
+                        "6CKG2B3GJCHG3S1C1GJG3CHS2S7B5B7GKS4S4B3B1SJB6S2G5G",
+                        "7SKG4G3GHCHS2B7CKC2C2S7BJB5BHBJG6C6B4B3B1GKB1BJSHG6G4S3C5C6S2G4C",
+                        ""};
+        Deck deck;
+        Card c;
+        for(String deckCards:cards) {
+            deck = new Deck(deckCards);
+            //turn the string representing the cards into an ArrayList of Strings
+            ArrayList<String> cardList=Parser.splitString(deckCards,2);
+            for (int i = 0; i < cardList.size(); i++) {
+                c=deck.drawCard();
+                assertEquals(cardList.get(i),c.toString());
+            }
+            try {
+                deck.drawCard();
+                //supposed to throw exception
+                fail("Drawing card didn't fail");
+            } catch (NoCardInDeckException e) {
+                //Supposed to happen
+            }
+        }
+    }
     /**
      * This test method checks that the {@link Player#placeCardAtIndex(int)} method
      * works properly including
@@ -324,6 +398,34 @@ public class ExampleUnitTest {
     }
 
     /**
+     * Tests that the value enumeration takes the
+     * right values
+     *
+     */
+    @Test
+    public void checkValue()  {
+        String values[]={"1","2","3","4","5","6","7","J","H","K"};
+        Value valuesReturned[]=Value.values();
+        assertEquals(values.length,valuesReturned.length);
+        for(int i=0;i<values.length;i++)
+            assertEquals(values[i],valuesReturned[i].toString());
+
+    }
+    /**
+     * Tests that the suit enumeration takes the
+     * right values
+     *
+     */
+    @Test
+    public void checkSuit()  {
+        String suits[]={"B","S","C","G"};
+        Suit suitsReturned[]=Suit.values();
+        assertEquals(suits.length,suitsReturned.length);
+        for(int i=0;i<suits.length;i++)
+            assertEquals(suits[i],suitsReturned[i].toString());
+
+    }
+    /**
      * Check the Card constructor in the Card class
      * by providing it a set of all possible Invalid pairs of characters for card creation
      * @throws Exception
@@ -337,6 +439,9 @@ public class ExampleUnitTest {
 
         /**
          * Create a pile of valid cards
+         * we know these cards are valid because it's been tested
+         * in the previous method that {@link Value#values()}  and
+         * {@link Suit#values()}  contain the right symbols
          */
         for(Suit s:Suit.values())
             for(Value v:Value.values())
@@ -392,11 +497,23 @@ public class ExampleUnitTest {
         catch(Exception e){}
     }
 
+    /**
+     * method used in the tests to generate a new random state
+     * @return string representing a state of a new game
+     */
     private String generateState(){
         Briscola b=new Briscola();
-        state=b.toString();
+        String state=b.toString();
         return state;
     }
+
+    /**
+     * Generates a random sequence of moves of a random length
+     * from 10 to 20
+     * Used in the tests to generate random states of the game
+     * @return a random sequence of moves of random length
+     * P.S. random refers to pseudo-random of course
+     */
     private String generateMoves(){
         int moveLength= (int) (Math.floor(Math.random()*10)+10);
         String moves="";

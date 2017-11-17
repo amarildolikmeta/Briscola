@@ -1,4 +1,4 @@
-package it.polimi.ma.group07.briscola.model.helper;
+package it.polimi.ma.group07.briscola.controller.helper;
 
 import android.util.Log;
 
