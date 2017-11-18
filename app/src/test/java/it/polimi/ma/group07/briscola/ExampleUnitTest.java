@@ -379,6 +379,10 @@ public class ExampleUnitTest {
      * To check it we will start the game  from a final configuration
      * whose result is known  and test the method
      * by comparing the expected and actual result
+     * Method should return :
+     * the index of the winner player, 0 or 1, if there is a winner
+     * -1 if the game finished with a draw
+     * -2 if the game is not finished yet.
      */
     @Test
     public void checkDetermineWinner() throws InvalidCardDescriptionException, InvalidGameStateException {
