@@ -11,25 +11,28 @@ import it.polimi.ma.group07.briscola.R;
 import it.polimi.ma.group07.briscola.model.Briscola;
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionException;
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidGameStateException;
+import it.polimi.ma.group07.briscola.model.PlayerState;
 import it.polimi.ma.group07.briscola.model.StateBundle;
 
 /**
  * Created by amari on 31-Oct-17.
  */
 
-public class Coordinator {
+public class Coordinator implements GameController {
 
     private static  Coordinator Instance;
     private final boolean singlePlayer;
     private String startConfiguration;
     private String movesPerformed;
-    private StateBundle state;
+    private PlayerState state;
     private Handler handler ;
+    private int playerIndex;
     public Coordinator(String startConfiguration,boolean singlePlayer){
         this.startConfiguration=startConfiguration;
         this.singlePlayer=singlePlayer;
         this.handler= new Handler();
         this.movesPerformed="";
+        playerIndex=0;
     }
 
     public static Coordinator createInstance(String startConfiguration,boolean singlePlayer){
@@ -46,7 +49,7 @@ public class Coordinator {
     public void onPerformMove(final GameActivity activity, int index){
         boolean s=Briscola.getInstance().onPerformMove(index);
         movesPerformed+=""+index;
-        state=Briscola.getInstance().getGameState();
+        state=Briscola.getInstance().getPlayerState(playerIndex);
         activity.flushInterface();
         activity.buildInterface(state);
         if(Briscola.getInstance().isGameFinished())
@@ -70,6 +73,7 @@ public class Coordinator {
             return;
         }
         if(Briscola.getInstance().isRoundFinished()){
+            Log.i("Round Finished","Finishing");
             finishRound(activity);
         }
         else {
@@ -77,7 +81,8 @@ public class Coordinator {
             if (Briscola.getInstance().getCurrentPlayer() == 1 && singlePlayer) {
                 handler.postDelayed(new Runnable() {
                     public void run() {
-                        onPerformMove(activity, AIPlayer.getMoveFromState(Briscola.getInstance().getCurrentPlayerState()));
+                        PlayerState state=Briscola.getInstance().getPlayerState(Briscola.getInstance().getCurrentPlayer());
+                        onPerformMove(activity, AIPlayer.getMoveFromState(state));
                     }
                 }, 1500);
 
@@ -87,7 +92,8 @@ public class Coordinator {
 
     private void finishRound(final GameActivity activity) {
         Briscola.getInstance().finishRound();
-        state=Briscola.getInstance().getGameState();
+        Log.i("Round Finished","Round finished");
+        state=Briscola.getInstance().getPlayerState(playerIndex);
         //deal a card after a second
         handler.postDelayed(new Runnable() {
             public void run() {
@@ -98,17 +104,19 @@ public class Coordinator {
             handler.postDelayed(new Runnable() {
                 public void run() {
                     Briscola.getInstance().dealCard();
-                    state=Briscola.getInstance().getGameState();
+                    state=Briscola.getInstance().getPlayerState(playerIndex);
                     activity.flushInterface();
                     activity.buildInterface(state);
+                    Log.i("Round Finished","1st Card Dealt");
                 }
             }, 3000);
         handler.postDelayed(new Runnable() {
             public void run() {
                 Briscola.getInstance().dealCard();
-                state=Briscola.getInstance().getGameState();
+                state=Briscola.getInstance().getPlayerState(playerIndex);
                 activity.flushInterface();
                 activity.buildInterface(state);
+                Log.i("Round Finished","2nd Card Dealt");
             }
         }, 4500);
 
@@ -116,7 +124,8 @@ public class Coordinator {
         if (Briscola.getInstance().getCurrentPlayer() == 1 && singlePlayer) {
             handler.postDelayed(new Runnable() {
                 public void run() {
-                    onPerformMove(activity, AIPlayer.getMoveFromState(Briscola.getInstance().getCurrentPlayerState()));
+                    PlayerState state=Briscola.getInstance().getPlayerState(Briscola.getInstance().getCurrentPlayer());
+                    onPerformMove(activity, AIPlayer.getMoveFromState(state));
                 }
             },6000);
         }
@@ -132,7 +141,7 @@ public class Coordinator {
             e.printStackTrace();
         }
         movesPerformed="";
-        state=Briscola.getInstance().getGameState();
+        state=Briscola.getInstance().getPlayerState(playerIndex);
         activity.flushInterface();
         activity.buildInterface(state);
     }
@@ -141,12 +150,12 @@ public class Coordinator {
         Briscola.getInstance().restart();
         startConfiguration=Briscola.getInstance().toString();
         movesPerformed="";
-        state=Briscola.getInstance().getGameState();
+        state=Briscola.getInstance().getPlayerState(playerIndex);
         activity.flushInterface();
         activity.buildInterface(state);
     }
 
-    public StateBundle getState(){
+    public PlayerState getState(){
         return state;
     }
     public String getStartConfiguration() {
@@ -157,7 +166,7 @@ public class Coordinator {
         this.startConfiguration = startConfiguration;
     }
 
-    public  void setState(GameActivity activity,StateBundle state) {
+    public  void setState(GameActivity activity,PlayerState state) {
         this.state = state;
 
     }

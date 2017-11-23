@@ -11,6 +11,7 @@ import android.widget.RelativeLayout;
 import it.polimi.ma.group07.briscola.GameActivity;
 import it.polimi.ma.group07.briscola.R;
 import it.polimi.ma.group07.briscola.model.Briscola;
+import it.polimi.ma.group07.briscola.model.PlayerState;
 import it.polimi.ma.group07.briscola.model.StateBundle;
 import it.polimi.ma.group07.briscola.view.CardViewFragment;
 
@@ -33,7 +34,7 @@ public class CardPressedListener implements CardViewFragment.OnCardSelectedListe
         View v=card.getView();
         LinearLayout playerView=((LinearLayout) v.getParent());
         int playerIndex=((RelativeLayout)playerView.getParent()).indexOfChild(playerView);
-        StateBundle state=Coordinator.getInstance().getState();
+        PlayerState state=Coordinator.getInstance().getState();
         //don't take commands if the state is not playable
         if(!state.playableState)
             return;

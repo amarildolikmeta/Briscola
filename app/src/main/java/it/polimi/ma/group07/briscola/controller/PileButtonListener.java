@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import java.util.ArrayList;
 
 import it.polimi.ma.group07.briscola.GameActivity;
+import it.polimi.ma.group07.briscola.model.PlayerState;
 import it.polimi.ma.group07.briscola.model.StateBundle;
 
 /**
@@ -30,14 +31,14 @@ public class PileButtonListener implements View.OnClickListener {
         String message="No cards in Pile";
         LinearLayout playerView=(LinearLayout) v.getParent();
         ArrayList<String> pile;
-        StateBundle state=Coordinator.getInstance().getState();
+        PlayerState state=Coordinator.getInstance().getState();
         if(((LinearLayout)playerView.getParent()).indexOfChild(playerView)==0)
         {
-            pile=state.pile2;
+            pile=state.opponentPiles.get(0);
         }
         else
         {
-            pile=state.pile1;
+            pile=state.ownPile;
         }
         if(pile.size()>0)
             message=pile.toString();

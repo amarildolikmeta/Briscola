@@ -37,8 +37,8 @@ public class HttpRequest{
     public HttpRequest(){
         HttpParams myParams = new BasicHttpParams();
 
-        HttpConnectionParams.setConnectionTimeout(myParams, 10000);
-        HttpConnectionParams.setSoTimeout(myParams, 10000);
+        HttpConnectionParams.setConnectionTimeout(myParams, 30000);
+        HttpConnectionParams.setSoTimeout(myParams, 30000);
         httpClient = new DefaultHttpClient(myParams);
         localContext = new BasicHttpContext();
     }
