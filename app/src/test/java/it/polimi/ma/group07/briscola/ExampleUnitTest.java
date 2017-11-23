@@ -120,6 +120,7 @@ public class ExampleUnitTest {
      * @throws Exception
      */
     @Test
+    @Ignore
     public void invalid_configurations_test() throws Exception {
         InputStream in = this.getClass().getClassLoader().getResourceAsStream("invalidConfigurations");
         BufferedReader file=new BufferedReader(new InputStreamReader(in));
@@ -149,6 +150,7 @@ public class ExampleUnitTest {
      * @throws Exception
      */
     @Test
+    @Ignore
     public void randomInvalidConfigurationTests() throws Exception {
         int count=0;
         for(int i=0;i<10000;i++){
