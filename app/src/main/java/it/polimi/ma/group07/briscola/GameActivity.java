@@ -24,6 +24,7 @@ import it.polimi.ma.group07.briscola.controller.RestartListener;
 import it.polimi.ma.group07.briscola.controller.SendDataListener;
 import it.polimi.ma.group07.briscola.model.Briscola;
 
+import it.polimi.ma.group07.briscola.model.PlayerState;
 import it.polimi.ma.group07.briscola.model.StateBundle;
 import it.polimi.ma.group07.briscola.view.CardBackFragment;
 import it.polimi.ma.group07.briscola.view.CardViewFragment;
@@ -79,7 +80,7 @@ public class GameActivity extends AppCompatActivity  {
         Log.i("Game Activity","Views found");
         Briscola game=Briscola.getInstance();
         cardPressedListener=new CardPressedListener(GameActivity.this);
-        StateBundle state=game.getGameState();
+        PlayerState state=game.getPlayerState(0);
         String name="c"+state.briscola.toLowerCase();
         int resourceId = getResources().getIdentifier(name, "drawable",
                 getPackageName());
@@ -112,10 +113,10 @@ public class GameActivity extends AppCompatActivity  {
         // etc.
     }
 
-    public void buildInterface(StateBundle state) {
-
-        for (int j = 0; j < state.hand1.size(); j++) {
-            String name = "c" + state.hand1.get(j).toLowerCase();
+    public void buildInterface(PlayerState state) {
+        int opponentSize=state.opponentHandSize[0];
+        for (int j = 0; j < state.hand.size(); j++) {
+            String name = "c" + state.hand.get(j).toString().toLowerCase();
             int resourceId = getResources().getIdentifier(name, "drawable",
                     getPackageName());
             CardViewFragment card = new CardViewFragment();
@@ -124,24 +125,13 @@ public class GameActivity extends AppCompatActivity  {
             fragmentManager.beginTransaction().add(playerViews[0].getId(), card).commitNow();
         }
 
-        for (int j = 0; j < state.hand2.size(); j++) {
-            if (singlePlayer) {
+        for (int j = 0; j < opponentSize; j++) {
                 CardBackFragment card = new CardBackFragment();
                 fragmentManager.beginTransaction().add(playerViews[1].getId(), card).commitNow();
-            } else {
-                String name = "c" + state.hand2.get(j).toLowerCase();
-                ;
-                int resourceId = getResources().getIdentifier(name, "drawable",
-                        getPackageName());
-                CardViewFragment card = new CardViewFragment();
-                card.setImageId(resourceId);
-                card.setOnCardSelectedListener(cardPressedListener);
-                fragmentManager.beginTransaction().add(playerViews[1].getId(), card).commitNow();
-            }
         }
 
         for (int j = 0; j < state.surface.size(); j++) {
-            String name = "c" + state.surface.get(j).toLowerCase();
+            String name = "c" + state.surface.get(j).toString().toLowerCase();
             int resourceId = getResources().getIdentifier(name, "drawable",
                     getPackageName());
             CardViewFragment card = new CardViewFragment();
@@ -165,13 +155,14 @@ public class GameActivity extends AppCompatActivity  {
             Log.i("Build interfaace", "Briscola");
         }
     }
-        private void startGame(StateBundle state) {
+        private void startGame(PlayerState state) {
+            int opponentSize=state.opponentHandSize[0];
             CardBackFragment c=new CardBackFragment();
             fragmentManager.beginTransaction().add(deck.getId(),c).commitNow();
 
-            for(int j=0;j<state.hand1.size();j++)
+            for(int j=0;j<state.hand.size();j++)
             {
-                String name="c"+state.hand1.get(j).toLowerCase();
+                String name="c"+state.hand.get(j).toString().toLowerCase();
                 int resourceId = getResources().getIdentifier(name, "drawable",
                         getPackageName());
                 CardViewFragment card=new CardViewFragment();
@@ -180,27 +171,15 @@ public class GameActivity extends AppCompatActivity  {
                 fragmentManager.beginTransaction().setCustomAnimations(R.anim.move,R.anim.move).add(playerViews[0].getId(),card).commitNow();
             }
 
-            for(int j=0;j<state.hand2.size();j++)
+            for(int j=0;j<opponentSize;j++)
             {
-                if(singlePlayer){
-                    CardBackFragment card=new CardBackFragment();
-                    fragmentManager.beginTransaction().add(playerViews[1].getId(),card).commitNow();
-                }
-
-                else{
-                    String name="c"+state.hand2.get(j).toLowerCase();;
-                    int resourceId = getResources().getIdentifier(name, "drawable",
-                            getPackageName());
-                    CardViewFragment card=new CardViewFragment();
-                    card.setImageId(resourceId);
-                    card.setOnCardSelectedListener(cardPressedListener);
-                    fragmentManager.beginTransaction().add(playerViews[1].getId(),card).commitNow();
-                }
+                CardBackFragment card=new CardBackFragment();
+                fragmentManager.beginTransaction().add(playerViews[1].getId(),card).commitNow();
             }
 
             for(int j=0;j<state.surface.size();j++)
             {
-                String name="c"+state.surface.get(j).toLowerCase();
+                String name="c"+state.surface.get(j).toString().toLowerCase();
                 int resourceId = getResources().getIdentifier(name, "drawable",
                         getPackageName());
                 CardViewFragment card=new CardViewFragment();

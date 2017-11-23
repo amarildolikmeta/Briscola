@@ -11,7 +11,7 @@ import android.widget.Button;
 import it.polimi.ma.group07.briscola.model.Briscola;
 
 public class MainActivity extends AppCompatActivity {
-    private Button testButton;
+    private Button multiplayerButton;
     private Button singlePlayerButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,14 +19,13 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        testButton=(Button) findViewById(R.id.testButton);
+        multiplayerButton=(Button) findViewById(R.id.testButton);
         singlePlayerButton=(Button) findViewById(R.id.singlePlayerButton);
 
 
-        testButton.setOnClickListener(new View.OnClickListener() {
+        multiplayerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Briscola.deleteInstance();
                 Intent  intent=new Intent(MainActivity.this,GameActivity.class);
                 intent.putExtra("singlePlayer",false);
                 startActivity(intent);

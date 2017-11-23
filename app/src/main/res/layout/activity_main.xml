@@ -50,7 +50,7 @@
         android:layout_marginTop="100dp"
         android:gravity="center"
         android:layout_gravity="center"
-        android:text="Test"
+        android:text="Multiplayer"
         />
     <Button
         android:id="@+id/singlePlayerButton"

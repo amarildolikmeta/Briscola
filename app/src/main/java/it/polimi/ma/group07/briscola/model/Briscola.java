@@ -288,10 +288,7 @@ public class Briscola {
             /**
              * check correctness of the cards
              */
-            if(!handSizeCorrect()){
-
-                throw new InvalidGameStateException("Hand sizes don't reflect state of game");
-            }
+            
 
             /**
              * Assume game is finished and if any player has cards left
@@ -649,19 +646,8 @@ public class Briscola {
     public boolean finishRound(){
         if(isRoundFinished())
         {
-            /**
-             * determine the index of the winning card and
-             * the points the surface is worth
-             */
-            int winner =brain.determineWinner(surface);
+            currentPlayer=determineWinningPlayer(surface);
             int points=brain.calculatePoints(surface);
-            /**
-             * determine winner player from the index of the cards
-             * addcards to the winner pile and increment his score
-             * (winner will be first player of next round)
-             */
-            currentPlayer+=winner;
-            currentPlayer=currentPlayer%players.size();
             players.get(currentPlayer).addCardsinPile(surface);
             players.get(currentPlayer).incrementScore(points);
             /**
@@ -819,25 +805,28 @@ public class Briscola {
      * Returns state of the current player to play  {@link PlayerState}
      * @return state of a single player
      */
-    public PlayerState getCurrentPlayerState(){
-        ArrayList<Card> hand=getPlayerHandCards(currentPlayer);
-        ArrayList<Card> surface=getSurfaceCards();
-        ArrayList<Card> ownPile=getPlayerCardsPile(currentPlayer);
-        ArrayList<ArrayList<Card>> opponentPiles=new ArrayList<ArrayList<Card>>();
+    public PlayerState getPlayerState(int playerIndex){
+        ArrayList<String> hand=new ArrayList<>(Parser.splitString(getPlayerHand(playerIndex),2));
+        ArrayList<String> surface=new ArrayList<>(Parser.splitString(getSurface(),2));
+        ArrayList<String> ownPile=new ArrayList<>(Parser.splitString(getPlayerCardPile(playerIndex),2));
+        ArrayList<ArrayList<String>> opponentPiles=new ArrayList<ArrayList<String>>();
         Card briscola=briscolaCard;
+        int opponentHandSizes[]=new int[players.size()-1];
         /**
          * Visible state of a player is considered also the
          * piles of the other players since the player can
          * witness and count each card in each players piles
          * it's important to be used by an AI
          */
-        int index=currentPlayer;
+        int index=playerIndex;
         for(int i=1;i<players.size();i++){
             index=(index+1)%players.size();
-            opponentPiles.add(getPlayerCardsPile(index));
+            opponentPiles.add(new ArrayList<String>(Parser.splitString(getPlayerCardPile(index),2)));
+            opponentHandSizes[i-1]=players.get(index).getHand().size();
         }
 
-        return new PlayerState(hand,surface,ownPile,opponentPiles,briscola);
+        return new PlayerState(hand,surface,ownPile,opponentPiles,briscola,
+                playerIndex,deck.getSize(),opponentHandSizes,isPlayableState());
     }
 
     public int getDeckSize(){
@@ -906,5 +895,54 @@ public class Briscola {
 
     public ArrayList<Player> getPlayers() {
         return players;
+    }
+
+    public Brain getBrain() {
+        return brain;
+    }
+
+    public int getNumberPlayers() {
+        return players.size();
+    }
+
+    /**
+     * determines Winning player of the round if the round is finished
+     * @return index of winning player or 1 if round is not finished
+     */
+    public int determineWinningPlayer(ArrayList<Card> surface){
+        if(surface.size()==players.size()){
+            /**
+             * determine the index of the winning card and
+             */
+            int winner =brain.determineWinner(surface);
+            /**
+             * determine winner player from the index of the cards
+             * addcards to the winner pile and increment his score
+             * (winner will be first player of next round)
+             */
+            int winningPlayer=winner;
+            winningPlayer=(currentPlayer+winningPlayer)%players.size();
+            return winningPlayer;
+        }
+        return -1;
+    }
+
+    /**
+     * calculate the reward s move gives to the current player without performing it
+     * To be used by the AI
+     * @param move index of card to be played by current player
+     * @return points the move awards
+     */
+    public int getReward(int move){
+        //last move of the round
+        if(surface.size()+1==players.size()){
+               ArrayList<Card> s=new ArrayList<>(surface);
+               Card cardPlayed=players.get(currentPlayer).getHand().get(move);
+               s.add(cardPlayed);
+               int winningPlayer=determineWinningPlayer(s);
+               if(winningPlayer==currentPlayer)
+                   return brain.calculatePoints(s);
+        }
+            return 0;
     }
 }

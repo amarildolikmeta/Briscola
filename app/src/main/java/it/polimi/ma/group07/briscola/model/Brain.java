@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionException;
+
 /**
  * Represents on object that will apply the rules of the game
  * {@inheritDoc }
@@ -80,7 +82,13 @@ public class Brain implements RuleApplier {
      * @param trumpSuit ArrayList of Cards\
      */
     public void setTrumpSuit(Suit trumpSuit) { this.trumpSuit = trumpSuit; }
-
+    public int determineWinnerString(ArrayList<String> s) throws InvalidCardDescriptionException {
+        ArrayList<Card> surface=new ArrayList<>();
+        for(String c:s){
+            surface.add(new Card(c));
+        }
+        return determineWinner(surface);
+    }
     /**
      * return the index of the winning card in range from 0 to the number of players - 1
      * @param surface ArrayList of Cards
@@ -184,5 +192,13 @@ public class Brain implements RuleApplier {
             return -1;
         }
         return index;
+    }
+
+    public int calculatePointsString(ArrayList<String> s) throws InvalidCardDescriptionException {
+        ArrayList<Card> surface=new ArrayList<>();
+        for(String c:s){
+            surface.add(new Card(c));
+        }
+        return calculatePoints(surface);
     }
 }

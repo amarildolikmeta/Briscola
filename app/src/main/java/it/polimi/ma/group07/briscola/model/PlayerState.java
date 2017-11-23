@@ -8,18 +8,26 @@ import java.util.ArrayList;
  */
 
 public class PlayerState {
-    public ArrayList<Card> hand ;
-    public ArrayList<Card> surface;
-    public ArrayList<Card> ownPile;
-    public ArrayList<ArrayList<Card>> opponentPiles;
-    public Card briscola;
-
-    public PlayerState(ArrayList<Card> hand,ArrayList<Card> surface,ArrayList<Card> ownPile,
-                       ArrayList<ArrayList<Card>> opponentPile,Card briscola){
+    public ArrayList<String> hand ;
+    public ArrayList<String> surface;
+    public ArrayList<String> ownPile;
+    public ArrayList<ArrayList<String>> opponentPiles;
+    public String briscola;
+    public int currentPlayer;
+    public int deckSize;
+    public int[] opponentHandSize;
+    public boolean playableState;
+    public PlayerState(ArrayList<String> hand,ArrayList<String> surface,ArrayList<String> ownPile,
+                       ArrayList<ArrayList<String>> opponentPile,Card briscola,int currentPlayer,
+                       int deckSize,int[] opponentHandSize,boolean playableState){
         this.hand=hand;
         this.surface=surface;
         this.ownPile=ownPile;
         this.opponentPiles=opponentPile;
-        this.briscola=briscola;
+        this.briscola=briscola.toString();
+        this.currentPlayer=currentPlayer;
+        this.deckSize=deckSize;
+        this.opponentHandSize=opponentHandSize;
+        this.playableState=playableState;
     }
 }
