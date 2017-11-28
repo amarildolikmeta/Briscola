@@ -158,6 +158,12 @@ public class Coordinator implements GameController {
     public PlayerState getState(){
         return state;
     }
+
+    @Override
+    public PlayerState setState() {
+        return null;
+    }
+
     public String getStartConfiguration() {
         return startConfiguration;
     }

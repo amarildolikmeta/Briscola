@@ -24,6 +24,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 
+import it.polimi.ma.group07.briscola.R;
+
 public class HttpRequest{
 
     DefaultHttpClient httpClient;
@@ -80,7 +82,7 @@ public class HttpRequest{
 
         httpPost.setHeader("User-Agent", "SET YOUR USER AGENT STRING HERE");
         httpPost.setHeader("Accept", "text/html,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
-
+        httpPost.setHeader("Authorization","APIKey "+ R.string.API_KEY);
         if (contentType != null) {
             httpPost.setHeader("Content-Type", contentType);
         } else {
@@ -114,9 +116,11 @@ public class HttpRequest{
 
     public String sendGet(String url) {
         httpGet = new HttpGet(url);
-
+        httpGet.setHeader("Authorization","APIKey "+R.string.API_KEY);
         try {
+            Log.i("HTTPRequest","Connecting");
             response = httpClient.execute(httpGet);
+
         } catch (Exception e) {
             Log.e("Your App Name Here", e.getMessage());
         }

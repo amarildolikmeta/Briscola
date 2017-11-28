@@ -7,6 +7,12 @@ import android.support.test.runner.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
+
+import it.polimi.ma.group07.briscola.controller.ServerCoordinator;
+import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionException;
+import it.polimi.ma.group07.briscola.model.Exceptions.InvalidGameStateException;
+
 import static org.junit.Assert.*;
 
 /**
@@ -22,5 +28,9 @@ public class ExampleInstrumentedTest {
         Context appContext = InstrumentationRegistry.getTargetContext();
 
         assertEquals("it.polimi.ma.group07.briscola", appContext.getPackageName());
+    }
+    @Test
+    public void test_connection() throws InvalidGameStateException, InvalidCardDescriptionException, IOException {
+        //new ServerCoordinator().startGame();
     }
 }

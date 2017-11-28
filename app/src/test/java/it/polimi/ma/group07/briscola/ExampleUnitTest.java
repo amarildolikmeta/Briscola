@@ -4,12 +4,14 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import it.polimi.ma.group07.briscola.controller.ServerCoordinator;
 import it.polimi.ma.group07.briscola.model.Brain;
 import it.polimi.ma.group07.briscola.model.Briscola;
 import it.polimi.ma.group07.briscola.model.Card;
@@ -550,4 +552,5 @@ public class ExampleUnitTest {
         }
         return moves;
     }
+
 }

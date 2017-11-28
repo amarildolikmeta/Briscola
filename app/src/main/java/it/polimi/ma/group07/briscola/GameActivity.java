@@ -2,6 +2,7 @@ package it.polimi.ma.group07.briscola;
 
 import android.app.Activity;
 
+import android.app.ProgressDialog;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -14,16 +15,20 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import java.io.IOException;
 import java.util.List;
 
 import it.polimi.ma.group07.briscola.controller.CardPressedListener;
 import it.polimi.ma.group07.briscola.controller.Coordinator;
+import it.polimi.ma.group07.briscola.controller.GameController;
 import it.polimi.ma.group07.briscola.controller.NewGameListener;
 import it.polimi.ma.group07.briscola.controller.PileButtonListener;
 import it.polimi.ma.group07.briscola.controller.RestartListener;
 import it.polimi.ma.group07.briscola.controller.SendDataListener;
+import it.polimi.ma.group07.briscola.controller.ServerCoordinator;
 import it.polimi.ma.group07.briscola.model.Briscola;
 
+import it.polimi.ma.group07.briscola.model.Player;
 import it.polimi.ma.group07.briscola.model.PlayerState;
 import it.polimi.ma.group07.briscola.model.StateBundle;
 import it.polimi.ma.group07.briscola.view.CardBackFragment;
@@ -46,6 +51,8 @@ public class GameActivity extends AppCompatActivity  {
     CardPressedListener cardPressedListener;
     boolean singlePlayer;
     FragmentManager fragmentManager;
+    public GameController controller;
+    ProgressDialog dialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i("Game Activity","onCreate");
@@ -78,26 +85,42 @@ public class GameActivity extends AppCompatActivity  {
 
         surface=(LinearLayout) findViewById(R.id.surface);
         Log.i("Game Activity","Views found");
-        Briscola game=Briscola.getInstance();
         cardPressedListener=new CardPressedListener(GameActivity.this);
-        PlayerState state=game.getPlayerState(0);
-        String name="c"+state.briscola.toLowerCase();
-        int resourceId = getResources().getIdentifier(name, "drawable",
-                getPackageName());
 
-        if(resourceId!=0){
-            CardViewFragment card=new CardViewFragment();
-            card.setImageId(resourceId);
-            fragmentManager.beginTransaction().add(briscolaCard.getId(),card).commit();
-        }
-        Coordinator.createInstance(game.toString(),singlePlayer);
-        Coordinator.getInstance().setState(GameActivity.this,state);
+
+        PlayerState state;
         //game just started
-        if(savedInstanceState != null){
-            startGame(state);
+        if(savedInstanceState == null){
+            if(singlePlayer) {
+                Briscola game=Briscola.getInstance();
+                state=game.getPlayerState(0);
+                controller = Coordinator.createInstance(game.toString(), singlePlayer);
+                Coordinator.getInstance().setState(GameActivity.this, state);
+                String name="c"+state.briscola.toLowerCase();
+                int resourceId = getResources().getIdentifier(name, "drawable",
+                        getPackageName());
+                if(resourceId!=0){
+                    CardViewFragment card=new CardViewFragment();
+                    card.setImageId(resourceId);
+                    fragmentManager.beginTransaction().add(briscolaCard.getId(),card).commit();
+                }
+                startGame(state);
+            }
+            else{
+                controller=new ServerCoordinator();
+                try {
+                    ((ServerCoordinator)controller).startGame(GameActivity.this);
+                    dialog = ProgressDialog.show(GameActivity.this, "",
+                            "Waiting Game!!", true);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
-        else
+        else {
+            state=controller.getState();
             buildInterface(state);
+        }
     }
 
 
@@ -155,7 +178,7 @@ public class GameActivity extends AppCompatActivity  {
             Log.i("Build interfaace", "Briscola");
         }
     }
-        private void startGame(PlayerState state) {
+        public void startGame(PlayerState state) {
             int opponentSize=state.opponentHandSize[0];
             CardBackFragment c=new CardBackFragment();
             fragmentManager.beginTransaction().add(deck.getId(),c).commitNow();
@@ -168,7 +191,7 @@ public class GameActivity extends AppCompatActivity  {
                 CardViewFragment card=new CardViewFragment();
                 card.setImageId(resourceId);
                 card.setOnCardSelectedListener(cardPressedListener);
-                fragmentManager.beginTransaction().setCustomAnimations(R.anim.move,R.anim.move).add(playerViews[0].getId(),card).commitNow();
+                fragmentManager.beginTransaction().add(playerViews[0].getId(),card).commitNow();
             }
 
             for(int j=0;j<opponentSize;j++)
@@ -219,5 +242,8 @@ public class GameActivity extends AppCompatActivity  {
     }
     public LinearLayout[] getPlayerViews() {
         return playerViews;
+    }
+    public void dismissDialog(){
+        dialog.dismiss();
     }
 }
