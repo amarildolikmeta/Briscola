@@ -12,5 +12,6 @@ public interface GameController {
     public void onPerformMove(final GameActivity activity, int index) ;
 
     PlayerState getState();
-    PlayerState setState();
+    void setState(PlayerState state);
+    int getPlayerIndex();
 }

@@ -32,16 +32,10 @@ public class CardPressedListener implements CardViewFragment.OnCardSelectedListe
         if(Briscola.getInstance().isGameFinished())
             return;
         View v=card.getView();
-        LinearLayout playerView=((LinearLayout) v.getParent());
-        int playerIndex=((RelativeLayout)playerView.getParent()).indexOfChild(playerView);
-        PlayerState state=Coordinator.getInstance().getState();
+        PlayerState state=activity.controller.getState();
         //don't take commands if the state is not playable
         if(!state.playableState)
             return;
-        //take commands only from the players turn
-        if(playerIndex==0&&state.currentPlayer==0 || playerIndex==2 && state.currentPlayer==1){
-            return ;
-        }
         int index=((LinearLayout)v.getParent()).indexOfChild(v);
         activity.controller.onPerformMove(activity,index);
     }

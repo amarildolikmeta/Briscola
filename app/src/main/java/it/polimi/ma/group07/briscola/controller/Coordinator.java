@@ -160,9 +160,16 @@ public class Coordinator implements GameController {
     }
 
     @Override
-    public PlayerState setState() {
-        return null;
+    public void setState(PlayerState state) {
+
     }
+
+    @Override
+    public int getPlayerIndex() {
+        //in single mode player is 0 by default
+        return 0;
+    }
+
 
     public String getStartConfiguration() {
         return startConfiguration;

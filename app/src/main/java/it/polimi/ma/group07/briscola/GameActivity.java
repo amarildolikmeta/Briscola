@@ -52,7 +52,6 @@ public class GameActivity extends AppCompatActivity  {
     boolean singlePlayer;
     FragmentManager fragmentManager;
     public GameController controller;
-    ProgressDialog dialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i("Game Activity","onCreate");
@@ -110,8 +109,6 @@ public class GameActivity extends AppCompatActivity  {
                 controller=new ServerCoordinator();
                 try {
                     ((ServerCoordinator)controller).startGame(GameActivity.this);
-                    dialog = ProgressDialog.show(GameActivity.this, "",
-                            "Waiting Game!!", true);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -137,6 +134,7 @@ public class GameActivity extends AppCompatActivity  {
     }
 
     public void buildInterface(PlayerState state) {
+        flushInterface();
         int opponentSize=state.opponentHandSize[0];
         for (int j = 0; j < state.hand.size(); j++) {
             String name = "c" + state.hand.get(j).toString().toLowerCase();
@@ -243,7 +241,7 @@ public class GameActivity extends AppCompatActivity  {
     public LinearLayout[] getPlayerViews() {
         return playerViews;
     }
-    public void dismissDialog(){
-        dialog.dismiss();
+    public boolean isSinglePlayer(){
+        return singlePlayer;
     }
 }
