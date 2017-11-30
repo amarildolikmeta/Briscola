@@ -14,4 +14,5 @@ public interface GameController {
     PlayerState getState();
     void setState(PlayerState state);
     int getPlayerIndex();
+    void finishGame(String reason);
 }

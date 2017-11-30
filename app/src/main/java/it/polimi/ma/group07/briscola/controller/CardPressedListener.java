@@ -33,11 +33,9 @@ public class CardPressedListener implements CardViewFragment.OnCardSelectedListe
             return;
         View v=card.getView();
         PlayerState state=activity.controller.getState();
-        //don't take commands if the state is not playable
-        if(!state.playableState)
-            return;
         int index=((LinearLayout)v.getParent()).indexOfChild(v);
-        activity.controller.onPerformMove(activity,index);
+        if(activity.isReady)
+            activity.controller.onPerformMove(activity,index);
     }
 }
 

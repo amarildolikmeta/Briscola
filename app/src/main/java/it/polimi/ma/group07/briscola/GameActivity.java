@@ -3,9 +3,11 @@ package it.polimi.ma.group07.briscola;
 import android.app.Activity;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -52,6 +54,13 @@ public class GameActivity extends AppCompatActivity  {
     boolean singlePlayer;
     FragmentManager fragmentManager;
     public GameController controller;
+    private static boolean isActive;
+    public boolean isReady;
+    @Override
+    public void onStart(){
+        super.onStart();
+        isActive=true;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i("Game Activity","onCreate");
@@ -133,7 +142,40 @@ public class GameActivity extends AppCompatActivity  {
         // etc.
     }
 
+    @Override
+    public void onBackPressed(){
+        AlertDialog.Builder alert = new AlertDialog.Builder(GameActivity.this);
+        alert.setTitle("Quit");
+        alert.setMessage("Are you sure you want to quit the game?");
+        alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                finish();
+            }
+        });
+
+        alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        alert.show();
+    }
+    @Override
+    public void onDestroy(){
+        isActive=false;
+        controller.finishGame("abandon");
+        super.onDestroy();
+    }
     public void buildInterface(PlayerState state) {
+        if(!isActive)
+            return;
+        isReady=false;
         flushInterface();
         int opponentSize=state.opponentHandSize[0];
         for (int j = 0; j < state.hand.size(); j++) {
@@ -175,8 +217,10 @@ public class GameActivity extends AppCompatActivity  {
             fragmentManager.beginTransaction().add(briscolaCard.getId(), card).commitNow();
             Log.i("Build interfaace", "Briscola");
         }
+        isReady=true;
     }
         public void startGame(PlayerState state) {
+            isReady=false;
             int opponentSize=state.opponentHandSize[0];
             CardBackFragment c=new CardBackFragment();
             fragmentManager.beginTransaction().add(deck.getId(),c).commitNow();
@@ -216,9 +260,11 @@ public class GameActivity extends AppCompatActivity  {
                 card.setImageId(resourceId);
                 fragmentManager.beginTransaction().add(briscolaCard.getId(),card).commitNow();
 
-
+                isReady=true;
     }
     public void flushInterface(){
+        if (!isActive)
+            return;
         Log.i("Flushing Interface","Flushing");
         List<Fragment> al = getSupportFragmentManager().getFragments();
         if (al == null) {

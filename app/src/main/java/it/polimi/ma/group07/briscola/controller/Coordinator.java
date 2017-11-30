@@ -170,6 +170,11 @@ public class Coordinator implements GameController {
         return 0;
     }
 
+    @Override
+    public void finishGame(String reason) {
+
+    }
+
 
     public String getStartConfiguration() {
         return startConfiguration;
