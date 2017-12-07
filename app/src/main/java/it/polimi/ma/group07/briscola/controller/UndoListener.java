@@ -16,6 +16,6 @@ public class UndoListener implements View.OnClickListener {
     }
     @Override
     public void onClick(View v) {
-
+        activity.controller.onUndo(activity);
     }
 }

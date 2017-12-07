@@ -102,8 +102,11 @@ public class GameActivity extends AppCompatActivity  {
             if(singlePlayer) {
                 Briscola game=Briscola.getInstance();
                 state=game.getPlayerState(0);
-                controller = Coordinator.createInstance(game.toString(), singlePlayer);
+                String startConfiguration=getIntent().getExtras().getString("startConfiguration");
+                controller = Coordinator.createInstance(startConfiguration, singlePlayer);
                 Coordinator.getInstance().setState(GameActivity.this, state);
+                String movesPerformed=getIntent().getExtras().getString("movesPerformed");
+                Coordinator.getInstance().setMoves(movesPerformed);
                 String name="c"+state.briscola.toLowerCase();
                 int resourceId = getResources().getIdentifier(name, "drawable",
                         getPackageName());
@@ -289,5 +292,31 @@ public class GameActivity extends AppCompatActivity  {
     }
     public boolean isSinglePlayer(){
         return singlePlayer;
+    }
+
+    /**
+     * Show animation of card from the deck to the player
+     * @param card the card to be added
+     * @param player the player that gets the card
+     */
+    public void drawCard(String card,int player){
+
+    }
+
+    /**
+     * Show animation of playing card from hand to surface
+     * @param card card played
+     * @param player player that plays it
+     */
+    public  void playCard(String card,int player){
+
+    }
+
+    /**
+     * Show animation of the cards moving from the surface to the winner of the round
+     * @param winner the player that gets the cards
+     */
+    public void finishRound(int winner){
+
     }
 }

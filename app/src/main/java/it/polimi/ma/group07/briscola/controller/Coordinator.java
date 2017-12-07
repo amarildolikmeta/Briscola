@@ -1,5 +1,6 @@
 package it.polimi.ma.group07.briscola.controller;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
@@ -7,7 +8,11 @@ import android.util.Log;
 import android.widget.LinearLayout;
 
 import it.polimi.ma.group07.briscola.GameActivity;
+import it.polimi.ma.group07.briscola.MainActivity;
 import it.polimi.ma.group07.briscola.R;
+import it.polimi.ma.group07.briscola.controller.persistance.DataRepository;
+import it.polimi.ma.group07.briscola.controller.persistance.DatabaseRepository;
+import it.polimi.ma.group07.briscola.controller.persistance.LocalGame;
 import it.polimi.ma.group07.briscola.model.Briscola;
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionException;
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidGameStateException;
@@ -27,6 +32,7 @@ public class Coordinator implements GameController {
     private PlayerState state;
     private Handler handler ;
     private int playerIndex;
+    private DataRepository repository;
     public Coordinator(String startConfiguration,boolean singlePlayer){
         this.startConfiguration=startConfiguration;
         this.singlePlayer=singlePlayer;
@@ -57,12 +63,20 @@ public class Coordinator implements GameController {
 
             AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
             alertDialog.setTitle("Game Finished");
-            String message="You Won";
-            if(Briscola.getInstance().getWinner()==-1)
-                message="Draw";
-            else if(Briscola.getInstance().getWinner()==1)
-                message="You Lost";
+            String message="You Won :";
+            String state=LocalGame.WON;
+            if(Briscola.getInstance().getWinner()==-1) {
+                message = "Draw :";
+                state=LocalGame.DRAWN;
+            }
+            else if(Briscola.getInstance().getWinner()==1) {
+                message = "You Lost :";
+                state=LocalGame.LOST;
+            }
+            message+=""+Briscola.getInstance().getPlayers().get(0).getScore();
             alertDialog.setMessage(message);
+
+            getRepository().saveLocalGame(new LocalGame(startConfiguration,movesPerformed,state));
             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
@@ -172,9 +186,22 @@ public class Coordinator implements GameController {
 
     @Override
     public void finishGame(String reason) {
-
+        //Save game to replay it later
+        if(!Briscola.getInstance().isGameFinished()) {
+            Log.i("Coordinator","State:"+startConfiguration+" Moves:"+movesPerformed);
+            getRepository().saveCurrentGame(new LocalGame(startConfiguration, movesPerformed, "Running"));
+        }
     }
 
+    @Override
+    public DataRepository getRepository() {
+        return DatabaseRepository.getInstance();
+    }
+
+    @Override
+    public void onUndo(GameActivity activity) {
+
+    }
 
     public String getStartConfiguration() {
         return startConfiguration;
@@ -191,5 +218,9 @@ public class Coordinator implements GameController {
 
     public String getMovesPerformed() {
         return movesPerformed;
+    }
+
+    public void setMoves(String moves) {
+        this.movesPerformed = moves;
     }
 }

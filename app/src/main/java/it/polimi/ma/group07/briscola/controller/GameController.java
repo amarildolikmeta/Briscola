@@ -1,6 +1,7 @@
 package it.polimi.ma.group07.briscola.controller;
 
 import it.polimi.ma.group07.briscola.GameActivity;
+import it.polimi.ma.group07.briscola.controller.persistance.DataRepository;
 import it.polimi.ma.group07.briscola.model.PlayerState;
 
 /**
@@ -15,4 +16,7 @@ public interface GameController {
     void setState(PlayerState state);
     int getPlayerIndex();
     void finishGame(String reason);
+    DataRepository getRepository();
+
+    void onUndo(GameActivity activity);
 }

@@ -31,7 +31,11 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import it.polimi.ma.group07.briscola.GameActivity;
+import it.polimi.ma.group07.briscola.MainActivity;
 import it.polimi.ma.group07.briscola.R;
+import it.polimi.ma.group07.briscola.controller.persistance.DataRepository;
+import it.polimi.ma.group07.briscola.controller.persistance.DatabaseRepository;
+import it.polimi.ma.group07.briscola.controller.persistance.OnlineGame;
 import it.polimi.ma.group07.briscola.model.Brain;
 import it.polimi.ma.group07.briscola.model.Briscola;
 import it.polimi.ma.group07.briscola.model.Card;
@@ -60,6 +64,7 @@ public class ServerCoordinator implements GameController {
     private int score;
     Brain brain;
     private int cardsPlayed;
+    private DataRepository repository;
 
     public void startGame(GameActivity activity) throws IOException {
             this.activity=activity;
@@ -87,9 +92,20 @@ public class ServerCoordinator implements GameController {
     public void finishGame(String reason){
         if(state!=null) {
             Log.i("DELETE", "Terminating game");
+            getRepository().saveOnlineGame(new OnlineGame(OnlineGame.TERMINATED));
             DeleteGameTask task = new DeleteGameTask(activity);
             task.execute(gameURL, reason);
         }
+    }
+
+    @Override
+    public DataRepository getRepository() {
+        return DatabaseRepository.getInstance();
+    }
+
+    @Override
+    public void onUndo(GameActivity activity) {
+        return;
     }
 
     @Override
