@@ -36,6 +36,7 @@ public class CardPressedListener implements CardViewFragment.OnCardSelectedListe
         int index=((LinearLayout)v.getParent()).indexOfChild(v);
         if(activity.isReady)
             activity.controller.onPerformMove(activity,index);
+
     }
 }
 

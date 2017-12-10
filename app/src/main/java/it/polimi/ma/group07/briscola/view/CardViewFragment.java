@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import it.polimi.ma.group07.briscola.R;
@@ -25,7 +26,7 @@ public class CardViewFragment extends Fragment {
 
     // TODO: Rename and change types of parameters
     private int mImageId;
-
+    private ImageView imageView;
     private OnCardSelectedListener mListener;
 
     public CardViewFragment() {
@@ -67,7 +68,7 @@ public class CardViewFragment extends Fragment {
         Log.i("CardViewFragment","mImageId:"+mImageId);
         // Inflate the layout for this fragment
         final View rootView = inflater.inflate(R.layout.fragment_card_view, container, false);
-        ImageView imageView = (ImageView) rootView.findViewById(R.id.card_image);
+        imageView = (ImageView) rootView.findViewById(R.id.card_image);
         // If a list of image ids exists, set the image resource to the correct item in that list
         // Otherwise, create a Log statement that indicates that the list was not found
         if(mImageId != 0){
@@ -95,7 +96,14 @@ public class CardViewFragment extends Fragment {
     public void setOnCardSelectedListener(OnCardSelectedListener listener) {
         this.mListener = listener;
     }
-
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+//This is the NoSaveStateFrameLayout - force it to not clip
+        ViewGroup frameLayout = (ViewGroup) view.getParent();
+        frameLayout.setClipChildren(false);
+        frameLayout.setClipToPadding(false);
+    }
     /**
      * Save the current state of this fragment
      */
@@ -130,6 +138,14 @@ public class CardViewFragment extends Fragment {
         mListener = null;
     }
 
+    public int getImageId() {
+        return mImageId;
+    }
+     public void changeImageResource(int resourceId) {
+         mImageId=resourceId;
+         if(imageView!=null)
+             imageView.setImageResource(resourceId);
+     }
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated

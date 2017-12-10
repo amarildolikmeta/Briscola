@@ -13,7 +13,9 @@
         android:layout_height="576dp"
         android:orientation="vertical"
         tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="8dp">
+        tools:layout_editor_absoluteY="8dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:id="@+id/player2View"
@@ -21,7 +23,9 @@
             android:layout_height="@dimen/card_hidden_height"
             android:layout_alignParentTop="true"
             android:orientation="horizontal"
-            android:gravity="center">
+            android:gravity="center"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
         </LinearLayout>
 
@@ -29,14 +33,18 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/surface_height"
             android:layout_above="@+id/player1View"
-            android:layout_toEndOf="@+id/linearLayout">
+            android:layout_toEndOf="@+id/linearLayout"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <LinearLayout
                 android:id="@+id/surface"
                 android:layout_width="@dimen/surface_width"
                 android:layout_height="@dimen/surface_height"
                 android:orientation="horizontal"
-                android:gravity="center"></LinearLayout>
+                android:gravity="center"
+                android:clipChildren="false"
+                android:clipToPadding="false"></LinearLayout>
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -44,18 +52,26 @@
                 android:layout_toEndOf="@+id/surface"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:id="@+id/deckView">
-                <LinearLayout
+                android:id="@+id/deckView"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+               >
+                <RelativeLayout
                     android:id="@+id/deck"
                     android:layout_width="@dimen/card_width"
                     android:layout_height="@dimen/card_height"
-                    android:orientation="horizontal">
-                    </LinearLayout>
+                    android:orientation="horizontal"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                   >
+                    </RelativeLayout>
                 <LinearLayout
                     android:id="@+id/briscolaCard"
                     android:layout_width="@dimen/card_width"
                     android:layout_height="@dimen/card_height"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+
+                    >
                     </LinearLayout>
                 <TextView
                     android:layout_width="wrap_content"
@@ -71,7 +87,10 @@
             android:layout_weight="1"
             android:paddingBottom="25dp"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            >
 
 
 

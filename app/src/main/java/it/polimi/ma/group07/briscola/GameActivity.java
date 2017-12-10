@@ -1,5 +1,9 @@
 package it.polimi.ma.group07.briscola;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 
 import android.app.ProgressDialog;
@@ -11,6 +15,11 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AnimationSet;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -18,6 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import it.polimi.ma.group07.briscola.controller.CardPressedListener;
@@ -49,13 +59,18 @@ public class GameActivity extends AppCompatActivity  {
     Button restartButton;
     Button movesButton;
     LinearLayout briscolaCard;
-    LinearLayout deck;
+    RelativeLayout deck;
     CardPressedListener cardPressedListener;
     boolean singlePlayer;
     FragmentManager fragmentManager;
     public GameController controller;
     private static boolean isActive;
     public boolean isReady;
+    public CardViewFragment testFragment;
+    private ArrayList<CardViewFragment> surfaceFragments;
+    private ArrayList<ArrayList<CardViewFragment>> playerFragments;
+
+
     @Override
     public void onStart(){
         super.onStart();
@@ -72,7 +87,7 @@ public class GameActivity extends AppCompatActivity  {
         gameView=(RelativeLayout) findViewById(R.id.gameView);
         singlePlayer=getIntent().getExtras().getBoolean("singlePlayer");
         briscolaCard=(LinearLayout) findViewById(R.id.briscolaCard);
-        deck=(LinearLayout) findViewById(R.id.deck);
+        deck=(RelativeLayout) findViewById(R.id.deck);
         deckView=(LinearLayout) findViewById(R.id.deckView);
 
         newGameButton=(Button) findViewById(R.id.newGameButton);
@@ -94,7 +109,7 @@ public class GameActivity extends AppCompatActivity  {
         surface=(LinearLayout) findViewById(R.id.surface);
         Log.i("Game Activity","Views found");
         cardPressedListener=new CardPressedListener(GameActivity.this);
-
+        playerFragments=new ArrayList<>();
 
         PlayerState state;
         //game just started
@@ -107,14 +122,6 @@ public class GameActivity extends AppCompatActivity  {
                 Coordinator.getInstance().setState(GameActivity.this, state);
                 String movesPerformed=getIntent().getExtras().getString("movesPerformed");
                 Coordinator.getInstance().setMoves(movesPerformed);
-                String name="c"+state.briscola.toLowerCase();
-                int resourceId = getResources().getIdentifier(name, "drawable",
-                        getPackageName());
-                if(resourceId!=0){
-                    CardViewFragment card=new CardViewFragment();
-                    card.setImageId(resourceId);
-                    fragmentManager.beginTransaction().add(briscolaCard.getId(),card).commit();
-                }
                 startGame(state);
             }
             else{
@@ -178,6 +185,8 @@ public class GameActivity extends AppCompatActivity  {
     public void buildInterface(PlayerState state) {
         if(!isActive)
             return;
+        int backCardId = getResources().getIdentifier("back1", "drawable",
+                getPackageName());
         isReady=false;
         flushInterface();
         int opponentSize=state.opponentHandSize[0];
@@ -189,11 +198,14 @@ public class GameActivity extends AppCompatActivity  {
             card.setImageId(resourceId);
             card.setOnCardSelectedListener(cardPressedListener);
             fragmentManager.beginTransaction().add(playerViews[0].getId(), card).commitNow();
+            playerFragments.get(0).add(card);
         }
 
         for (int j = 0; j < opponentSize; j++) {
-                CardBackFragment card = new CardBackFragment();
+                CardViewFragment card = new CardViewFragment();
+                card.setImageId(backCardId);
                 fragmentManager.beginTransaction().add(playerViews[1].getId(), card).commitNow();
+                playerFragments.get(1).add(card);
         }
 
         for (int j = 0; j < state.surface.size(); j++) {
@@ -225,9 +237,12 @@ public class GameActivity extends AppCompatActivity  {
         public void startGame(PlayerState state) {
             isReady=false;
             int opponentSize=state.opponentHandSize[0];
-            CardBackFragment c=new CardBackFragment();
+            int backCardId = getResources().getIdentifier("back1", "drawable",
+                    getPackageName());
+            CardViewFragment c=new CardViewFragment();
+            c.setImageId(backCardId);
             fragmentManager.beginTransaction().add(deck.getId(),c).commitNow();
-
+            playerFragments.add(new ArrayList<CardViewFragment>());
             for(int j=0;j<state.hand.size();j++)
             {
                 String name="c"+state.hand.get(j).toString().toLowerCase();
@@ -237,14 +252,17 @@ public class GameActivity extends AppCompatActivity  {
                 card.setImageId(resourceId);
                 card.setOnCardSelectedListener(cardPressedListener);
                 fragmentManager.beginTransaction().add(playerViews[0].getId(),card).commitNow();
+                playerFragments.get(0).add(card);
             }
-
+            playerFragments.add(new ArrayList<CardViewFragment>());
             for(int j=0;j<opponentSize;j++)
             {
-                CardBackFragment card=new CardBackFragment();
+                CardViewFragment card=new CardViewFragment();
+                card.setImageId(backCardId);
                 fragmentManager.beginTransaction().add(playerViews[1].getId(),card).commitNow();
+                playerFragments.get(1).add(card);
             }
-
+            surfaceFragments=new ArrayList<>();
             for(int j=0;j<state.surface.size();j++)
             {
                 String name="c"+state.surface.get(j).toString().toLowerCase();
@@ -253,6 +271,7 @@ public class GameActivity extends AppCompatActivity  {
                 CardViewFragment card=new CardViewFragment();
                 card.setImageId(resourceId);
                 fragmentManager.beginTransaction().add(surface.getId(),card).commitNow();
+                surfaceFragments.add(card);
             }
 
                 String name="c"+state.briscola.toLowerCase();
@@ -262,7 +281,6 @@ public class GameActivity extends AppCompatActivity  {
                 card.setOnCardSelectedListener(null);
                 card.setImageId(resourceId);
                 fragmentManager.beginTransaction().add(briscolaCard.getId(),card).commitNow();
-
                 isReady=true;
     }
     public void flushInterface(){
@@ -285,6 +303,9 @@ public class GameActivity extends AppCompatActivity  {
             }
 
         }
+        for(int i=0;i<playerFragments.size();i++){
+            playerFragments.get(i).clear();
+        }
         Log.i("Flushing Interface","Flushed");
     }
     public LinearLayout[] getPlayerViews() {
@@ -299,8 +320,63 @@ public class GameActivity extends AppCompatActivity  {
      * @param card the card to be added
      * @param player the player that gets the card
      */
-    public void drawCard(String card,int player){
+    public void drawCard(String card, final int player){
+        String name="";
+        if(player==0)
+            name="c"+card.toLowerCase();
+        else
+            name="back1";
+        final CardViewFragment frag=new CardViewFragment();
+        final int resourceId = getResources().getIdentifier("back1", "drawable", getPackageName());
+        frag.setImageId(resourceId);
+        final CardViewFragment newFrag=new CardViewFragment();
+        final int cardId = getResources().getIdentifier(name, "drawable", getPackageName());
+        newFrag.setImageId(cardId);
+        getSupportFragmentManager().beginTransaction().add(deck.getId(),frag).commitNow();
 
+        final View view=frag.getView();
+        int deckHeight,playerHeight,deckWidth,playerWidth;
+        int[] locationDeck = new int[2];
+        deck.getLocationOnScreen(locationDeck);
+        int[] locationPlayer=new int[2];
+        playerViews[player].getLocationOnScreen(locationPlayer);
+        playerHeight = playerViews[player].getHeight();
+        deckHeight = deck.getHeight();
+        playerWidth = playerViews[player].getWidth();
+        deckWidth = deck.getWidth();
+        final double translationY=(playerHeight/2+locationPlayer[1])-(deckHeight/2+locationDeck[1]);
+        final double translationX=(playerWidth*0.75+locationPlayer[0])-(deckWidth/2+locationDeck[0]);
+        final ObjectAnimator animationY = ObjectAnimator.ofFloat(view, "translationY", 0.F, (int) translationY);
+        final ObjectAnimator animationX = ObjectAnimator.ofFloat(view, "translationX", 0.F, (int) translationX);
+        final AnimatorSet translation = new AnimatorSet();
+        translation.play(animationY).with(animationX);
+        translation.setDuration(600);
+        translation.addListener(new AnimatorListenerAdapter()
+            {@Override
+            public void onAnimationEnd(Animator animation) {
+                getSupportFragmentManager().beginTransaction().remove(frag).commit();
+                getSupportFragmentManager().beginTransaction().add(playerViews[player].getId(), newFrag).commit();
+                playerFragments.get(player).add(newFrag);
+            }
+        });
+        if(player==0){
+            final ObjectAnimator oa1 = ObjectAnimator.ofFloat(view, "scaleX", 1f, 0f);
+            oa1.setInterpolator(new DecelerateInterpolator());
+            oa1.setDuration(150);
+            oa1.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    frag.changeImageResource(cardId);
+                    final ObjectAnimator oa2 = ObjectAnimator.ofFloat(view, "scaleX", 0f, 1f);
+                    oa2.setInterpolator(new AccelerateDecelerateInterpolator());
+                    oa2.setDuration(150);
+                    oa2.start();
+                }
+            });
+            oa1.start();
+        }
+        translation.start();
     }
 
     /**
@@ -308,8 +384,54 @@ public class GameActivity extends AppCompatActivity  {
      * @param card card played
      * @param player player that plays it
      */
-    public  void playCard(String card,int player){
+    public  void playCard(final String card, int player,int cardIndex ) {
+        final CardViewFragment fragment=playerFragments.get(player).get(cardIndex);
+        playerFragments.get(player).remove(fragment);
+        final View view=fragment.getView();
+        final CardViewFragment newFrag=new CardViewFragment();
+        final int resourceId = getResources().getIdentifier("c"+card.toLowerCase(), "drawable",
+                    getPackageName());
+        newFrag.setImageId(resourceId);
+        int surfaceHeight,playerHeight,surfaceWidth,playerWidth;
+        int[] locationSurface = new int[2];
+        surface.getLocationOnScreen(locationSurface);
+        int[] locationPlayer=new int[2];
+        playerViews[player].getLocationOnScreen(locationPlayer);
 
+        playerHeight = playerViews[player].getHeight();
+        surfaceHeight = surface.getHeight();
+        playerWidth = playerViews[player].getWidth();
+        surfaceWidth = surface.getWidth();
+        final double translationY=(surfaceHeight/2+locationSurface[1])-(playerHeight/2+locationPlayer[1]);
+        final double translationX=(surfaceWidth/2+locationSurface[0])-(playerWidth/2+locationPlayer[0]);
+        final ObjectAnimator animationY = ObjectAnimator.ofFloat(view, "translationY", 0.F, (int) translationY);
+        final ObjectAnimator animationX = ObjectAnimator.ofFloat(view, "translationX", 0.F, (int) translationX);
+        final AnimatorSet translation = new AnimatorSet();
+        translation.play(animationY).with(animationX);
+        translation.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+                    getSupportFragmentManager().beginTransaction().add(surface.getId(), newFrag).commit();
+                    surfaceFragments.add(newFrag);
+                }
+            });
+        if(player==1){
+            final ObjectAnimator oa1 = ObjectAnimator.ofFloat(view, "scaleX", 1f, 0f);
+            oa1.setInterpolator(new DecelerateInterpolator());
+            oa1.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    fragment.changeImageResource(resourceId);
+                    final ObjectAnimator oa2 = ObjectAnimator.ofFloat(view, "scaleX", 0f, 1f);
+                    oa2.setInterpolator(new AccelerateDecelerateInterpolator());
+                    oa2.start();
+                }
+            });
+            oa1.start();
+        }
+            translation.start();
     }
 
     /**
@@ -317,6 +439,26 @@ public class GameActivity extends AppCompatActivity  {
      * @param winner the player that gets the cards
      */
     public void finishRound(int winner){
-
+        if(surfaceFragments.size()<2)
+            return;
+        int translationY;
+        if(winner==0)
+            translationY=600;
+        else
+            translationY=-600;
+        final ObjectAnimator animation1 = ObjectAnimator.ofFloat(surfaceFragments.get(0).getView(), "translationY", 0.F, (int) translationY);
+        final ObjectAnimator animation2 = ObjectAnimator.ofFloat(surfaceFragments.get(1).getView(), "translationY", 0.F, (int) translationY);
+        final AnimatorSet translation = new AnimatorSet();
+        translation.play(animation1).with(animation2);
+        translation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                for(int i=0;i<surfaceFragments.size();i++)
+                    getSupportFragmentManager().beginTransaction().remove(surfaceFragments.get(i)).commit();
+                surfaceFragments.clear();
+            }
+        });
+        translation.start();
     }
 }
