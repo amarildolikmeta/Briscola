@@ -65,6 +65,7 @@ public class ServerCoordinator implements GameController {
     Brain brain;
     private int cardsPlayed;
     private DataRepository repository;
+    private boolean playable;
 
     public void startGame(GameActivity activity) throws IOException {
             this.activity=activity;
@@ -73,16 +74,16 @@ public class ServerCoordinator implements GameController {
     }
     @Override
     public void onPerformMove(GameActivity activity, int index) {
-        if(!state.playableState)
-            return;
         String c=state.hand.remove(index);
         this.activity=activity;
         state.surface.add(c);
         state.playableState=false;
-        activity.buildInterface(state);
+        playable=false;
+        //activity.buildInterface(state);
+
         Log.i("Post","About to post");
        PostCardTask postCardTask=new PostCardTask(activity);
-        postCardTask.execute(gameURL,c);
+        postCardTask.execute(gameURL,c,index+"");
     }
     public void pollServer(){
         state.playableState=false;
@@ -106,6 +107,16 @@ public class ServerCoordinator implements GameController {
     @Override
     public void onUndo(GameActivity activity) {
         return;
+    }
+
+    @Override
+    public void onMovePerformed(GameActivity activity) {
+
+    }
+
+    @Override
+    public boolean isPlayable() {
+        return playable;
     }
 
     @Override
@@ -235,6 +246,7 @@ public class ServerCoordinator implements GameController {
                         playerIndex=0;
                         startedRound=true;
                         Toast.makeText(activity,"You Start!!",Toast.LENGTH_LONG).show();
+                        playable=true;
                     }
                     else {
                         playerIndex = 1;
@@ -282,6 +294,7 @@ public class ServerCoordinator implements GameController {
     private class PostCardTask extends AsyncTask<String, Void, Boolean> {
         String response;
         String playedCard;
+        int indexPlayed;
         HttpURLConnection urlConnection;
         URL url;
         private Handler handler ;
@@ -295,6 +308,7 @@ public class ServerCoordinator implements GameController {
         protected Boolean doInBackground(String... args) {
             String urlString=args[0];
             String card=args[1];
+            indexPlayed=Integer.parseInt(args[2]);
             playedCard=card;
             boolean flag=true;
             Log.i("Post","Posting Card To Server");
@@ -368,6 +382,7 @@ public class ServerCoordinator implements GameController {
             String opponentCard="",myCard=null;
             int winnerCard=0;
             if(result){
+                activity.playCard(playedCard,0,playerIndex);
                 cardsPlayed++;
                 if(state.surface.size()<2){
                     state.currentPlayer=(state.currentPlayer+1)%2;
@@ -381,25 +396,7 @@ public class ServerCoordinator implements GameController {
                         winnerCard=brain.determineWinnerString(state.surface);
                         ArrayList<String> s=new ArrayList<String>(state.surface);
                         state.surface=new ArrayList<>();
-                        if(startedRound&winnerCard==0||!startedRound&&winnerCard==1){
-                            state.ownPile.addAll(s);
-                            startedRound=true;
-                            state.currentPlayer=playerIndex;
-                            winner=true;
-                            score+=brain.calculatePointsString(s);
-                        }
-                        else{
-                            winner=false;
-                            state.opponentPiles.get(0).addAll(s);
-                            startedRound=false;
-                            state.currentPlayer=(playerIndex+1)%2;
-                        }
-                        state.playableState=false;
-                        handler.postDelayed(new Runnable() {
-                            public void run() {
-                                activity.buildInterface(state);
-                            }
-                        },1000);
+                        ArrayList<String> cardsDealt=new ArrayList<>();
                         try{
                             resultJSON=new JSONObject(response);
                             myCard=resultJSON.getString("card");
@@ -407,27 +404,37 @@ public class ServerCoordinator implements GameController {
                             e.printStackTrace();
                         }
                         final String finalMyCard = myCard;
-                        handler.postDelayed(new Runnable() {
-                            public void run() {
-                                if(state.deckSize>0)
-                                    state.deckSize--;
-                                if(finalMyCard!=null&&winner)
-                                    state.hand.add(finalMyCard);
-                                else if(finalMyCard!=null&&!winner)
-                                    state.opponentHandSize[0]++;
-                                activity.buildInterface(state);
-                            }
-                        },2000);
-                        handler.postDelayed(new Runnable() {
-                            public void run() {
-                                if(state.deckSize>0)
-                                    state.deckSize--;
-                                if(finalMyCard!=null&&winner)
-                                    state.opponentHandSize[0]++;
-                                else if(finalMyCard!=null&&!winner)
-                                    state.hand.add(finalMyCard);
-                                activity.buildInterface(state);
+                        if(startedRound&winnerCard==0||!startedRound&&winnerCard==1){
+                            state.ownPile.addAll(s);
+                            startedRound=true;
+                            state.currentPlayer=playerIndex;
+                            winner=true;
+                            score+=brain.calculatePointsString(s);
+                            if(myCard!=null){
+                            cardsDealt.add(myCard);
+                            cardsDealt.add("");}
+                        }
+                        else{
+                            winner=false;
+                            state.opponentPiles.get(0).addAll(s);
+                            startedRound=false;
+                            state.currentPlayer=(playerIndex+1)%2;
+                            if(myCard!=null){
+                            cardsDealt.add(myCard);
+                            cardsDealt.add("");}
+                        }
+                        state.playableState=false;
+                        playable=false;
 
+                        boolean isLastDraw=state.deckSize<3;
+                        if(state.deckSize>0)
+                            state.deckSize=state.deckSize-2;
+                        if(finalMyCard!=null){
+                            state.hand.add(finalMyCard);
+                            state.opponentHandSize[0]++;}
+                        Log.i("Round Finished","Round finished:Winner:"+Briscola.getInstance().getCurrentPlayer());
+
+                        activity.finishRound(Briscola.getInstance().getCurrentPlayer(),cardsDealt,isLastDraw);
                                 if(winner){
                                     state.playableState=true;
                                 }
@@ -439,8 +446,6 @@ public class ServerCoordinator implements GameController {
 
                                 if(cardsPlayed==40)
                                     showWinner();
-                            }
-                        },3000);
                     } catch (InvalidCardDescriptionException e) {
                         e.printStackTrace();
                     }

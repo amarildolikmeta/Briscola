@@ -7,6 +7,8 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.LinearLayout;
 
+import java.util.ArrayList;
+
 import it.polimi.ma.group07.briscola.GameActivity;
 import it.polimi.ma.group07.briscola.MainActivity;
 import it.polimi.ma.group07.briscola.R;
@@ -33,11 +35,14 @@ public class Coordinator implements GameController {
     private Handler handler ;
     private int playerIndex;
     private DataRepository repository;
+    private boolean playable;
+
     public Coordinator(String startConfiguration,boolean singlePlayer){
         this.startConfiguration=startConfiguration;
         this.singlePlayer=singlePlayer;
         this.handler= new Handler();
         this.movesPerformed="";
+        playable=true;
         playerIndex=0;
     }
 
@@ -53,14 +58,19 @@ public class Coordinator implements GameController {
     }
 
     public void onPerformMove(final GameActivity activity, int index){
-        boolean s=Briscola.getInstance().onPerformMove(index);
+        Log.i("Coordinator","Playing index:"+index);
+        int player=Briscola.getInstance().getCurrentPlayer();
+        String card=Briscola.getInstance().onPerformMove(index);
+        playable=false;
         movesPerformed+=""+index;
         state=Briscola.getInstance().getPlayerState(playerIndex);
-        activity.flushInterface();
-        activity.buildInterface(state);
+        activity.playCard(card,player,index);
+        Log.i("Coordinator","Card Played:"+card);
+        }
+    @Override
+    public void onMovePerformed(final GameActivity activity){
         if(Briscola.getInstance().isGameFinished())
         {
-
             AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
             alertDialog.setTitle("Game Finished");
             String message="You Won :";
@@ -73,7 +83,7 @@ public class Coordinator implements GameController {
                 message = "You Lost :";
                 state=LocalGame.LOST;
             }
-            message+=""+Briscola.getInstance().getPlayers().get(0).getScore();
+            message+=""+Briscola.getInstance().getPlayers().get(0).getScore()+" points";
             alertDialog.setMessage(message);
 
             getRepository().saveLocalGame(new LocalGame(startConfiguration,movesPerformed,state));
@@ -88,62 +98,49 @@ public class Coordinator implements GameController {
         }
         if(Briscola.getInstance().isRoundFinished()){
             Log.i("Round Finished","Finishing");
-            finishRound(activity);
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    finishRound(activity);
+                }
+            },700);
+
         }
         else {
             //AIPlays
             if (Briscola.getInstance().getCurrentPlayer() == 1 && singlePlayer) {
+
                 handler.postDelayed(new Runnable() {
                     public void run() {
                         PlayerState state=Briscola.getInstance().getPlayerState(Briscola.getInstance().getCurrentPlayer());
                         onPerformMove(activity, AIPlayer.getMoveFromState(state));
                     }
-                }, 1500);
+                },700);
 
-                    }
             }
+            else
+                playable=true;
         }
+    }
+
+    @Override
+    public boolean isPlayable() {
+        return playable;
+    }
 
     private void finishRound(final GameActivity activity) {
         Briscola.getInstance().finishRound();
-        Log.i("Round Finished","Round finished");
         state=Briscola.getInstance().getPlayerState(playerIndex);
-        //deal a card after a second
-        handler.postDelayed(new Runnable() {
-            public void run() {
-                activity.flushInterface();
-                activity.buildInterface(state);
-            }
-        }, 1500);
-            handler.postDelayed(new Runnable() {
-                public void run() {
-                    Briscola.getInstance().dealCard();
-                    state=Briscola.getInstance().getPlayerState(playerIndex);
-                    activity.flushInterface();
-                    activity.buildInterface(state);
-                    Log.i("Round Finished","1st Card Dealt");
-                }
-            }, 3000);
-        handler.postDelayed(new Runnable() {
-            public void run() {
-                Briscola.getInstance().dealCard();
-                state=Briscola.getInstance().getPlayerState(playerIndex);
-                activity.flushInterface();
-                activity.buildInterface(state);
-                Log.i("Round Finished","2nd Card Dealt");
-            }
-        }, 4500);
+        ArrayList<String> cardsDealt=new ArrayList<>();
+          if(Briscola.getInstance().hasMoreCards())
+              for(int i=0;i<Briscola.getInstance().getNumberPlayers();i++)
+                cardsDealt.add(Briscola.getInstance().dealCard());
+          else
+              Briscola.getInstance().dealCards();
+        Log.i("Round Finished","Will Deal"+cardsDealt.toString());
+        boolean isLastDraw=!Briscola.getInstance().hasMoreCards();
+        Log.i("Round Finished","Round finished:Winner:"+Briscola.getInstance().getCurrentPlayer());
 
-        //make AI Play
-        if (Briscola.getInstance().getCurrentPlayer() == 1 && singlePlayer) {
-            handler.postDelayed(new Runnable() {
-                public void run() {
-                    PlayerState state=Briscola.getInstance().getPlayerState(Briscola.getInstance().getCurrentPlayer());
-                    onPerformMove(activity, AIPlayer.getMoveFromState(state));
-                }
-            },6000);
-        }
-
+        activity.finishRound(Briscola.getInstance().getCurrentPlayer(),cardsDealt,isLastDraw);
     }
 
     public void onRestart(GameActivity activity){

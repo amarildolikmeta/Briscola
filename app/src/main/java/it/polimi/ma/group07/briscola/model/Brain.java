@@ -1,5 +1,7 @@
 package it.polimi.ma.group07.briscola.model;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -168,6 +170,7 @@ public class Brain implements RuleApplier {
     @Override
     public int determineWinningPlayer(ArrayList<Player> players) {
         //assume first player wins;
+        Log.i("Brain","Scores: "+players.get(0).getScore()+" "+players.get(1).getScore());
         int maxPoints=players.get(0).getScore();
         int index=0;
         //count total points to see if game finished

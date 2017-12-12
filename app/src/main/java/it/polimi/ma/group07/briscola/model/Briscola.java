@@ -1,5 +1,7 @@
 package it.polimi.ma.group07.briscola.model;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 
 import it.polimi.ma.group07.briscola.model.Exceptions.BriscolaException;
@@ -511,8 +513,8 @@ public class Briscola {
              * if it return false the move wasnt performed
              * so the sequence of moves given wasnt correct
              */
-            boolean res= onPerformMove(moves.charAt(i)-'0');
-            if(!res){
+            String res= onPerformMove(moves.charAt(i)-'0');
+            if(res==""){
                     return "ERROR: Incorrect Sequence of moves";
                 }
             /**
@@ -567,16 +569,18 @@ public class Briscola {
      * Deal one card to the next player
      * the index of the player to deal next is specified in the field
      * dealing index
-     * @return true if the dealing was succesful
+     * @return String representation of dealt card ,otherwise null
      * might fail if we are in a playable state,
      * the winner of the last round is not yet determined
      * or there are no cards in the deck
      */
-    public boolean dealCard(){
+    public String dealCard(){
             if(isPlayableState()||roundFinished)
-                return false;
+                return null;
+            Card card=null;
             try {
-                players.get((dealingIndex ) ).addCardToHand(deck.drawCard());
+                card=deck.drawCard();
+                players.get((dealingIndex ) ).addCardToHand(card);
                 incrementDealingIndexPlayer();
                 /**
                  * when dealing index is equal to the next player to play
@@ -584,13 +588,13 @@ public class Briscola {
                  */
                 if(dealingIndex==currentPlayer)
                     playableState=true;
-                return true;
+                return card.toString();
             } catch (NoCardInDeckException e) {
                 /**if cards finish don't deal
                  *
                  */
                 playableState=true;
-                return false;
+                return null;
             }
     }
 
@@ -601,16 +605,18 @@ public class Briscola {
     /**
      * Perform the move specified by the given index on the current player
      * @param index index of the card to be played from the hand of the current player
-     * @return true if the move was correcty performed
+     * @return String Representation of Card that was thrown or empty string if error
      * @throws IndexOutOfBoundsException if the index specified was outside the range
      * of the hand of the current player
      */
-    public boolean onPerformMove(int index) throws IndexOutOfBoundsException{
+    public String onPerformMove(int index) throws IndexOutOfBoundsException{
         /**
          * Cannot perform a move if the game is not in a playable state
          */
-        if(isRoundFinished()||!isPlayableState())
-            return false;
+        if(isRoundFinished()||!isPlayableState()) {
+            Log.i("Briscola","Not Playable");
+            return "";
+        }
         try{
             /**
              * place the specified card in the surface
@@ -628,11 +634,12 @@ public class Briscola {
                     gameFinished=true;
             }
             incrementCurrentPlayer();
-            return true;
+            return c.toString();
         }
         catch (IndexOutOfBoundsException e)
         {
-            return false;
+            Log.i("Briscola","Exception");
+            return "";
         }
 
     }
@@ -944,5 +951,9 @@ public class Briscola {
                    return brain.calculatePoints(s);
         }
             return 0;
+    }
+
+    public boolean hasMoreCards() {
+        return deck.hasMoreCards();
     }
 }

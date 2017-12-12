@@ -19,4 +19,7 @@ public interface GameController {
     DataRepository getRepository();
 
     void onUndo(GameActivity activity);
+
+    void onMovePerformed(GameActivity activity);
+    boolean isPlayable();
 }
