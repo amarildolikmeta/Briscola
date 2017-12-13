@@ -66,7 +66,11 @@ public class ServerCoordinator implements GameController {
     private int cardsPlayed;
     private DataRepository repository;
     private boolean playable;
-
+    //used in #onMovePerformed method
+    private String lastMove;
+    private String response;
+    private boolean winner;
+    int indexPlayed;
     public void startGame(GameActivity activity) throws IOException {
             this.activity=activity;
             CreateGameTask task=new CreateGameTask(activity);
@@ -74,16 +78,17 @@ public class ServerCoordinator implements GameController {
     }
     @Override
     public void onPerformMove(GameActivity activity, int index) {
+        indexPlayed=index;
         String c=state.hand.remove(index);
+        Log.i("Server Controller","Playing index "+index+" Card:"+c);
         this.activity=activity;
         state.surface.add(c);
         state.playableState=false;
         playable=false;
         //activity.buildInterface(state);
-
         Log.i("Post","About to post");
        PostCardTask postCardTask=new PostCardTask(activity);
-        postCardTask.execute(gameURL,c,index+"");
+        postCardTask.execute(gameURL,c);
     }
     public void pollServer(){
         state.playableState=false;
@@ -111,7 +116,186 @@ public class ServerCoordinator implements GameController {
 
     @Override
     public void onMovePerformed(GameActivity activity) {
+        switch(lastMove){
+            case "POST":
+                onPostFinished();
+                break;
+            case "POST_FINISH":
+                if(cardsPlayed==40)
+                    showWinner();
+                else if(winner){
+                    state.playableState=true;
+                    playable=true;
+                }
+                else{
+                    state.playableState=false;
+                    playable=false;
+                    if(cardsPlayed<40)
+                        pollServer();
+                }
+                break;
+            case "GET":
+                onGetFinished();
+                break;
+            case "GET_FINISH":
+                if(cardsPlayed==40)
+                    showWinner();
+                else if(winner){
+                    state.playableState=true;
+                    playable=true;
+                }
+                else{
+                    state.playableState=false;
+                    playable=false;
+                    if(cardsPlayed<40)
+                        pollServer();
+                }
+                break;
+            default :
+                Log.i("Server Controller","Shouldn't be here");
 
+        }
+    }
+
+    private void onGetFinished() {
+        String myCard=null;
+        int winnerCard=0;
+        if(state.surface.size()<2) {
+            state.playableState = true;
+            playable=true;
+            state.currentPlayer=playerIndex;
+        }
+        else{
+            state.playableState=false;
+            playable=false;
+            try {
+                Log.i("GET","Determining Winner");
+                winnerCard=brain.determineWinnerString(state.surface);
+                ArrayList<String> s=new ArrayList<String>(state.surface);
+                state.surface=new ArrayList<>();
+                final ArrayList<String> cardsDealt=new ArrayList<>();
+                try {
+                    resultJSON=new JSONObject(response);
+                    myCard=resultJSON.getString("card");
+
+                } catch (JSONException e) {
+                    Log.i("GET GAME","Card not in response");
+                }
+                if(startedRound&winnerCard==0||!startedRound&&winnerCard==1){
+                    winner=true;
+                    state.ownPile.addAll(s);
+                    startedRound=true;
+                    state.currentPlayer=playerIndex;
+                    score+=brain.calculatePointsString(s);
+                    if(myCard!=null){
+                        cardsDealt.add(myCard);
+                        cardsDealt.add("");
+                    }
+                }
+                else{
+                    winner=false;
+                    state.opponentPiles.get(0).addAll(s);
+                    startedRound=false;
+                    state.currentPlayer=(playerIndex+1)%2;
+                    if(myCard!=null){
+                        cardsDealt.add("");
+                        cardsDealt.add(myCard);
+                    }
+                }
+                state.playableState=false;
+                playable=false;
+
+                final boolean isLastDraw=state.deckSize<3;
+                if(state.deckSize>0)
+                    state.deckSize=state.deckSize-2;
+                if(myCard!=null){
+                    state.hand.add(myCard);
+                    state.opponentHandSize[0]++;}
+                int winningPlayer=0;
+                if(!winner)
+                    winningPlayer=1;
+                Log.i("Round Finished","Round finished:Winner:"+winningPlayer);
+                lastMove="GET_FINISH";
+                final int arg0=winningPlayer;
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        activity.finishRound(arg0,cardsDealt,isLastDraw);
+                    }
+                },700);
+            } catch (InvalidCardDescriptionException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void onPostFinished() {
+        String opponentCard="",myCard=null;
+        int winnerCard=0;
+        if(state.surface.size()<2){
+            state.currentPlayer=(state.currentPlayer+1)%2;
+            pollServer();
+        }
+        else{
+            //round finished
+            try {
+                Log.i("Post","Determining Winner");
+
+                winnerCard=brain.determineWinnerString(state.surface);
+                ArrayList<String> s=new ArrayList<String>(state.surface);
+                state.surface=new ArrayList<>();
+                final ArrayList<String> cardsDealt=new ArrayList<>();
+                try{
+                    resultJSON=new JSONObject(response);
+                    myCard=resultJSON.getString("card");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                final String finalMyCard = myCard;
+                if(startedRound&winnerCard==0||!startedRound&&winnerCard==1){
+                    state.ownPile.addAll(s);
+                    startedRound=true;
+                    state.currentPlayer=playerIndex;
+                    winner=true;
+                    score+=brain.calculatePointsString(s);
+                    if(myCard!=null){
+                        cardsDealt.add(myCard);
+                        cardsDealt.add("");}
+                }
+                else{
+                    winner=false;
+                    state.opponentPiles.get(0).addAll(s);
+                    startedRound=false;
+                    state.currentPlayer=(playerIndex+1)%2;
+                    if(myCard!=null){
+                        cardsDealt.add("");
+                        cardsDealt.add(myCard);}
+                }
+                state.playableState=false;
+                playable=false;
+
+                final boolean isLastDraw=state.deckSize<3;
+                if(state.deckSize>0)
+                    state.deckSize=state.deckSize-2;
+                if(finalMyCard!=null){
+                    state.hand.add(finalMyCard);
+                    state.opponentHandSize[0]++;}
+                int winningPlayer=0;
+                if(!winner)
+                    winningPlayer=1;
+                Log.i("Round Finished","Round finished:Winner:"+winningPlayer);
+                lastMove="POST_FINISH";
+                final int arg0=winningPlayer;
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        activity.finishRound(arg0,cardsDealt,isLastDraw);
+                    }
+                },700);
+
+
+            } catch (InvalidCardDescriptionException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -292,9 +476,7 @@ public class ServerCoordinator implements GameController {
     }
 
     private class PostCardTask extends AsyncTask<String, Void, Boolean> {
-        String response;
         String playedCard;
-        int indexPlayed;
         HttpURLConnection urlConnection;
         URL url;
         private Handler handler ;
@@ -308,7 +490,6 @@ public class ServerCoordinator implements GameController {
         protected Boolean doInBackground(String... args) {
             String urlString=args[0];
             String card=args[1];
-            indexPlayed=Integer.parseInt(args[2]);
             playedCard=card;
             boolean flag=true;
             Log.i("Post","Posting Card To Server");
@@ -379,77 +560,11 @@ public class ServerCoordinator implements GameController {
 
         @Override
         protected void onPostExecute(Boolean result){
-            String opponentCard="",myCard=null;
-            int winnerCard=0;
+
             if(result){
-                activity.playCard(playedCard,0,playerIndex);
+                activity.playCard(playedCard,0,indexPlayed);
                 cardsPlayed++;
-                if(state.surface.size()<2){
-                    state.currentPlayer=(state.currentPlayer+1)%2;
-                        pollServer();
-                }
-                else{
-                    //round finished
-                    try {
-                        Log.i("GET","Determining Winner");
-                        final boolean winner;
-                        winnerCard=brain.determineWinnerString(state.surface);
-                        ArrayList<String> s=new ArrayList<String>(state.surface);
-                        state.surface=new ArrayList<>();
-                        ArrayList<String> cardsDealt=new ArrayList<>();
-                        try{
-                            resultJSON=new JSONObject(response);
-                            myCard=resultJSON.getString("card");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        final String finalMyCard = myCard;
-                        if(startedRound&winnerCard==0||!startedRound&&winnerCard==1){
-                            state.ownPile.addAll(s);
-                            startedRound=true;
-                            state.currentPlayer=playerIndex;
-                            winner=true;
-                            score+=brain.calculatePointsString(s);
-                            if(myCard!=null){
-                            cardsDealt.add(myCard);
-                            cardsDealt.add("");}
-                        }
-                        else{
-                            winner=false;
-                            state.opponentPiles.get(0).addAll(s);
-                            startedRound=false;
-                            state.currentPlayer=(playerIndex+1)%2;
-                            if(myCard!=null){
-                            cardsDealt.add(myCard);
-                            cardsDealt.add("");}
-                        }
-                        state.playableState=false;
-                        playable=false;
-
-                        boolean isLastDraw=state.deckSize<3;
-                        if(state.deckSize>0)
-                            state.deckSize=state.deckSize-2;
-                        if(finalMyCard!=null){
-                            state.hand.add(finalMyCard);
-                            state.opponentHandSize[0]++;}
-                        Log.i("Round Finished","Round finished:Winner:"+Briscola.getInstance().getCurrentPlayer());
-
-                        activity.finishRound(Briscola.getInstance().getCurrentPlayer(),cardsDealt,isLastDraw);
-                                if(winner){
-                                    state.playableState=true;
-                                }
-                                else{
-                                    state.playableState=false;
-                                    if(cardsPlayed<40)
-                                        pollServer();
-                                }
-
-                                if(cardsPlayed==40)
-                                    showWinner();
-                    } catch (InvalidCardDescriptionException e) {
-                        e.printStackTrace();
-                    }
-                }
+                lastMove="POST";
             }
             else {
                 try {
@@ -476,7 +591,7 @@ public class ServerCoordinator implements GameController {
 
     }
     private class GetCardTask extends AsyncTask<String, Void, Boolean> {
-        String response;
+
         HttpURLConnection urlConnection;
         URL url;
         private Handler handler ;
@@ -546,15 +661,14 @@ public class ServerCoordinator implements GameController {
 
         @Override
         protected void onPostExecute(Boolean result){
-            String opponentCard="",myCard=null;
-            int winnerCard=0;
+            String opponentCard="";
             state.playableState=false;
+            playable=false;
             if(result){
                 cardsPlayed++;
                 try {
                     resultJSON=new JSONObject(response);
                     opponentCard=resultJSON.getString("opponent");
-                    myCard=resultJSON.getString("card");
 
                 } catch (JSONException e) {
                     Log.i("GET GAME","Card not in response");
@@ -562,83 +676,8 @@ public class ServerCoordinator implements GameController {
                 state.surface.add(opponentCard);
                 state.opponentHandSize[0]--;
                 state.playableState = false;
-                activity.buildInterface(state);
-                Log.i("GET","Updating interface");
-                if(state.surface.size()<2) {
-                    state.playableState = true;
-                    state.currentPlayer=playerIndex;
-                }
-                else
-                    state.playableState=false;
-                handler.postDelayed(new Runnable() {
-                    public void run() {
-                        Log.i("GET","Inside Post Delayed");
-
-                        activity.buildInterface(state);
-                    }
-                },500);
-                //round has finished
-                if(state.surface.size()==2){
-                    try {
-                        Log.i("GET","Determining Winner");
-                        final boolean winner;
-                        winnerCard=brain.determineWinnerString(state.surface);
-                        ArrayList<String> s=new ArrayList<String>(state.surface);
-                        state.surface=new ArrayList<>();
-                        if(startedRound&winnerCard==0||!startedRound&&winnerCard==1){
-                            winner=true;
-                            state.ownPile.addAll(s);
-                            startedRound=true;
-                            state.currentPlayer=playerIndex;
-                            score+=brain.calculatePointsString(s);
-                        }
-                        else{
-                            winner=false;
-                            state.opponentPiles.get(0).addAll(s);
-                            startedRound=false;
-                            state.currentPlayer=(playerIndex+1)%2;
-                        }
-                        handler.postDelayed(new Runnable() {
-                            public void run() {
-                                activity.buildInterface(state);
-                            }
-                        },1000);
-                        final String finalMyCard = myCard;
-                        handler.postDelayed(new Runnable() {
-                            public void run() {
-                                if(state.deckSize>0)
-                                    state.deckSize--;
-                                if(finalMyCard!=null&&winner)
-                                    state.hand.add(finalMyCard);
-                                else if(finalMyCard!=null&&!winner)
-                                    state.opponentHandSize[0]++;
-                                activity.buildInterface(state);
-                            }
-                        },2000);
-                        handler.postDelayed(new Runnable() {
-                            public void run() {
-                                if(state.deckSize>0)
-                                    state.deckSize--;
-                                if(finalMyCard!=null&&winner)
-                                    state.opponentHandSize[0]++;
-                                else if(finalMyCard!=null&&!winner)
-                                    state.hand.add(finalMyCard);
-                                activity.buildInterface(state);
-                                if(winner)
-                                    state.playableState=true;
-                                else{
-                                    state.playableState=false;
-                                    if(cardsPlayed<40)
-                                        pollServer();
-                                }
-                                if(cardsPlayed==40)
-                                    showWinner();
-                            }
-                        },3000);
-                    } catch (InvalidCardDescriptionException e) {
-                        e.printStackTrace();
-                    }
-                }
+                lastMove="GET";
+                activity.playCard(opponentCard,1,state.opponentHandSize[0]);
             }
             else {
                 try {
