@@ -956,4 +956,11 @@ public class Briscola {
     public boolean hasMoreCards() {
         return deck.hasMoreCards();
     }
+
+    public int[] getScores() {
+        int scores[]=new int[getNumberPlayers()];
+        for(int i=0;i<players.size();i++)
+            scores[i]=players.get(i).getScore();
+        return scores;
+    }
 }

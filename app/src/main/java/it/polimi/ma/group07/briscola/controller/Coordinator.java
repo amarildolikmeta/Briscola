@@ -141,6 +141,7 @@ public class Coordinator implements GameController {
         Log.i("Round Finished","Round finished:Winner:"+Briscola.getInstance().getCurrentPlayer());
 
         activity.finishRound(Briscola.getInstance().getCurrentPlayer(),cardsDealt,isLastDraw);
+        activity.setScores(Briscola.getInstance().getScores());
     }
 
     public void onRestart(GameActivity activity){

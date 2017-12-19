@@ -61,7 +61,7 @@ public class ServerCoordinator implements GameController {
     private int playerIndex;
     private boolean startedRound;
     private String gameURL;
-    private int score;
+    private int scores[];
     Brain brain;
     private int cardsPlayed;
     private DataRepository repository;
@@ -121,6 +121,7 @@ public class ServerCoordinator implements GameController {
                 onPostFinished();
                 break;
             case "POST_FINISH":
+                activity.setScores(scores);
                 if(cardsPlayed==40)
                     showWinner();
                 else if(winner){
@@ -138,6 +139,7 @@ public class ServerCoordinator implements GameController {
                 onGetFinished();
                 break;
             case "GET_FINISH":
+                activity.setScores(scores);
                 if(cardsPlayed==40)
                     showWinner();
                 else if(winner){
@@ -186,7 +188,7 @@ public class ServerCoordinator implements GameController {
                     state.ownPile.addAll(s);
                     startedRound=true;
                     state.currentPlayer=playerIndex;
-                    score+=brain.calculatePointsString(s);
+                    scores[0]+=brain.calculatePointsString(s);
                     if(myCard!=null){
                         cardsDealt.add(myCard);
                         cardsDealt.add("");
@@ -194,6 +196,7 @@ public class ServerCoordinator implements GameController {
                 }
                 else{
                     winner=false;
+                    scores[1]+=brain.calculatePointsString(s);
                     state.opponentPiles.get(0).addAll(s);
                     startedRound=false;
                     state.currentPlayer=(playerIndex+1)%2;
@@ -256,13 +259,14 @@ public class ServerCoordinator implements GameController {
                     startedRound=true;
                     state.currentPlayer=playerIndex;
                     winner=true;
-                    score+=brain.calculatePointsString(s);
+                    scores[0]+=brain.calculatePointsString(s);
                     if(myCard!=null){
                         cardsDealt.add(myCard);
                         cardsDealt.add("");}
                 }
                 else{
                     winner=false;
+                    scores[1]+=brain.calculatePointsString(s);
                     state.opponentPiles.get(0).addAll(s);
                     startedRound=false;
                     state.currentPlayer=(playerIndex+1)%2;
@@ -417,7 +421,7 @@ public class ServerCoordinator implements GameController {
                     ArrayList<String> ownPile = new ArrayList<>(Parser.splitString("", 2));
                     ArrayList<ArrayList<String>> opponentPiles = new ArrayList<ArrayList<String>>();
                     Card briscola = new Card(resultJSON.getString("last_card"));
-                    score=0;
+                    scores=new int[]{0,0};
                     cardsPlayed=0;
                     int opponentHandSizes[] = new int[1];
                     yourTurn=resultJSON.getBoolean("your_turn");
@@ -706,13 +710,13 @@ public class ServerCoordinator implements GameController {
 
     private void showWinner() {
         String message="You Won";
-        if(score<60)
+        if(scores[0]<scores[1])
             message="You Lost";
-        else if(score==60)
+        else if(scores[0]==scores[1])
             message="Draw";
         AlertDialog.Builder alert = new AlertDialog.Builder(activity);
         alert.setTitle(message);
-        alert.setMessage(score+" Points");
+        alert.setMessage(scores[0]+" Points");
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 
             @Override

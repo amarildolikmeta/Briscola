@@ -8,6 +8,7 @@ import android.app.Activity;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.media.MediaPlayer;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -25,6 +26,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,6 +48,8 @@ import it.polimi.ma.group07.briscola.model.StateBundle;
 import it.polimi.ma.group07.briscola.view.CardBackFragment;
 import it.polimi.ma.group07.briscola.view.CardViewFragment;
 
+import static it.polimi.ma.group07.briscola.MainActivity.backgroundMusic;
+import static it.polimi.ma.group07.briscola.MainActivity.context;
 import static java.security.AccessController.getContext;
 
 
@@ -54,7 +58,7 @@ public class GameActivity extends AppCompatActivity  {
     RelativeLayout gameView;
     LinearLayout surface;
     LinearLayout[] playerViews;
-    LinearLayout deckView;
+    RelativeLayout deckView;
     Button newGameButton;
     Button restartButton;
     Button movesButton;
@@ -68,15 +72,24 @@ public class GameActivity extends AppCompatActivity  {
     public boolean isReady;
     public CardViewFragment testFragment;
     private ArrayList<CardViewFragment> surfaceFragments;
+    private ArrayList<TextView> scoreViews;
     private ArrayList<ArrayList<CardViewFragment>> playerFragments;
     private CardViewFragment deckFragment;
     private CardViewFragment briscolaFragment;
-
+    private MediaPlayer playCardMusic;
+    private MediaPlayer dealCardMusic;
 
     @Override
     public void onStart(){
         super.onStart();
+        if(MainActivity.isMusicStopped())
+            MainActivity.startMusic();
         isActive=true;
+    }
+    @Override
+    public void onStop(){
+        MainActivity.stopMusic();
+        super.onStop();
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,7 +103,7 @@ public class GameActivity extends AppCompatActivity  {
         singlePlayer=getIntent().getExtras().getBoolean("singlePlayer");
         briscolaCard=(LinearLayout) findViewById(R.id.briscolaCard);
         deck=(RelativeLayout) findViewById(R.id.deck);
-        deckView=(LinearLayout) findViewById(R.id.deckView);
+        deckView=(RelativeLayout) findViewById(R.id.deckView);
 
         newGameButton=(Button) findViewById(R.id.newGameButton);
         newGameButton.setOnClickListener(new NewGameListener(GameActivity.this));
@@ -103,6 +116,9 @@ public class GameActivity extends AppCompatActivity  {
 
         playerViews=new LinearLayout[2];
 
+        scoreViews=new ArrayList<>();
+        scoreViews.add((TextView) findViewById(R.id.score1));
+        scoreViews.add((TextView) findViewById(R.id.score2));
         PileButtonListener pileButtonListener=new PileButtonListener(GameActivity.this);
 
         playerViews[0]=(LinearLayout)findViewById(R.id.player1View);
@@ -112,6 +128,8 @@ public class GameActivity extends AppCompatActivity  {
         Log.i("Game Activity","Views found");
         cardPressedListener=new CardPressedListener(GameActivity.this);
         playerFragments=new ArrayList<>();
+        playCardMusic= MediaPlayer.create(context, R.raw.play_card);
+        dealCardMusic= MediaPlayer.create(context, R.raw.deal_card);
 
         PlayerState state;
         //game just started
@@ -124,7 +142,9 @@ public class GameActivity extends AppCompatActivity  {
                 Coordinator.getInstance().setState(GameActivity.this, state);
                 String movesPerformed=getIntent().getExtras().getString("movesPerformed");
                 Coordinator.getInstance().setMoves(movesPerformed);
+                int scores[]={0,0};
                 startGame(state);
+                setScores(scores);
             }
             else{
                 controller=new ServerCoordinator();
@@ -181,6 +201,7 @@ public class GameActivity extends AppCompatActivity  {
     @Override
     public void onDestroy(){
         isActive=false;
+        MainActivity.stopMusic();
         controller.finishGame("abandon");
         super.onDestroy();
     }
@@ -347,6 +368,7 @@ public class GameActivity extends AppCompatActivity  {
                  frag = briscolaFragment;
             }
         }
+
         final CardViewFragment newFrag=new CardViewFragment();
         final int cardId = getResources().getIdentifier(name, "drawable", getPackageName());
         newFrag.setImageId(cardId);
@@ -406,6 +428,7 @@ public class GameActivity extends AppCompatActivity  {
             oa1.start();
         }
         translation.start();
+        onDealCardEffect();
     }
 
     /**
@@ -427,7 +450,6 @@ public class GameActivity extends AppCompatActivity  {
         surface.getLocationOnScreen(locationSurface);
         int[] locationPlayer=new int[2];
         playerViews[player].getLocationOnScreen(locationPlayer);
-
         playerHeight = playerViews[player].getHeight();
         surfaceHeight = surface.getHeight();
         playerWidth = playerViews[player].getWidth();
@@ -464,6 +486,7 @@ public class GameActivity extends AppCompatActivity  {
             oa1.start();
         }
             translation.start();
+        onPlayCardEffect();
     }
 
     /**
@@ -479,6 +502,7 @@ public class GameActivity extends AppCompatActivity  {
             translationY=600;
         else
             translationY=-600;
+
         final ObjectAnimator animation1 = ObjectAnimator.ofFloat(surfaceFragments.get(0).getView(), "translationY", 0.F, (int) translationY);
         final ObjectAnimator animation2 = ObjectAnimator.ofFloat(surfaceFragments.get(1).getView(), "translationY", 0.F, (int) translationY);
         final AnimatorSet translation = new AnimatorSet();
@@ -499,10 +523,30 @@ public class GameActivity extends AppCompatActivity  {
             }
         });
         translation.start();
+        onPlayCardEffect();
+
     }
+
+
 
 
     public int indexOfFragment(CardViewFragment card) {
         return playerFragments.get(0).indexOf(card);
+    }
+    private void onPlayCardEffect() {
+        if(playCardMusic!=null)
+            playCardMusic.release();
+        playCardMusic= MediaPlayer.create(context, R.raw.play_card);
+        playCardMusic.start();
+    }
+    private void onDealCardEffect() {
+        if(dealCardMusic!=null)
+            dealCardMusic.release();
+        dealCardMusic= MediaPlayer.create(context, R.raw.deal_card);
+        dealCardMusic.start();
+    }
+    public void setScores(int scores[]){
+        for(int i=0;i<scoreViews.size();i++)
+            scoreViews.get(i).setText(scores[i]+"");
     }
 }
