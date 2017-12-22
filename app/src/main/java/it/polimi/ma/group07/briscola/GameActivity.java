@@ -8,6 +8,7 @@ import android.app.Activity;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -40,6 +41,7 @@ import it.polimi.ma.group07.briscola.controller.PileButtonListener;
 import it.polimi.ma.group07.briscola.controller.RestartListener;
 import it.polimi.ma.group07.briscola.controller.SendDataListener;
 import it.polimi.ma.group07.briscola.controller.ServerCoordinator;
+import it.polimi.ma.group07.briscola.controller.SettingsButtonListener;
 import it.polimi.ma.group07.briscola.model.Briscola;
 
 import it.polimi.ma.group07.briscola.model.Player;
@@ -55,6 +57,12 @@ import static java.security.AccessController.getContext;
 
 public class GameActivity extends AppCompatActivity  {
 
+    private static String MY_PREFERENCES="BRISCOLA_PREFERENCES";
+    private static String MUSIC_PREFERENCES="MUSIC";
+    private static String SOUND_EFFECTS_PREFERENCES="SOUND_EFFECTS";
+    private static String DECK_SKIN_PREFERENCES="DECK_SKIN";
+    private static String GAME_THEME_PREFERENCES="GAME_THEME";
+
     RelativeLayout gameView;
     LinearLayout surface;
     LinearLayout[] playerViews;
@@ -62,6 +70,7 @@ public class GameActivity extends AppCompatActivity  {
     Button newGameButton;
     Button restartButton;
     Button movesButton;
+    Button settingsButton;
     LinearLayout briscolaCard;
     RelativeLayout deck;
     CardPressedListener cardPressedListener;
@@ -78,11 +87,16 @@ public class GameActivity extends AppCompatActivity  {
     private CardViewFragment briscolaFragment;
     private MediaPlayer playCardMusic;
     private MediaPlayer dealCardMusic;
-
+    private boolean backgroundMusicOn,soundEffectsOn;
+    private String deckSkin;
     @Override
     public void onStart(){
         super.onStart();
-        if(MainActivity.isMusicStopped())
+        SharedPreferences prefs = getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE);
+        backgroundMusicOn = prefs.getBoolean(MUSIC_PREFERENCES, true);
+        soundEffectsOn= prefs.getBoolean(SOUND_EFFECTS_PREFERENCES, true); //0 is the default value.
+        deckSkin=prefs.getString(DECK_SKIN_PREFERENCES, "back1");
+        if(MainActivity.isMusicStopped()&&backgroundMusicOn)
             MainActivity.startMusic();
         isActive=true;
     }
@@ -105,6 +119,8 @@ public class GameActivity extends AppCompatActivity  {
         deck=(RelativeLayout) findViewById(R.id.deck);
         deckView=(RelativeLayout) findViewById(R.id.deckView);
 
+        settingsButton=(Button) findViewById(R.id.settingsButton);
+        settingsButton.setOnClickListener(new SettingsButtonListener(GameActivity.this));
         newGameButton=(Button) findViewById(R.id.newGameButton);
         newGameButton.setOnClickListener(new NewGameListener(GameActivity.this));
 
@@ -131,10 +147,17 @@ public class GameActivity extends AppCompatActivity  {
         playCardMusic= MediaPlayer.create(context, R.raw.play_card);
         dealCardMusic= MediaPlayer.create(context, R.raw.deal_card);
 
+        SharedPreferences prefs = getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE);
+        deckSkin="back1";
+        backgroundMusicOn = prefs.getBoolean(MUSIC_PREFERENCES, true);
+        soundEffectsOn= prefs.getBoolean(SOUND_EFFECTS_PREFERENCES, true); //0 is the default value.
+        deckSkin=prefs.getString(DECK_SKIN_PREFERENCES, "back1");
+
         PlayerState state;
         //game just started
         if(savedInstanceState == null){
             if(singlePlayer) {
+
                 Briscola game=Briscola.getInstance();
                 state=game.getPlayerState(0);
                 String startConfiguration=getIntent().getExtras().getString("startConfiguration");
@@ -143,8 +166,11 @@ public class GameActivity extends AppCompatActivity  {
                 String movesPerformed=getIntent().getExtras().getString("movesPerformed");
                 Coordinator.getInstance().setMoves(movesPerformed);
                 int scores[]={0,0};
+                Log.i("Single Player","Starting Game ");
                 startGame(state);
+                Log.i("Single Player","Game Started");
                 setScores(scores);
+
             }
             else{
                 controller=new ServerCoordinator();
@@ -208,7 +234,7 @@ public class GameActivity extends AppCompatActivity  {
     public void buildInterface(PlayerState state) {
         if(!isActive)
             return;
-        int backCardId = getResources().getIdentifier("back1", "drawable",
+        int backCardId = getResources().getIdentifier(deckSkin, "drawable",
                 getPackageName());
         isReady=false;
         flushInterface();
@@ -260,7 +286,8 @@ public class GameActivity extends AppCompatActivity  {
         public void startGame(PlayerState state) {
             isReady=false;
             int opponentSize=state.opponentHandSize[0];
-            int backCardId = getResources().getIdentifier("back1", "drawable",
+            Log.i("deck skin","Current skin:"+deckSkin);
+            int backCardId = getResources().getIdentifier(deckSkin, "drawable",
                     getPackageName());
             CardViewFragment c=new CardViewFragment();
             c.setImageId(backCardId);
@@ -352,11 +379,11 @@ public class GameActivity extends AppCompatActivity  {
             Log.i("Dealing","Dealing "+cards.get(0).toLowerCase());
         }
         else
-            name="back1";
+            name=deckSkin;
         final CardViewFragment frag;
         if(!isLastDraw) {
              frag = new CardViewFragment();
-            final int resourceId = getResources().getIdentifier("back1", "drawable", getPackageName());
+            final int resourceId = getResources().getIdentifier(deckSkin, "drawable", getPackageName());
             frag.setImageId(resourceId);
         }
         else
@@ -534,12 +561,16 @@ public class GameActivity extends AppCompatActivity  {
         return playerFragments.get(0).indexOf(card);
     }
     private void onPlayCardEffect() {
+        if(!soundEffectsOn)
+            return;
         if(playCardMusic!=null)
             playCardMusic.release();
         playCardMusic= MediaPlayer.create(context, R.raw.play_card);
         playCardMusic.start();
     }
     private void onDealCardEffect() {
+        if(!soundEffectsOn)
+            return;
         if(dealCardMusic!=null)
             dealCardMusic.release();
         dealCardMusic= MediaPlayer.create(context, R.raw.deal_card);
@@ -548,5 +579,50 @@ public class GameActivity extends AppCompatActivity  {
     public void setScores(int scores[]){
         for(int i=0;i<scoreViews.size();i++)
             scoreViews.get(i).setText(scores[i]+"");
+    }
+    public void changeCardsSkin(String newSkin){
+        deckSkin=newSkin;
+        int backCardId = getResources().getIdentifier(deckSkin, "drawable",
+                getPackageName());
+        for(CardViewFragment c:playerFragments.get(1))
+            c.changeImageResource(backCardId);
+        if(deckFragment!=null)
+            deckFragment.changeImageResource(backCardId);
+    }
+
+    public String getDeckSkin() {
+        return deckSkin;
+    }
+
+    public boolean isMusicOn() {
+        return backgroundMusicOn;
+    }
+
+    public boolean isSoundEffectOn() {
+        return soundEffectsOn;
+    }
+
+    public void setSoundEffects(boolean mode) {
+        soundEffectsOn=mode;
+        SharedPreferences.Editor editor = getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE).edit();
+        editor.putBoolean(SOUND_EFFECTS_PREFERENCES,mode);
+        editor.apply();
+    }
+    public void setMusic(boolean mode) {
+        backgroundMusicOn=mode;
+        if(mode)
+            MainActivity.startMusic();
+        else
+            MainActivity.stopMusic();
+        SharedPreferences.Editor editor = getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE).edit();
+        editor.putBoolean(MUSIC_PREFERENCES,mode);
+        editor.apply();
+    }
+    public void setDeckSkin(String deckSkin){
+        this.deckSkin=deckSkin;
+        changeCardsSkin(deckSkin);
+        SharedPreferences.Editor editor = getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE).edit();
+        editor.putString(DECK_SKIN_PREFERENCES,deckSkin);
+        editor.apply();
     }
 }

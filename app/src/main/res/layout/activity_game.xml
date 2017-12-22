@@ -6,7 +6,17 @@
     android:layout_height="match_parent"
     tools:context="it.polimi.ma.group07.briscola.GameActivity"
     android:background="@drawable/wood_table">
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/settingsButton"
+            android:layout_width="@dimen/settings_icon_height"
+            android:layout_height="@dimen/settings_icon_height"
+            android:background="@drawable/settings_icon"
 
+            />
+    </RelativeLayout>
     <RelativeLayout
         android:id="@+id/gameView"
         android:layout_width="368dp"
@@ -16,23 +26,45 @@
         tools:layout_editor_absoluteY="8dp"
         android:clipChildren="false"
         android:clipToPadding="false">
-
         <LinearLayout
-            android:id="@+id/player2View"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/card_hidden_height"
+            android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:orientation="horizontal"
-            android:gravity="center"
             android:clipChildren="false"
-            android:clipToPadding="false">
+            android:clipToPadding="false"
+            >
+
+            <LinearLayout
+            android:id="@+id/player2View"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/card_height"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
         </LinearLayout>
+            <TextView
+                android:id="@+id/score2"
+                android:layout_width="@dimen/text_view_height"
+                android:layout_height="@dimen/text_view_height"
+                android:background="@drawable/text_view_circle"
+                android:textAlignment="center"
+                android:gravity="center"
+                android:textColor="@color/greenDark"
+                android:textSize="@dimen/point_view_height"
+                android:layout_marginTop="3dp"
+                android:layout_marginEnd="6dp"/>
+
+        </LinearLayout>
+
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="@dimen/surface_height"
-            android:layout_above="@+id/player1View"
+            android:layout_above="@+id/player1"
             android:layout_toEndOf="@+id/linearLayout"
             android:clipChildren="false"
             android:clipToPadding="false">
@@ -45,6 +77,7 @@
                 android:gravity="center"
                 android:clipChildren="false"
                 android:clipToPadding="false"></LinearLayout>
+
             <RelativeLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -56,14 +89,7 @@
                 android:clipChildren="false"
                 android:clipToPadding="false"
                >
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/score2"
-                    android:textAlignment="center"
-                    android:textColor="@color/greenDark"
-                    android:textSize="@dimen/point_view_height"
-                    android:layout_alignParentTop="true"/>
+
                 <RelativeLayout
                     android:id="@+id/deck"
                     android:layout_width="@dimen/card_width"
@@ -71,7 +97,8 @@
                     android:orientation="horizontal"
                     android:clipChildren="false"
                     android:clipToPadding="false"
-                    android:layout_below="@+id/score2"
+                    android:layout_alignParentTop="true"
+
                    >
                     </RelativeLayout>
                 <LinearLayout
@@ -79,26 +106,26 @@
                     android:layout_width="@dimen/card_width"
                     android:layout_height="@dimen/card_height"
                     android:orientation="horizontal"
-                    android:layout_above="@+id/score1"
+                    android:layout_alignParentBottom="true"
                     >
                     </LinearLayout>
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:id="@+id/score1"
-                    android:textAlignment="center"
-                    android:textColor="@color/greenDark"
-                    android:textSize="@dimen/point_view_height"
-                    />
+
             </RelativeLayout>
         </RelativeLayout>
 
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:id="@+id/player1">
         <LinearLayout
             android:id="@+id/player1View"
             android:layout_width="match_parent"
             android:layout_height="@dimen/card_height"
-            android:layout_alignParentBottom="true"
             android:layout_weight="1"
             android:gravity="center"
             android:orientation="horizontal"
@@ -106,10 +133,21 @@
             android:clipToPadding="false"
             >
 
-
-
         </LinearLayout>
-
+            <TextView
+                android:layout_width="@dimen/text_view_height"
+                android:layout_height="@dimen/text_view_height"
+                android:background="@drawable/text_view_circle"
+                android:id="@+id/score1"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:textColor="@color/greenDark"
+                android:textSize="@dimen/point_view_height"
+                android:layout_gravity="bottom"
+                android:layout_marginTop="3dp"
+                android:layout_marginEnd="6dp"
+                />
+        </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"

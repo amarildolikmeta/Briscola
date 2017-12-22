@@ -630,8 +630,6 @@ public class Briscola {
             {
                 roundFinished=true;
                 playableState=false;
-                if(players.get(currentPlayer).getHand().size()==0)
-                    gameFinished=true;
             }
             incrementCurrentPlayer();
             return c.toString();
@@ -665,6 +663,8 @@ public class Briscola {
             surface.clear();
             dealingIndex=currentPlayer;
             roundFinished=false;
+            if(players.get(currentPlayer).getHand().size()==0)
+                gameFinished=true;
             return true;
         }
         else

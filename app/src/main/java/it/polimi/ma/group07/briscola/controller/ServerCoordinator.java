@@ -97,7 +97,7 @@ public class ServerCoordinator implements GameController {
     }
     public void finishGame(String reason){
         if(state!=null) {
-            Log.i("DELETE", "Terminating game");
+            Log.i("Server Coordinator", "Terminating game");
             getRepository().saveOnlineGame(new OnlineGame(OnlineGame.TERMINATED));
             DeleteGameTask task = new DeleteGameTask(activity);
             task.execute(gameURL, reason);
