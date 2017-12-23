@@ -85,7 +85,8 @@ public class Coordinator implements GameController {
             }
             message+=""+Briscola.getInstance().getPlayers().get(0).getScore()+" points";
             alertDialog.setMessage(message);
-
+            //delete previous saved game if any
+            getRepository().deleteCurrentGame();
             getRepository().saveLocalGame(new LocalGame(startConfiguration,movesPerformed,state));
             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                     new DialogInterface.OnClickListener() {

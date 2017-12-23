@@ -446,6 +446,7 @@ public class ServerCoordinator implements GameController {
                     brain=new Brain();
                     brain.setTrumpSuit(briscola.getSuit());
                     activity.startGame(state);
+                    activity.setScores(scores);
                     if(!yourTurn)
                         pollServer();
                 }catch (JSONException e){

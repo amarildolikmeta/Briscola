@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import it.polimi.ma.group07.briscola.GameActivity;
@@ -25,14 +26,19 @@ import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 public class SettingsButtonListener implements View.OnClickListener {
     private GameActivity activity;
     private ArrayList<Integer> skins;
+    private ArrayList<String> skinNames;
+    ArrayList<ImageView> images;
     int musicOnResourceId,musicOffResourceId,soundEffectOnResourceId,soundEffectOffResourceId;
     boolean soundEffectsOn,musicOn;
     public SettingsButtonListener(GameActivity activity){
         this.activity=activity;
         skins=new ArrayList<>();
-        for(int i=1;i<5;i++)
+        skinNames=new ArrayList<>();
+        for(int i=1;i<5;i++){
             skins.add(activity.getResources().getIdentifier("back"+i, "drawable",
                     activity.getPackageName()));
+            skinNames.add("back"+i);
+        }
         musicOnResourceId=activity.getResources().getIdentifier("music_on", "drawable",
                 activity.getPackageName());
         musicOffResourceId=activity.getResources().getIdentifier("music_off", "drawable",
@@ -55,21 +61,30 @@ public class SettingsButtonListener implements View.OnClickListener {
         View popupView = inflater.inflate(R.layout.settings_window, null);
 
         // create the popup window
-        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        int width = LinearLayout.LayoutParams.MATCH_PARENT;
         int height = LinearLayout.LayoutParams.WRAP_CONTENT;
         boolean focusable = true; // lets taps outside the popup also dismiss it
         final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
         LinearLayout gallery=(LinearLayout) popupView.findViewById(R.id.deck_skins);
-        ImageView image=new ImageView(activity);
+        ImageView selectedImage=new ImageView(activity);
+        ImageView image;
         int currentSkin=activity.getResources().getIdentifier(activity.getDeckSkin(), "drawable",
                 activity.getPackageName());
-        image.setImageResource(currentSkin);
-        gallery.addView(image);
+        selectedImage.setImageResource(currentSkin);
+        images=new ArrayList<>();
+        gallery.addView(selectedImage);
+        deckSkinListener listener=new deckSkinListener();
         for(int i=0;i<skins.size();i++){
             if(skins.get(i)!=currentSkin){
                 image=new ImageView(activity);
                 image.setImageResource(skins.get(i));
                 gallery.addView(image);
+                images.add(image);
+                image.setOnClickListener(listener);
+            }
+            else {
+                images.add(selectedImage);
+                selectedImage.setOnClickListener(listener);
             }
         }
         final Button soundEffectButton=(Button)popupView.findViewById(R.id.sound_effects_button);
@@ -123,5 +138,13 @@ public class SettingsButtonListener implements View.OnClickListener {
                 popupWindow.dismiss();
             }
         });
+    }
+    private class deckSkinListener implements View.OnClickListener{
+
+        @Override
+        public void onClick(View v) {
+            int index=images.indexOf(v);
+            activity.setDeckSkin(skinNames.get(index));
+        }
     }
 }
