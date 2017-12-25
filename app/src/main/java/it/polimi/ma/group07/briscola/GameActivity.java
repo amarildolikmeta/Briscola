@@ -102,8 +102,7 @@ public class GameActivity extends AppCompatActivity  {
         Log.i("Game Activity onStart","backgroundMusic"+backgroundMusicOn);
         if(backgroundMusicOn)
             MainActivity.startMusic();
-        else
-            MainActivity.stopMusic();
+
     }
     @Override
     public void onStop(){
