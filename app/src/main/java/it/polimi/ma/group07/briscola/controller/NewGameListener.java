@@ -3,6 +3,7 @@ package it.polimi.ma.group07.briscola.controller;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
+import android.widget.Toast;
 
 import it.polimi.ma.group07.briscola.GameActivity;
 import it.polimi.ma.group07.briscola.model.Briscola;
@@ -19,6 +20,9 @@ public class NewGameListener implements View.OnClickListener {
     }
     @Override
     public void onClick(View v) {
+        if(!activity.isReady||!activity.controller.isPlayable()){
+            Toast.makeText(activity,"Wait Your Turn",Toast.LENGTH_SHORT).show();
+            return;}
         AlertDialog.Builder alert = new AlertDialog.Builder(activity);
         alert.setTitle("New Game?");
         alert.setMessage("Are you sure you want to start a New Game?");
@@ -26,7 +30,7 @@ public class NewGameListener implements View.OnClickListener {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Coordinator.getInstance().onNewGame(activity);
+                activity.controller.onNewGame(activity);
                 dialog.dismiss();
             }
         });

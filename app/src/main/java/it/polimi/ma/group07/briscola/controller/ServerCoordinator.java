@@ -109,9 +109,14 @@ public class ServerCoordinator implements GameController {
         return DatabaseRepository.getInstance();
     }
 
-    @Override
+
     public void onUndo(GameActivity activity) {
         return;
+    }
+
+    @Override
+    public void onNewGame(GameActivity activity) {
+
     }
 
     @Override
@@ -306,6 +311,7 @@ public class ServerCoordinator implements GameController {
     public boolean isPlayable() {
         return playable;
     }
+
 
     @Override
     public PlayerState getState() {

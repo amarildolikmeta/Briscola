@@ -3,6 +3,7 @@ package it.polimi.ma.group07.briscola.controller;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
+import android.widget.Toast;
 
 import it.polimi.ma.group07.briscola.GameActivity;
 import it.polimi.ma.group07.briscola.model.Briscola;
@@ -23,6 +24,9 @@ public class RestartListener implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+        if(!activity.isReady||!activity.controller.isPlayable()){
+            Toast.makeText(activity,"Wait Your Turn",Toast.LENGTH_SHORT).show();
+            return;}
         AlertDialog.Builder alert = new AlertDialog.Builder(activity);
         alert.setTitle("Restart Game?");
         alert.setMessage("Are you sure you want to restart the game?");
@@ -31,7 +35,7 @@ public class RestartListener implements View.OnClickListener {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
-                Coordinator.getInstance().onRestart(activity);
+                ((Coordinator)activity.controller).onRestart(activity);
                 dialog.dismiss();
             }
         });

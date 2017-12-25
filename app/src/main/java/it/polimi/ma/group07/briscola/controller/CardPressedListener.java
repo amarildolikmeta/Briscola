@@ -29,7 +29,7 @@ public class CardPressedListener implements CardViewFragment.OnCardSelectedListe
 
     @Override
     public void onCardSelected(CardViewFragment card) {
-        if(Briscola.getInstance().isGameFinished())
+        if(Briscola.getInstance().isGameFinished()||!activity.isReady)
             return;
         View v=card.getView();
         PlayerState state=activity.controller.getState();

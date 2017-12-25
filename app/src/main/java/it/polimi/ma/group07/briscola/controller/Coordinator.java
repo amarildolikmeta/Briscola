@@ -146,26 +146,15 @@ public class Coordinator implements GameController {
     }
 
     public void onRestart(GameActivity activity){
-        try {
-            Briscola.getInstance().startFromConfiguration(startConfiguration);
-        } catch (InvalidCardDescriptionException e) {
-            e.printStackTrace();
-        } catch (InvalidGameStateException e) {
-            e.printStackTrace();
-        }
-        movesPerformed="";
-        state=Briscola.getInstance().getPlayerState(playerIndex);
-        activity.flushInterface();
-        activity.buildInterface(state);
+        activity.finish();
+        MainActivity.getInstance().resumeGame(startConfiguration,"");
     }
 
     public void onNewGame(GameActivity activity){
-        Briscola.getInstance().restart();
-        startConfiguration=Briscola.getInstance().toString();
-        movesPerformed="";
-        state=Briscola.getInstance().getPlayerState(playerIndex);
-        activity.flushInterface();
-        activity.buildInterface(state);
+        activity.finish();
+        //domn't save the finished game
+        getRepository().deleteCurrentGame();
+        MainActivity.getInstance().startNewGame();
     }
 
     public PlayerState getState(){
@@ -197,9 +186,28 @@ public class Coordinator implements GameController {
         return DatabaseRepository.getInstance();
     }
 
-    @Override
-    public void onUndo(GameActivity activity) {
 
+    public void onUndo(GameActivity activity) {
+        Log.i("Undo","moves Performed:"+movesPerformed);
+        while(true){
+            movesPerformed=movesPerformed.substring(0,movesPerformed.length()-1);
+            try {
+                Briscola.getInstance().moveTest(startConfiguration,movesPerformed);
+                //check If it's your turn to play
+                if(Briscola.getInstance().getCurrentPlayer()==0){
+                    activity.flushInterface();
+                    state=Briscola.getInstance().getPlayerState(0);
+                    activity.buildInterface(state);
+                    Log.i("Building Interface","State:"+Briscola.getInstance().toString());
+                    activity.setScores(Briscola.getInstance().getScores());
+                    return;
+                }
+            } catch (InvalidCardDescriptionException e) {
+                e.printStackTrace();
+            } catch (InvalidGameStateException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public String getStartConfiguration() {

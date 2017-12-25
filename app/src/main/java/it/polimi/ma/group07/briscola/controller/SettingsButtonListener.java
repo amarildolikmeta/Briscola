@@ -1,18 +1,17 @@
 package it.polimi.ma.group07.briscola.controller;
 
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
-
-import java.lang.reflect.Array;
+import android.view.ViewGroup.LayoutParams;
 import java.util.ArrayList;
+
 
 import it.polimi.ma.group07.briscola.GameActivity;
 import it.polimi.ma.group07.briscola.R;
@@ -53,7 +52,7 @@ public class SettingsButtonListener implements View.OnClickListener {
     public void onClick(View v) {
         // get a reference to the already created main layout
         RelativeLayout mainLayout = (RelativeLayout)
-              activity.findViewById(R.id.gameView);
+              activity.findViewById(R.id.settingLayout);
 
         // inflate the layout of the popup window
         LayoutInflater inflater = (LayoutInflater)
@@ -73,13 +72,22 @@ public class SettingsButtonListener implements View.OnClickListener {
         selectedImage.setImageResource(currentSkin);
         images=new ArrayList<>();
         gallery.addView(selectedImage);
+        int dimensionInPixel = 100;
+        int dimensionInDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dimensionInPixel, activity.getResources().getDisplayMetrics());
+        selectedImage.getLayoutParams().height = dimensionInDp;
+        selectedImage.getLayoutParams().width = dimensionInDp;
+        selectedImage.requestLayout();
         deckSkinListener listener=new deckSkinListener();
+
         for(int i=0;i<skins.size();i++){
             if(skins.get(i)!=currentSkin){
                 image=new ImageView(activity);
                 image.setImageResource(skins.get(i));
                 gallery.addView(image);
                 images.add(image);
+                image.getLayoutParams().height = dimensionInDp;
+                image.getLayoutParams().width = dimensionInDp;
+                image.requestLayout();
                 image.setOnClickListener(listener);
             }
             else {
@@ -130,6 +138,7 @@ public class SettingsButtonListener implements View.OnClickListener {
             }
         });
         // show the popup window
+        popupWindow.setAnimationStyle(R.style.Animations_popup);
         popupWindow.showAtLocation(mainLayout, Gravity.CENTER, 0, 0);
         Button dismiss=(Button) popupView.findViewById(R.id.dismissButton);
         dismiss.setOnClickListener(new View.OnClickListener() {

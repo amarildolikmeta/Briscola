@@ -42,6 +42,7 @@ import it.polimi.ma.group07.briscola.controller.RestartListener;
 import it.polimi.ma.group07.briscola.controller.SendDataListener;
 import it.polimi.ma.group07.briscola.controller.ServerCoordinator;
 import it.polimi.ma.group07.briscola.controller.SettingsButtonListener;
+import it.polimi.ma.group07.briscola.controller.UndoListener;
 import it.polimi.ma.group07.briscola.model.Briscola;
 
 import it.polimi.ma.group07.briscola.model.Player;
@@ -67,17 +68,18 @@ public class GameActivity extends AppCompatActivity  {
     LinearLayout surface;
     LinearLayout[] playerViews;
     RelativeLayout deckView;
+    RelativeLayout settingsLayout;
     Button newGameButton;
     Button restartButton;
-    Button movesButton;
     Button settingsButton;
+    Button undoButton;
     LinearLayout briscolaCard;
+    LinearLayout gameOptions;
     RelativeLayout deck;
     CardPressedListener cardPressedListener;
     boolean singlePlayer;
     FragmentManager fragmentManager;
     public GameController controller;
-    private static boolean isActive;
     public boolean isReady;
     public CardViewFragment testFragment;
     private ArrayList<CardViewFragment> surfaceFragments;
@@ -95,11 +97,13 @@ public class GameActivity extends AppCompatActivity  {
         super.onStart();
         SharedPreferences prefs = getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE);
         backgroundMusicOn = prefs.getBoolean(MUSIC_PREFERENCES, true);
-        soundEffectsOn= prefs.getBoolean(SOUND_EFFECTS_PREFERENCES, true); //0 is the default value.
+        soundEffectsOn= prefs.getBoolean(SOUND_EFFECTS_PREFERENCES, true);
         deckSkin=prefs.getString(DECK_SKIN_PREFERENCES, "back1");
-        if(MainActivity.isMusicStopped()&&backgroundMusicOn)
+        Log.i("Game Activity onStart","backgroundMusic"+backgroundMusicOn);
+        if(backgroundMusicOn)
             MainActivity.startMusic();
-        isActive=true;
+        else
+            MainActivity.stopMusic();
     }
     @Override
     public void onStop(){
@@ -124,15 +128,13 @@ public class GameActivity extends AppCompatActivity  {
         settingsButton.setOnClickListener(new SettingsButtonListener(GameActivity.this));
         newGameButton=(Button) findViewById(R.id.newGameButton);
         newGameButton.setOnClickListener(new NewGameListener(GameActivity.this));
-
+        undoButton=(Button) findViewById(R.id.undoButton);
+        undoButton.setOnClickListener(new UndoListener(GameActivity.this));
         restartButton=(Button) findViewById(R.id.restartButton);
         restartButton.setOnClickListener(new RestartListener(GameActivity.this));
 
-        movesButton=(Button) findViewById(R.id.movesButton);
-        movesButton.setOnClickListener(new SendDataListener(GameActivity.this));
-
         playerViews=new LinearLayout[2];
-
+        gameOptions=(LinearLayout) findViewById(R.id.gameOptions);
         scoreViews=new ArrayList<>();
         scoreViews.add((TextView) findViewById(R.id.score1));
         scoreViews.add((TextView) findViewById(R.id.score2));
@@ -140,6 +142,8 @@ public class GameActivity extends AppCompatActivity  {
 
         playerViews[0]=(LinearLayout)findViewById(R.id.player1View);
         playerViews[1]=(LinearLayout)findViewById(R.id.player2View);
+
+        settingsLayout=(RelativeLayout) findViewById(R.id.settingLayout);
 
         surface=(LinearLayout) findViewById(R.id.surface);
         Log.i("Game Activity","Views found");
@@ -166,7 +170,7 @@ public class GameActivity extends AppCompatActivity  {
                 Coordinator.getInstance().setState(GameActivity.this, state);
                 String movesPerformed=getIntent().getExtras().getString("movesPerformed");
                 Coordinator.getInstance().setMoves(movesPerformed);
-                int scores[]={0,0};
+                int scores[]=Briscola.getInstance().getScores();
                 Log.i("Single Player","Starting Game ");
                 startGame(state);
                 Log.i("Single Player","Game Started");
@@ -174,6 +178,11 @@ public class GameActivity extends AppCompatActivity  {
 
             }
             else{
+                //remove undo and new game
+                gameView.removeView(gameOptions);
+                LinearLayout bottomView=(LinearLayout) findViewById(R.id.player1);
+                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)bottomView.getLayoutParams();
+                params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
                 controller=new ServerCoordinator();
                 try {
                     ((ServerCoordinator)controller).startGame(GameActivity.this);
@@ -227,19 +236,19 @@ public class GameActivity extends AppCompatActivity  {
     }
     @Override
     public void onDestroy(){
-        isActive=false;
         MainActivity.stopMusic();
         controller.finishGame("abandon");
         super.onDestroy();
     }
     public void buildInterface(PlayerState state) {
-        if(!isActive)
-            return;
+
         int backCardId = getResources().getIdentifier(deckSkin, "drawable",
                 getPackageName());
         isReady=false;
         flushInterface();
         int opponentSize=state.opponentHandSize[0];
+        playerFragments=new ArrayList<>();
+        playerFragments.add(new ArrayList<CardViewFragment>());
         for (int j = 0; j < state.hand.size(); j++) {
             String name = "c" + state.hand.get(j).toString().toLowerCase();
             int resourceId = getResources().getIdentifier(name, "drawable",
@@ -250,14 +259,14 @@ public class GameActivity extends AppCompatActivity  {
             fragmentManager.beginTransaction().add(playerViews[0].getId(), card).commitNow();
             playerFragments.get(0).add(card);
         }
-
+        playerFragments.add(new ArrayList<CardViewFragment>());
         for (int j = 0; j < opponentSize; j++) {
                 CardViewFragment card = new CardViewFragment();
                 card.setImageId(backCardId);
                 fragmentManager.beginTransaction().add(playerViews[1].getId(), card).commitNow();
                 playerFragments.get(1).add(card);
         }
-
+        surfaceFragments=new ArrayList<>();
         for (int j = 0; j < state.surface.size(); j++) {
             String name = "c" + state.surface.get(j).toString().toLowerCase();
             int resourceId = getResources().getIdentifier(name, "drawable",
@@ -265,12 +274,13 @@ public class GameActivity extends AppCompatActivity  {
             CardViewFragment card = new CardViewFragment();
             card.setImageId(resourceId);
             fragmentManager.beginTransaction().add(surface.getId(), card).commitNow();
+            surfaceFragments.add(card);
         }
-        if (state.deckSize > 1) {
-            CardBackFragment card = new CardBackFragment();
-            fragmentManager.beginTransaction().add(deck.getId(), card).commitNow();
-            Log.i("Build interfaace", "Deck");
-        }
+        if(state.deckSize>1){
+        CardViewFragment c=new CardViewFragment();
+        c.setImageId(backCardId);
+        fragmentManager.beginTransaction().add(deck.getId(),c).commitNow();
+        deckFragment=c;}
 
         if (state.deckSize > 0) {
             String name = "c" + state.briscola.toLowerCase();
@@ -280,7 +290,7 @@ public class GameActivity extends AppCompatActivity  {
             card.setOnCardSelectedListener(null);
             card.setImageId(resourceId);
             fragmentManager.beginTransaction().add(briscolaCard.getId(), card).commitNow();
-            Log.i("Build interfaace", "Briscola");
+            briscolaFragment=card;
         }
         isReady=true;
     }
@@ -351,7 +361,6 @@ public class GameActivity extends AppCompatActivity  {
                 fragmentManager.beginTransaction().add(briscolaCard.getId(),card).commitNow();
                 briscolaFragment=card;
                 */
-                isReady=true;
     }
 
     private void fillSurface(final ArrayList<String> surface) {
@@ -417,8 +426,6 @@ public class GameActivity extends AppCompatActivity  {
         onDealCardEffect();
     }
     public void flushInterface(){
-        if (!isActive)
-            return;
         Log.i("Flushing Interface","Flushing");
         List<Fragment> al = getSupportFragmentManager().getFragments();
         if (al == null) {
@@ -582,6 +589,7 @@ public class GameActivity extends AppCompatActivity  {
             getSupportFragmentManager().beginTransaction().remove(frag).commit();
             getSupportFragmentManager().beginTransaction().add(briscolaCard.getId(), newFrag).commit();
             briscolaFragment=newFrag;
+            isReady=true;
         }
         });
             final ObjectAnimator oa1 = ObjectAnimator.ofFloat(view, "scaleX", 1f, 0f);
@@ -621,13 +629,16 @@ public class GameActivity extends AppCompatActivity  {
         int[] locationSurface = new int[2];
         surface.getLocationOnScreen(locationSurface);
         int[] locationPlayer=new int[2];
-        playerViews[player].getLocationOnScreen(locationPlayer);
+        fragment.getView().getLocationOnScreen(locationPlayer);
         playerHeight = playerViews[player].getHeight();
         surfaceHeight = surface.getHeight();
-        playerWidth = playerViews[player].getWidth();
+        playerWidth = fragment.getView().getWidth();
         surfaceWidth = surface.getWidth();
         final double translationY=(surfaceHeight/2+locationSurface[1])-(playerHeight/2+locationPlayer[1]);
-        final double translationX=(surfaceWidth/2+locationSurface[0])-(playerWidth/2+locationPlayer[0]);
+        double translationX=(surfaceWidth/2+locationSurface[0])-(playerWidth/2+locationPlayer[0]);
+        //case its second card played
+        if(surfaceFragments.size()>0)
+            translationX+=playerWidth;
         final ObjectAnimator animationY = ObjectAnimator.ofFloat(view, "translationY", 0.F, (int) translationY);
         final ObjectAnimator animationX = ObjectAnimator.ofFloat(view, "translationX", 0.F, (int) translationX);
         final AnimatorSet translation = new AnimatorSet();

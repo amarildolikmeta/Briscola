@@ -7,15 +7,21 @@
     tools:context="it.polimi.ma.group07.briscola.GameActivity"
     android:background="@drawable/wood_table">
     <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:id="@+id/settingLayout"
+        android:layout_width="100dp"
+        android:layout_height="120dp">
         <Button
             android:id="@+id/settingsButton"
             android:layout_width="@dimen/settings_icon_height"
             android:layout_height="@dimen/settings_icon_height"
             android:background="@drawable/settings_icon"
-
+            android:layout_alignParentTop="true"
             />
+        <Button
+            android:layout_width="@dimen/settings_icon_height"
+            android:layout_height="@dimen/settings_icon_height"
+            android:background="@drawable/more"
+            android:layout_alignParentBottom="true"            />
     </RelativeLayout>
     <RelativeLayout
         android:id="@+id/gameView"
@@ -33,6 +39,7 @@
             android:orientation="horizontal"
             android:clipChildren="false"
             android:clipToPadding="false"
+            android:id="@+id/topPlayer"
             >
 
             <LinearLayout
@@ -53,7 +60,7 @@
                 android:background="@drawable/text_view_circle"
                 android:textAlignment="center"
                 android:gravity="center"
-                android:textColor="@color/greenDark"
+                android:textColor="@color/white"
                 android:textSize="@dimen/point_view_height"
                 android:layout_marginTop="3dp"
                 android:layout_marginEnd="6dp"/>
@@ -65,7 +72,6 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/surface_height"
             android:layout_above="@+id/player1"
-            android:layout_toEndOf="@+id/linearLayout"
             android:clipChildren="false"
             android:clipToPadding="false">
 
@@ -117,7 +123,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
+            android:layout_above="@+id/gameOptions"
             android:orientation="horizontal"
             android:clipChildren="false"
             android:clipToPadding="false"
@@ -141,7 +147,7 @@
                 android:id="@+id/score1"
                 android:gravity="center"
                 android:textAlignment="center"
-                android:textColor="@color/greenDark"
+                android:textColor="@color/white"
                 android:textSize="@dimen/point_view_height"
                 android:layout_gravity="bottom"
                 android:layout_marginTop="3dp"
@@ -149,35 +155,64 @@
                 />
         </LinearLayout>
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_gravity="center"
-            android:layout_marginTop="50dp"
-            android:layout_weight="1"
-            android:gravity="center|bottom"
-            android:visibility="gone"
-            android:id="@+id/linearLayout">
-
-            <Button
-                android:id="@+id/newGameButton"
-                android:layout_width="wrap_content"
+            android:orientation="horizontal" android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/gameOptions">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:text="New Game" />
-
-            <Button
-                android:id="@+id/restartButton"
-                android:layout_width="wrap_content"
+                android:orientation="vertical">
+                <Button
+                    android:id="@+id/undoButton"
+                    android:layout_width="@dimen/undo_button_dimen"
+                    android:layout_height="@dimen/undo_button_dimen"
+                    android:background="@drawable/undo_icon"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Undo"
+                    android:textColor="@color/white"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:text="Restart" />
+                android:orientation="vertical">
+                <Button
+                    android:id="@+id/restartButton"
+                    android:layout_width="@dimen/undo_button_dimen"
+                    android:layout_height="@dimen/undo_button_dimen"
+                    android:background="@drawable/restart_icon"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Restart"
+                    android:textColor="@color/white"/>
 
-            <Button
-                android:id="@+id/movesButton"
-                android:layout_width="wrap_content"
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:text="Send Data" />
+                android:orientation="vertical">
+                <Button
+                    android:id="@+id/newGameButton"
+                    android:layout_width="@dimen/undo_button_dimen"
+                    android:layout_height="@dimen/undo_button_dimen"
+                    android:background="@drawable/new_game_icon"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="New Game"
+                    android:textColor="@color/white"/>
+            </LinearLayout>
+
         </LinearLayout>
 
     </RelativeLayout>

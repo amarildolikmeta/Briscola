@@ -18,8 +18,8 @@ public interface GameController {
     void finishGame(String reason);
     DataRepository getRepository();
 
-    void onUndo(GameActivity activity);
-
+    void onNewGame(GameActivity activity);
     void onMovePerformed(GameActivity activity);
     boolean isPlayable();
+
 }

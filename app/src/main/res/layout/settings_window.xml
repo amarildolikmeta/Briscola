@@ -6,7 +6,7 @@
     android:background="@color/white"
     android:orientation="vertical">
     <ImageView android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="100dp"
         android:layout_gravity="center"
         android:src="@drawable/settings_header">
 
@@ -17,53 +17,67 @@
         android:layout_gravity="center"
         android:gravity="center"
         android:textColor="@color/blueVeryLight"
-        android:text="Deck Skin"/>
+        android:text="Deck Skin"
+        android:textSize="@dimen/settings_text_size"/>
     <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@color/black">
+        android:layout_width="250dp"
+        android:layout_height="130dp"
+        android:background="@drawable/poker_table"
+        android:layout_gravity="center">
         <LinearLayout
             android:id="@+id/deck_skins"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingTop="2dp"/>
+            android:paddingTop="2dp"
+            />
     </HorizontalScrollView>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        >
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/music_textview_width"
             android:layout_height="wrap_content"
-            android:textAlignment="viewStart"
-            android:text="Music"/>
+            android:textAlignment="center"
+            android:textColor="@color/blueVeryLight"
+            android:text="Music"
+            android:textSize="@dimen/settings_text_size"/>
         <Button
             android:id="@+id/music_button"
             android:layout_width="@dimen/sound_button_width"
             android:layout_height="@dimen/sound_button_width"
-            android:background="@drawable/music_on"/>
+            android:background="@drawable/music_on"
+            android:layout_marginStart="100dp"
+            />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginTop="20dp">
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/music_textview_width"
             android:layout_height="wrap_content"
-            android:textAlignment="viewStart"
-            android:text="Sound"/>
+            android:textAlignment="center"
+            android:textColor="@color/blueVeryLight"
+            android:text="Sound"
+            android:textSize="@dimen/settings_text_size"/>
         <Button
             android:id="@+id/sound_effects_button"
             android:layout_width="@dimen/sound_button_width"
             android:layout_height="@dimen/sound_button_width"
-            android:background="@drawable/effects_on"/>
+            android:background="@drawable/effects_on"
+            android:layout_marginStart="100dp"/>
     </LinearLayout>
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Dismiss"
+        android:layout_gravity="center"
+        android:gravity="center"
         android:id="@+id/dismissButton"/>
 
 </LinearLayout>
