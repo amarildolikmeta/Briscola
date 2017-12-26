@@ -186,6 +186,10 @@ public class ServerCoordinator implements GameController {
     @Override
     public void onMovePerformed(GameActivity activity) {
         switch(lastMove){
+            case "START_GAME":
+                if(!yourTurn)
+                    pollServer();
+                break;
             case "POST":
                 onPostFinished();
                 break;
@@ -587,6 +591,7 @@ public class ServerCoordinator implements GameController {
                     /**
                      * Play the animations and display the scores
                      */
+                    lastMove="START_GAME";
                     activity.startGame(state);
                     activity.setScores(scores);
                     //poll the server if it;s not your turn to play
