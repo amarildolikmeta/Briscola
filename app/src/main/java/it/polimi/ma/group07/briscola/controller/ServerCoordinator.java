@@ -187,6 +187,7 @@ public class ServerCoordinator implements GameController {
     public void onMovePerformed(GameActivity activity) {
         switch(lastMove){
             case "START_GAME":
+                //poll the server if it's not your turn to play
                 if(!yourTurn)
                     pollServer();
                 break;
@@ -594,9 +595,7 @@ public class ServerCoordinator implements GameController {
                     lastMove="START_GAME";
                     activity.startGame(state);
                     activity.setScores(scores);
-                    //poll the server if it;s not your turn to play
-                    if(!yourTurn)
-                        pollServer();
+
                 }catch (JSONException e){
                     e.printStackTrace();
                 } catch (InvalidCardDescriptionException e) {
