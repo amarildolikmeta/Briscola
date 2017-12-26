@@ -4,32 +4,24 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.app.Activity;
 
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.AnimationSet;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,76 +31,126 @@ import it.polimi.ma.group07.briscola.controller.GameController;
 import it.polimi.ma.group07.briscola.controller.NewGameListener;
 import it.polimi.ma.group07.briscola.controller.PileButtonListener;
 import it.polimi.ma.group07.briscola.controller.RestartListener;
-import it.polimi.ma.group07.briscola.controller.SendDataListener;
 import it.polimi.ma.group07.briscola.controller.ServerCoordinator;
 import it.polimi.ma.group07.briscola.controller.SettingsButtonListener;
+import it.polimi.ma.group07.briscola.controller.SettingsController;
 import it.polimi.ma.group07.briscola.controller.UndoListener;
 import it.polimi.ma.group07.briscola.model.Briscola;
 
-import it.polimi.ma.group07.briscola.model.Player;
 import it.polimi.ma.group07.briscola.model.PlayerState;
-import it.polimi.ma.group07.briscola.model.StateBundle;
-import it.polimi.ma.group07.briscola.view.CardBackFragment;
 import it.polimi.ma.group07.briscola.view.CardViewFragment;
 
-import static it.polimi.ma.group07.briscola.MainActivity.backgroundMusic;
 import static it.polimi.ma.group07.briscola.MainActivity.context;
-import static java.security.AccessController.getContext;
 
-
+/**
+ * Represents the game view for both game modes
+ * local and multiplayer
+ */
 public class GameActivity extends AppCompatActivity  {
 
     private static String MY_PREFERENCES="BRISCOLA_PREFERENCES";
-    private static String MUSIC_PREFERENCES="MUSIC";
-    private static String SOUND_EFFECTS_PREFERENCES="SOUND_EFFECTS";
-    private static String DECK_SKIN_PREFERENCES="DECK_SKIN";
-    private static String GAME_THEME_PREFERENCES="GAME_THEME";
-
+    /**
+     *References to different layouts in the game
+     */
     RelativeLayout gameView;
     LinearLayout surface;
     LinearLayout[] playerViews;
     RelativeLayout deckView;
     RelativeLayout settingsLayout;
+    LinearLayout briscolaCard;
+    LinearLayout gameOptions;
+    RelativeLayout deck;
+    /**
+     * Buttons of the interface
+     */
     Button newGameButton;
     Button restartButton;
     Button settingsButton;
     Button undoButton;
-    LinearLayout briscolaCard;
-    LinearLayout gameOptions;
-    RelativeLayout deck;
+    /**
+     * reference to the listener to the cards that are played
+     */
     CardPressedListener cardPressedListener;
     boolean singlePlayer;
     FragmentManager fragmentManager;
+    /**
+     * Controller of the game
+     * Can be:
+     * Coordinator in case of local game
+     * ServerCoordinator in case of multiplayer
+     */
     public GameController controller;
+    /**
+     * Set to false when animations start
+     * set back to true when the animations are finished
+     * Done to avoid Exceptions created due to actions
+     * taking place before the animations finish
+     */
     public boolean isReady;
-    public CardViewFragment testFragment;
+    /**
+     * Reference to all the card fragments present in the interface
+     * used below to play the animations of the cards
+     */
     private ArrayList<CardViewFragment> surfaceFragments;
-    private ArrayList<TextView> scoreViews;
     private ArrayList<ArrayList<CardViewFragment>> playerFragments;
     private CardViewFragment deckFragment;
     private CardViewFragment briscolaFragment;
+    /**
+     * TextViews that display the scores of the players
+     */
+    private ArrayList<TextView> scoreViews;
+    /**
+     * Sound Effects sounds
+     */
     private MediaPlayer playCardMusic;
     private MediaPlayer dealCardMusic;
+    /**
+     * State of the settings
+     */
     private boolean backgroundMusicOn,soundEffectsOn;
     private String deckSkin;
+    /**
+     * String representation of the briscola suit
+     */
     private String briscola;
+    /**
+     * Listener to the changes of the game settings
+     */
+    private SharedPreferences.OnSharedPreferenceChangeListener listener;
+
+    /**
+     * Start the music if the settings are on
+     * and load the saved settings
+     */
     @Override
     public void onStart(){
         super.onStart();
-        SharedPreferences prefs = getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE);
-        backgroundMusicOn = prefs.getBoolean(MUSIC_PREFERENCES, true);
-        soundEffectsOn= prefs.getBoolean(SOUND_EFFECTS_PREFERENCES, true);
-        deckSkin=prefs.getString(DECK_SKIN_PREFERENCES, "back1");
+        deckSkin=SettingsController.getInstance().getDeckSkin();
+        backgroundMusicOn=SettingsController.getInstance().getBackgroundMusic();
+        soundEffectsOn=SettingsController.getInstance().getSoundEffects();
         Log.i("Game Activity onStart","backgroundMusic"+backgroundMusicOn);
         if(backgroundMusicOn)
             MainActivity.startMusic();
+        else
+            MainActivity.stopMusic();
+
 
     }
+
+    /**
+     * Stop the music when the activity stops
+     * Manages the cases when the activity is killed or put on background
+     */
     @Override
     public void onStop(){
         MainActivity.stopMusic();
         super.onStop();
     }
+
+    /**
+     * Build the interface and create the controllers
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i("Game Activity","onCreate");
@@ -151,17 +193,39 @@ public class GameActivity extends AppCompatActivity  {
         playCardMusic= MediaPlayer.create(context, R.raw.play_card);
         dealCardMusic= MediaPlayer.create(context, R.raw.deal_card);
 
-        SharedPreferences prefs = getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE);
         deckSkin="back1";
-        backgroundMusicOn = prefs.getBoolean(MUSIC_PREFERENCES, true);
-        soundEffectsOn= prefs.getBoolean(SOUND_EFFECTS_PREFERENCES, true); //0 is the default value.
-        deckSkin=prefs.getString(DECK_SKIN_PREFERENCES, "back1");
+        deckSkin=SettingsController.getInstance().getDeckSkin();
+        backgroundMusicOn=SettingsController.getInstance().getBackgroundMusic();
+        soundEffectsOn=SettingsController.getInstance().getBackgroundMusic();
+        /**
+         * listen to changes to shared preferences and set the sounds and skin appropriately
+         */
+        listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                String oldSkin=deckSkin;
+                deckSkin=SettingsController.getInstance().getDeckSkin();
+                backgroundMusicOn=SettingsController.getInstance().getBackgroundMusic();
+                soundEffectsOn=SettingsController.getInstance().getSoundEffects();
+                if(!(oldSkin==deckSkin))
+                    changeCardsSkin(deckSkin);
+                if(backgroundMusicOn)
+                    MainActivity.startMusic();
+                else
+                    MainActivity.stopMusic();
+            }
+        };
+        //register listener
+        getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE).registerOnSharedPreferenceChangeListener(listener);
 
         PlayerState state;
         //game just started
         if(savedInstanceState == null){
             if(singlePlayer) {
-
+                /**
+                 * Case it's single player
+                 * Get the parameters set by the calling activity
+                 * and create the controller for the new game
+                 */
                 Briscola game=Briscola.getInstance();
                 state=game.getPlayerState(0);
                 String startConfiguration=getIntent().getExtras().getString("startConfiguration");
@@ -171,19 +235,28 @@ public class GameActivity extends AppCompatActivity  {
                 Coordinator.getInstance().setMoves(movesPerformed);
                 int scores[]=Briscola.getInstance().getScores();
                 Log.i("Single Player","Starting Game ");
+                /**
+                 * Lay down the interface
+                 */
                 startGame(state);
                 Log.i("Single Player","Game Started");
                 setScores(scores);
 
             }
             else{
-                //remove undo and new game
+                /**
+                 * remove navigations that apply to local game only
+                 * undo or restart game don't apply to multiplayer games
+                 */
                 gameView.removeView(gameOptions);
                 LinearLayout bottomView=(LinearLayout) findViewById(R.id.player1);
                 RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)bottomView.getLayoutParams();
                 params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
                 controller=new ServerCoordinator();
                 try {
+                    /**
+                     * Wait for the new game to start
+                     */
                     ((ServerCoordinator)controller).startGame(GameActivity.this);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -209,6 +282,9 @@ public class GameActivity extends AppCompatActivity  {
         // etc.
     }
 
+    /**
+     * Ask Confirmation before leaving the game
+     */
     @Override
     public void onBackPressed(){
         AlertDialog.Builder alert = new AlertDialog.Builder(GameActivity.this);
@@ -233,12 +309,22 @@ public class GameActivity extends AppCompatActivity  {
 
         alert.show();
     }
+
+    /**
+     * Call the controller finishGame method before exiting
+     */
     @Override
     public void onDestroy(){
         MainActivity.stopMusic();
         controller.finishGame("abandon");
         super.onDestroy();
     }
+
+    /**
+     * Build an interface without the starting animations
+     * used when moves are undone or when the activity comes from being in background
+     * @param state State of the game
+     */
     public void buildInterface(PlayerState state) {
 
         int backCardId = getResources().getIdentifier(deckSkin, "drawable",
@@ -293,6 +379,11 @@ public class GameActivity extends AppCompatActivity  {
         }
         isReady=true;
     }
+
+    /**
+     * Start a game with the opening animation of dealing the cards
+     * @param state state of the game
+     */
         public void startGame(PlayerState state) {
             isReady=false;
             int opponentSize=state.opponentHandSize[0];
@@ -322,46 +413,14 @@ public class GameActivity extends AppCompatActivity  {
             briscola=state.briscola.toLowerCase();
             drawCard(cards,state.currentPlayer,false,true);
             fillSurface(state.surface);
-            /*for(int j=0;j<state.hand.size();j++)
-            {
-                String name="c"+state.hand.get(j).toString().toLowerCase();
-                int resourceId = getResources().getIdentifier(name, "drawable",
-                        getPackageName());
-                CardViewFragment card=new CardViewFragment();
-                card.setImageId(resourceId);
-                card.setOnCardSelectedListener(cardPressedListener);
-                fragmentManager.beginTransaction().add(playerViews[0].getId(),card).commitNow();
-                playerFragments.get(0).add(card);
-            }
-            for(int j=0;j<opponentSize;j++)
-            {
-                CardViewFragment card=new CardViewFragment();
-                card.setImageId(backCardId);
-                fragmentManager.beginTransaction().add(playerViews[1].getId(),card).commitNow();
-                playerFragments.get(1).add(card);
-            }
-            for(int j=0;j<state.surface.size();j++)
-            {
-                String name="c"+state.surface.get(j).toString().toLowerCase();
-                int resourceId = getResources().getIdentifier(name, "drawable",
-                        getPackageName());
-                CardViewFragment card=new CardViewFragment();
-                card.setImageId(resourceId);
-                fragmentManager.beginTransaction().add(surface.getId(),card).commitNow();
-                surfaceFragments.add(card);
-            }
 
-                String name="c"+state.briscola.toLowerCase();
-                int resourceId = getResources().getIdentifier(name, "drawable",
-                        getPackageName());
-                CardViewFragment card=new CardViewFragment();
-                card.setOnCardSelectedListener(null);
-                card.setImageId(resourceId);
-                fragmentManager.beginTransaction().add(briscolaCard.getId(),card).commitNow();
-                briscolaFragment=card;
-                */
     }
 
+    /**
+     * Add cards to the surface
+     * Used when the game is resumed from a saved state
+     * @param surface list of cards in the surface
+     */
     private void fillSurface(final ArrayList<String> surface) {
         if(surface.size()==0)
             return;
@@ -424,6 +483,10 @@ public class GameActivity extends AppCompatActivity  {
         translation.start();
         onDealCardEffect();
     }
+
+    /**
+     * Delete all the fragments in the interface , emptying it
+     */
     public void flushInterface(){
         Log.i("Flushing Interface","Flushing");
         List<Fragment> al = getSupportFragmentManager().getFragments();
@@ -447,12 +510,7 @@ public class GameActivity extends AppCompatActivity  {
         }
         Log.i("Flushing Interface","Flushed");
     }
-    public LinearLayout[] getPlayerViews() {
-        return playerViews;
-    }
-    public boolean isSinglePlayer(){
-        return singlePlayer;
-    }
+
 
     /**
      * Show animation of card from the deck to the player
@@ -521,6 +579,10 @@ public class GameActivity extends AppCompatActivity  {
                 }
                 else if(!isStartGame){
                     isReady = true;
+                    /**
+                     * After the animation is done
+                     * give back control to the controller
+                     */
                     controller.onMovePerformed(GameActivity.this);
                 }
                 else{
@@ -557,6 +619,9 @@ public class GameActivity extends AppCompatActivity  {
         onDealCardEffect();
     }
 
+    /**
+     * Show animation of the briscola card being drawn from the deck
+     */
     private void drawBriscola() {
        String name="c"+briscola;
         final CardViewFragment frag;
@@ -649,6 +714,10 @@ public class GameActivity extends AppCompatActivity  {
                     getSupportFragmentManager().beginTransaction().add(surface.getId(), newFrag).commit();
                     surfaceFragments.add(newFrag);
                     isReady=true;
+                    /**
+                     * After the animation is done
+                     * give back control to the controller
+                     */
                     controller.onMovePerformed(GameActivity.this);
                 }
             });
@@ -700,6 +769,10 @@ public class GameActivity extends AppCompatActivity  {
                     GameActivity.this.drawCard(dealtCards,winner,isLastDraw,false);
                 else {
                     isReady = true;
+                    /**
+                     * After the animation is done
+                     * give back control to the controller
+                     */
                     controller.onMovePerformed(GameActivity.this);
                 }
             }
@@ -709,12 +782,19 @@ public class GameActivity extends AppCompatActivity  {
 
     }
 
-
-
-
+    /**
+     * Get the index of a given fragment
+     * used by the controller to determine the index of the card just played
+     * @param card fragment
+     * @return index of fragment in the player hand
+     */
     public int indexOfFragment(CardViewFragment card) {
         return playerFragments.get(0).indexOf(card);
     }
+
+    /**
+     * Play the sound effect of the card being played
+     */
     private void onPlayCardEffect() {
         if(!soundEffectsOn)
             return;
@@ -723,6 +803,10 @@ public class GameActivity extends AppCompatActivity  {
         playCardMusic= MediaPlayer.create(context, R.raw.play_card);
         playCardMusic.start();
     }
+
+    /**
+     * Play sound effect of card being drawn from deck
+     */
     private void onDealCardEffect() {
         if(!soundEffectsOn)
             return;
@@ -731,53 +815,32 @@ public class GameActivity extends AppCompatActivity  {
         dealCardMusic= MediaPlayer.create(context, R.raw.deal_card);
         dealCardMusic.start();
     }
+
+    /**
+     * Display the scores of the player
+     * @param scores the scores of the players
+     */
     public void setScores(int scores[]){
         for(int i=0;i<scoreViews.size();i++)
             scoreViews.get(i).setText(scores[i]+"");
     }
+
+    /**
+     * Change the skin of the cards that are reversed
+     * @param newSkin the name of the new skin
+     */
     public void changeCardsSkin(String newSkin){
         deckSkin=newSkin;
+        //load the resource Id
         int backCardId = getResources().getIdentifier(deckSkin, "drawable",
                 getPackageName());
+        /**
+         * Change the skin of the cards of the opponent
+         * and the deck if there are cards on the deck
+         */
         for(CardViewFragment c:playerFragments.get(1))
             c.changeImageResource(backCardId);
         if(deckFragment!=null)
             deckFragment.changeImageResource(backCardId);
-    }
-
-    public String getDeckSkin() {
-        return deckSkin;
-    }
-
-    public boolean isMusicOn() {
-        return backgroundMusicOn;
-    }
-
-    public boolean isSoundEffectOn() {
-        return soundEffectsOn;
-    }
-
-    public void setSoundEffects(boolean mode) {
-        soundEffectsOn=mode;
-        SharedPreferences.Editor editor = getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE).edit();
-        editor.putBoolean(SOUND_EFFECTS_PREFERENCES,mode);
-        editor.apply();
-    }
-    public void setMusic(boolean mode) {
-        backgroundMusicOn=mode;
-        if(mode)
-            MainActivity.startMusic();
-        else
-            MainActivity.stopMusic();
-        SharedPreferences.Editor editor = getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE).edit();
-        editor.putBoolean(MUSIC_PREFERENCES,mode);
-        editor.apply();
-    }
-    public void setDeckSkin(String deckSkin){
-        this.deckSkin=deckSkin;
-        changeCardsSkin(deckSkin);
-        SharedPreferences.Editor editor = getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE).edit();
-        editor.putString(DECK_SKIN_PREFERENCES,deckSkin);
-        editor.apply();
     }
 }

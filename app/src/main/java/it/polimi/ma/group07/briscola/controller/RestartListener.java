@@ -12,7 +12,7 @@ import it.polimi.ma.group07.briscola.model.Exceptions.InvalidGameStateException;
 import it.polimi.ma.group07.briscola.model.StateBundle;
 
 /**
- * Created by amari on 31-Oct-17.
+ * Handles the pressing of the Restart Game Button
  */
 
 public class RestartListener implements View.OnClickListener {
@@ -24,9 +24,16 @@ public class RestartListener implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+        /**
+         * wait if the player doesn't have the turn
+         * avoids exceptions due to animations being performed
+         */
         if(!activity.isReady||!activity.controller.isPlayable()){
             Toast.makeText(activity,"Wait Your Turn",Toast.LENGTH_SHORT).show();
             return;}
+        /**
+         * Ask for confirmation before starting a new game
+         */
         AlertDialog.Builder alert = new AlertDialog.Builder(activity);
         alert.setTitle("Restart Game?");
         alert.setMessage("Are you sure you want to restart the game?");

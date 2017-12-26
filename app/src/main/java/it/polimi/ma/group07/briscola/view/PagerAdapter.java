@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import it.polimi.ma.group07.briscola.StatisticsActivity;
 
 /**
- * Created by amari on 03-Dec-17.
+ * Adapter for the Statistics Activity tabs
  */
 
 public  class PagerAdapter  extends FragmentStatePagerAdapter {
@@ -19,6 +19,9 @@ public  class PagerAdapter  extends FragmentStatePagerAdapter {
     public PagerAdapter(FragmentManager fm) {
         super(fm);
         this.fragments=new ArrayList<>();
+        /**
+         * Create the two fragments for local and online statistics
+         */
         StatisticsFragment localFragment=new StatisticsFragment();
         localFragment.setGameType("Local");
         fragments.add(localFragment);

@@ -49,33 +49,106 @@ import static android.R.id.switch_widget;
 import static it.polimi.ma.group07.briscola.R.id.deck;
 
 /**
- * Created by amari on 22-Nov-17.
+ * Controller for Online games
  */
-
 public class ServerCoordinator implements GameController {
+    /**
+     * Representation of the state of the game
+     * as seen from the user {@link PlayerState}
+     */
     private PlayerState state;
+    /**
+     * the activity fo the game
+     */
     private GameActivity activity;
+    /**
+     * reference to the responses of the API calls
+     */
     private JSONObject resultJSON;
     private JSONObject errorJSON;
+    /**
+     * flag to represent if it's the turn of the user  or no
+     */
     private boolean yourTurn;
+    /**
+     * Index of the player in te game {0 or 1}
+     */
     private int playerIndex;
+    /**
+     * did the user start the current round or no
+     */
     private boolean startedRound;
+    /**
+     * URL of the current game being played
+     * used to perform the API calls
+     */
     private String gameURL;
+    /**
+     * scores of the players
+     */
     private int scores[];
+    /**
+     * Object that will apply the rules of the game
+     * to determine the winners of each round {@link Brain}
+     */
     Brain brain;
+    /**
+     * counter to how many cards have been played in the game
+     */
     private int cardsPlayed;
-    private DataRepository repository;
+    /**
+     * is the game playable or no
+     * set to true after all the animations of the game are performed
+     */
     private boolean playable;
-    //used in #onMovePerformed method
+    /**
+     * used in #onMovePerformed method
+     */
     private String lastMove;
     private String response;
     private boolean winner;
     int indexPlayed;
+
+    /**
+     * Performs the API call to join a game
+     * The call is performed in the background
+     * @param activity activity of the game
+     * @throws IOException
+     */
     public void startGame(GameActivity activity) throws IOException {
             this.activity=activity;
             CreateGameTask task=new CreateGameTask(activity);
             task.execute(activity.getResources().getString(R.string.start_game_endpoint));
     }
+    /**
+     * Polls the server for the next card of the opponent
+     * Performs the API call to get the card played by the opponent
+     * The call is performed in the background
+     */
+    public void pollServer(){
+        state.playableState=false;
+        GetCardTask getCardTask=new GetCardTask(activity);
+        getCardTask.execute(gameURL);
+    }
+
+    /**
+     * Finishes the current game
+     * Performs the API call to get finish the current game
+     * The call is performed in the background
+     */
+    public void finishGame(String reason){
+        if(state!=null) {
+            Log.i("Server Coordinator", "Terminating game");
+            getRepository().saveOnlineGame(new OnlineGame(OnlineGame.TERMINATED));
+            DeleteGameTask task = new DeleteGameTask(activity);
+            task.execute(gameURL, reason);
+        }
+    }
+    /**
+     * Perform a move
+     * @param activity reference to the activity of the game
+     * @param index index of card tobe played
+     */
     @Override
     public void onPerformMove(GameActivity activity, int index) {
         indexPlayed=index;
@@ -85,40 +158,30 @@ public class ServerCoordinator implements GameController {
         state.surface.add(c);
         state.playableState=false;
         playable=false;
-        //activity.buildInterface(state);
         Log.i("Post","About to post");
+        /**
+         * Perform the APi call on the background
+         */
        PostCardTask postCardTask=new PostCardTask(activity);
         postCardTask.execute(gameURL,c);
     }
-    public void pollServer(){
-        state.playableState=false;
-        GetCardTask getCardTask=new GetCardTask(activity);
-        getCardTask.execute(gameURL);
-    }
-    public void finishGame(String reason){
-        if(state!=null) {
-            Log.i("Server Coordinator", "Terminating game");
-            getRepository().saveOnlineGame(new OnlineGame(OnlineGame.TERMINATED));
-            DeleteGameTask task = new DeleteGameTask(activity);
-            task.execute(gameURL, reason);
-        }
-    }
+
 
     @Override
     public DataRepository getRepository() {
         return DatabaseRepository.getInstance();
     }
 
-
-    public void onUndo(GameActivity activity) {
-        return;
-    }
-
     @Override
     public void onNewGame(GameActivity activity) {
 
     }
-
+    /**
+     * called after the animations in the view are finished
+     * checks the state of the game and performes the next actions
+     * accordingly
+     * @param activity the activity of the game
+     */
     @Override
     public void onMovePerformed(GameActivity activity) {
         switch(lastMove){
@@ -164,6 +227,11 @@ public class ServerCoordinator implements GameController {
         }
     }
 
+    /**
+     * Method is called after the call to the GET API is performed
+     * Method checks the state of the game at this moment
+     * and finishes the round if necessary
+     */
     private void onGetFinished() {
         String myCard=null;
         int winnerCard=0;
@@ -173,6 +241,11 @@ public class ServerCoordinator implements GameController {
             state.currentPlayer=playerIndex;
         }
         else{
+            /**
+             * Same logic applied in the model
+             * has to be applied again since the server
+             * doesn't determine the winner of a round
+             */
             state.playableState=false;
             playable=false;
             try {
@@ -227,6 +300,7 @@ public class ServerCoordinator implements GameController {
                 final int arg0=winningPlayer;
                 new Handler().postDelayed(new Runnable() {
                     public void run() {
+                        //play the animation of the round being finished
                         activity.finishRound(arg0,cardsDealt,isLastDraw);
                     }
                 },700);
@@ -235,9 +309,13 @@ public class ServerCoordinator implements GameController {
             }
         }
     }
-
+    /**
+     * Method is called after the call to the POST API is performed
+     * Method checks the state of the game at this moment
+     * and finishes the round if necessary
+     */
     private void onPostFinished() {
-        String opponentCard="",myCard=null;
+        String myCard=null;
         int winnerCard=0;
         if(state.surface.size()<2){
             state.currentPlayer=(state.currentPlayer+1)%2;
@@ -247,7 +325,11 @@ public class ServerCoordinator implements GameController {
             //round finished
             try {
                 Log.i("Post","Determining Winner");
-
+                /**
+                 * Same logic applied in the model
+                 * has to be applied again since the server
+                 * doesn't determine the winner of a round
+                 */
                 winnerCard=brain.determineWinnerString(state.surface);
                 ArrayList<String> s=new ArrayList<String>(state.surface);
                 state.surface=new ArrayList<>();
@@ -296,6 +378,7 @@ public class ServerCoordinator implements GameController {
                 final int arg0=winningPlayer;
                 new Handler().postDelayed(new Runnable() {
                     public void run() {
+                        //show the animation of the round finishing
                         activity.finishRound(arg0,cardsDealt,isLastDraw);
                     }
                 },700);
@@ -328,7 +411,9 @@ public class ServerCoordinator implements GameController {
         return playerIndex;
     }
 
-
+    /**
+     * Asynchronous call to the API to create a new game
+     */
     private class CreateGameTask extends AsyncTask<String, Void, Boolean> {
         ProgressDialog _progressDialog;
         HttpURLConnection urlConnection;
@@ -368,6 +453,9 @@ public class ServerCoordinator implements GameController {
                     break;
                 flag=false;
                 try {
+                    /**
+                     * Perform the API call
+                     */
                     if(urlConnection==null) {
                         url = new URL(urlString);
                         urlConnection = (HttpURLConnection) url.openConnection();
@@ -378,6 +466,10 @@ public class ServerCoordinator implements GameController {
                     }
                     int code=urlConnection.getResponseCode();
                     Log.i("ResponseCode",""+code);
+                    /**
+                     * Check the response codes and perform the
+                     * appropriate actions
+                     */
                     switch(code){
                         case 200:
                             BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
@@ -389,6 +481,7 @@ public class ServerCoordinator implements GameController {
                             br.close();
                             String jsonString = sb.toString();
                             System.out.println("JSON: " + jsonString);
+                            //save the response to be used later
                             resultJSON=new JSONObject(jsonString);
                             return true;
                         case 401:
@@ -401,6 +494,7 @@ public class ServerCoordinator implements GameController {
                             error.close();
                             String errorString = s.toString();
                             System.out.println("JSON: " + errorString);
+                            //save the eror essage to be used later
                             errorJSON=new JSONObject(errorString);
                             return false;
                         default:
@@ -417,11 +511,23 @@ public class ServerCoordinator implements GameController {
             return true;
         }
 
+        /**
+         * Executed when the call is finished and we have a reponse
+         * @param result true if the responce was succesful
+         */
         @Override
         protected void onPostExecute(Boolean result){
             _progressDialog.dismiss();
+            /**
+             * Case the call was succesfull
+             */
             if(result){
                 try {
+                    /**
+                     * Read the response and cuild the object
+                     * representing the state
+                     * and start the game based on the index you get
+                     */
                     ArrayList<String> hand = new ArrayList<>(Parser.splitString(resultJSON.getString("cards"), 2));
                     ArrayList<String> surface = new ArrayList<>(Parser.splitString("", 2));
                     ArrayList<String> ownPile = new ArrayList<>(Parser.splitString("", 2));
@@ -436,6 +542,9 @@ public class ServerCoordinator implements GameController {
                         opponentPiles.add(new ArrayList<String>());
                         opponentHandSizes[0] = 3;
                     }
+                    /**
+                     * set the index and the flag appropriately
+                     */
                     if(yourTurn){
                         playerIndex=0;
                         startedRound=true;
@@ -447,12 +556,22 @@ public class ServerCoordinator implements GameController {
                         startedRound=false;
 
                     }
+                    /**
+                     * construct the inner state
+                     */
                     state = new PlayerState(hand, surface, ownPile, opponentPiles, briscola,
                             playerIndex, 34, opponentHandSizes, startedRound);
+                    /**
+                     * create the Rule applier and set the briscola
+                     */
                     brain=new Brain();
                     brain.setTrumpSuit(briscola.getSuit());
+                    /**
+                     * Play the animations and display the scores
+                     */
                     activity.startGame(state);
                     activity.setScores(scores);
+                    //poll the server if it;s not your turn to play
                     if(!yourTurn)
                         pollServer();
                 }catch (JSONException e){
@@ -462,6 +581,9 @@ public class ServerCoordinator implements GameController {
                 }
             }
             else {
+                /**
+                 * Display the error that occurred and abandon the game after
+                 */
                 try {
                     String error=errorJSON.getString("error");
                     String message=errorJSON.getString("message");
@@ -485,7 +607,9 @@ public class ServerCoordinator implements GameController {
         }
 
     }
-
+    /**
+     * Asynchronous call to the API to perform a move
+     */
     private class PostCardTask extends AsyncTask<String, Void, Boolean> {
         String playedCard;
         HttpURLConnection urlConnection;
@@ -497,6 +621,12 @@ public class ServerCoordinator implements GameController {
             this.activity=activity;
             handler=new Handler();
         }
+
+        /**
+         * Perform the API call
+         * @param args
+         * @return true if the call is successful
+         */
         @Override
         protected Boolean doInBackground(String... args) {
             String urlString=args[0];
@@ -509,6 +639,9 @@ public class ServerCoordinator implements GameController {
                     break;
                 flag=false;
                 try {
+                    /**
+                     * perform the call
+                     */
                     if(urlConnection==null) {
                         url = new URL(urlString);
                         urlConnection = (HttpURLConnection) url.openConnection();
@@ -521,12 +654,18 @@ public class ServerCoordinator implements GameController {
                         urlConnection.setReadTimeout(30000 /* milliseconds */);
                         urlConnection.setConnectTimeout(35000/* milliseconds */);
                     }
+                    /**
+                     * Add the payload to the request
+                     */
                     OutputStream os = urlConnection.getOutputStream();
                     os.write(card.getBytes("UTF-8"));
                     os.close();
                     urlConnection.connect();
                     int code=urlConnection.getResponseCode();
                     Log.i("ResponseCode",""+code);
+                    /**
+                     * Check the response
+                     */
                     switch(code){
                         case 200:
                             BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
@@ -538,9 +677,15 @@ public class ServerCoordinator implements GameController {
                             br.close();
                             String jsonString = sb.toString();
                             System.out.println("JSON: " + jsonString);
+                            /**
+                             * save the results to be read later and return true
+                             */
                             response=jsonString;
                             return true;
                         default:
+                            /**
+                             * construct the error message and return false
+                             */
                             try {
                                 BufferedReader error = new BufferedReader(new InputStreamReader(urlConnection.getErrorStream()));
                                 StringBuilder s = new StringBuilder();
@@ -568,16 +713,28 @@ public class ServerCoordinator implements GameController {
             }
             return true;
         }
-
+        /**
+         * Executed when the call is finished and we have a reponse
+         * @param result true if the responce was succesful
+         */
         @Override
         protected void onPostExecute(Boolean result){
 
             if(result){
+                /**
+                 * show the animation of the card being played
+                 * set the flags and apdate the card counter
+                 * Control will be returned to OnPerformMove method to
+                 * check the state of the game
+                 */
                 activity.playCard(playedCard,0,indexPlayed);
                 cardsPlayed++;
                 lastMove="POST";
             }
             else {
+                /**
+                 * Display the error that occurred and abandon the game after
+                 */
                 try {
                     String error=errorJSON.getString("error");
                     String message=errorJSON.getString("message");
@@ -601,6 +758,11 @@ public class ServerCoordinator implements GameController {
         }
 
     }
+
+    /**
+     * Asynchronous call to the GET API to retrieve the card
+     * played by the opponent
+     */
     private class GetCardTask extends AsyncTask<String, Void, Boolean> {
 
         HttpURLConnection urlConnection;
@@ -612,6 +774,12 @@ public class ServerCoordinator implements GameController {
             this.activity=activity;
             handler=new Handler();
         }
+
+        /**
+         * perform the task on the background
+         * @param args
+         * @return true if the call is successful
+         */
         @Override
         protected Boolean doInBackground(String... args) {
             String urlString=args[0];
@@ -619,7 +787,13 @@ public class ServerCoordinator implements GameController {
             Log.i("Poll","Polling Server");
             while(flag) {
                 flag=false;
+                /**
+                 * perform the actual call
+                 */
                 try {
+                    /**
+                     * construct the request
+                     */
                     if(urlConnection==null) {
                         url = new URL(urlString);
                         urlConnection = (HttpURLConnection) url.openConnection();
@@ -630,6 +804,9 @@ public class ServerCoordinator implements GameController {
                     }
                     int code=urlConnection.getResponseCode();
                     Log.i("ResponseCode",""+code);
+                    /**
+                     * Check the response
+                     */
                     switch(code){
                         case 200:
                             BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
@@ -641,6 +818,9 @@ public class ServerCoordinator implements GameController {
                             br.close();
                             String jsonString = sb.toString();
                             System.out.println("JSON: " + jsonString);
+                            /**
+                             * save the result to be read later and return true
+                             */
                             response=jsonString;
                             return true;
                         case 401:
@@ -655,6 +835,9 @@ public class ServerCoordinator implements GameController {
                             String errorString = s.toString();
                             System.out.println("JSON: " + errorString);
                             errorJSON=new JSONObject(errorString);
+                            /**
+                             * save the error message and return false
+                             */
                             return false;
                         default:
                             return false;
@@ -670,12 +853,21 @@ public class ServerCoordinator implements GameController {
             return true;
         }
 
+        /**
+         * Called after the call has finished
+         * @param result true if the call was successful
+         */
         @Override
         protected void onPostExecute(Boolean result){
             String opponentCard="";
             state.playableState=false;
             playable=false;
+
             if(result){
+                /**
+                 * update card counter and
+                 * read the cards returned from the call
+                 */
                 cardsPlayed++;
                 try {
                     resultJSON=new JSONObject(response);
@@ -688,9 +880,16 @@ public class ServerCoordinator implements GameController {
                 state.opponentHandSize[0]--;
                 state.playableState = false;
                 lastMove="GET";
+                /**
+                 * play the animation of the card being played by opponent
+                 * control will be returned to the onMovePerformed method afterwards
+                 */
                 activity.playCard(opponentCard,1,state.opponentHandSize[0]);
             }
             else {
+                /**
+                 * Display the error that occurred and abandon the game after
+                 */
                 try {
                     String error=errorJSON.getString("error");
                     String message=errorJSON.getString("message");
@@ -715,12 +914,23 @@ public class ServerCoordinator implements GameController {
 
     }
 
+    /**
+     * Show the winner of the game
+     * and save the data about the finished game to be used in
+     * the statistics later
+     */
     private void showWinner() {
         String message="You Won";
-        if(scores[0]<scores[1])
-            message="You Lost";
-        else if(scores[0]==scores[1])
-            message="Draw";
+        String state=OnlineGame.WON;
+        if(scores[0]<scores[1]) {
+            message = "You Lost";
+            state=OnlineGame.LOST;
+        }
+        else if(scores[0]==scores[1]) {
+            message = "Draw";
+            state=OnlineGame.DRAWN;
+        }
+        getRepository().saveOnlineGame(new OnlineGame(state));
         AlertDialog.Builder alert = new AlertDialog.Builder(activity);
         alert.setTitle(message);
         alert.setMessage(scores[0]+" Points");
@@ -736,6 +946,9 @@ public class ServerCoordinator implements GameController {
         alert.show();
     }
 
+    /**
+     * Asynchronous call to the API to delete a game
+     */
     private class DeleteGameTask extends AsyncTask<String, Void, Boolean> {
         HttpURLConnection urlConnection;
         URL url;
@@ -744,6 +957,12 @@ public class ServerCoordinator implements GameController {
         public DeleteGameTask(GameActivity activity){
             this.activity=activity;
         }
+
+        /**
+         * performs the call in the background
+         * @param args
+         * @return true if the call is successful
+         */
         @Override
         protected Boolean doInBackground(String... args) {
             String urlString=args[0];
@@ -752,6 +971,9 @@ public class ServerCoordinator implements GameController {
             Log.i("Delete","Deleting Game");
             while(flag) {
                 flag=false;
+                /**
+                 * perform the actual call
+                 */
                 try {
                     if(urlConnection==null) {
                         url = new URL(urlString);
@@ -771,6 +993,10 @@ public class ServerCoordinator implements GameController {
                     urlConnection.connect();
                     int code=urlConnection.getResponseCode();
                     Log.i("ResponseCode",""+code);
+                    /**
+                     * Check the response and
+                     * return true or false accordingly
+                     */
                     switch(code){
                         case 200:
                             return true;

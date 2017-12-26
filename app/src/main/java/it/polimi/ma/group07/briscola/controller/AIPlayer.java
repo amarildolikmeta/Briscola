@@ -13,7 +13,8 @@ import it.polimi.ma.group07.briscola.model.Suit;
 import it.polimi.ma.group07.briscola.model.Value;
 
 /**
- * Created by amari on 31-Oct-17.
+ * Represents the opponent in the local game
+ * will take decisions based on the state of the game
  */
 
 public class AIPlayer {

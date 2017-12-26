@@ -18,7 +18,7 @@ import it.polimi.ma.group07.briscola.R;
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 
 /**
- * Created by amari on 31-Oct-17.
+ * Handler for the undo button
  */
 
 public class UndoListener implements View.OnClickListener {
@@ -29,9 +29,16 @@ public class UndoListener implements View.OnClickListener {
     }
     @Override
     public void onClick(View v) {
+        /**
+         * wait if the player doesn't have the turn
+         * avoids exceptions due to animations being performed
+         */
         if(!activity.isReady||!activity.controller.isPlayable()){
             Toast.makeText(activity,"Wait Your Turn",Toast.LENGTH_SHORT).show();
             return;}
+        /**
+         * Handle the case there are no moves to undo
+         */
         if(((Coordinator)activity.controller).getMovesPerformed().length()==0)
             Toast.makeText(activity,"No moves to undo",Toast.LENGTH_SHORT).show();
         else

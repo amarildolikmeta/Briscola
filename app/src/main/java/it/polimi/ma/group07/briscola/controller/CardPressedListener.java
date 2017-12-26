@@ -16,7 +16,7 @@ import it.polimi.ma.group07.briscola.model.StateBundle;
 import it.polimi.ma.group07.briscola.view.CardViewFragment;
 
 /**
- * Created by amari on 31-Oct-17.
+ * Listener for card the fragments
  */
 
 public class CardPressedListener implements CardViewFragment.OnCardSelectedListener {
@@ -31,8 +31,9 @@ public class CardPressedListener implements CardViewFragment.OnCardSelectedListe
     public void onCardSelected(CardViewFragment card) {
         if(Briscola.getInstance().isGameFinished()||!activity.isReady)
             return;
-        View v=card.getView();
-        PlayerState state=activity.controller.getState();
+        /**
+         * get the index of the card played and perform the given move
+         */
         int index=activity.indexOfFragment(card);
         if(activity.controller.isPlayable()&&Briscola.getInstance().getCurrentPlayer()==0)
             activity.controller.onPerformMove(activity,index);

@@ -3,7 +3,7 @@ package it.polimi.ma.group07.briscola.controller.persistance;
 import java.util.ArrayList;
 
 /**
- * Created by amari on 03-Dec-17.
+ * Interface the Data persistance layer has to implement
  */
 
 public interface DataRepository {

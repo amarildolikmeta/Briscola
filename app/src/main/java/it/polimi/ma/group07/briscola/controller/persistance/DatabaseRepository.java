@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import it.polimi.ma.group07.briscola.MainActivity;
 
 /**
- * Created by amari on 03-Dec-17.
+ * Persistence layer that uses {@link SQLiteDatabase} to save the data
+ * abut the games played
  */
 
 public class DatabaseRepository extends SQLiteOpenHelper implements DataRepository {
@@ -21,6 +22,9 @@ public class DatabaseRepository extends SQLiteOpenHelper implements DataReposito
     private static final String LOCAL_GAME_TABLE="LocalGame";
     private static final String ONLINE_GAME_TABLE="OnlineGame";
     private static final String RUNNING_GAME_TABLE ="RunningGame";
+    /**
+     * static reference to an instance of the repository
+     */
     private static  DatabaseRepository instance;
     public DatabaseRepository(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -32,6 +36,10 @@ public class DatabaseRepository extends SQLiteOpenHelper implements DataReposito
         return instance;
     }
 
+    /**
+     * Create the database
+     * @param db reference to the SQLiteDatabase
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
         String query="CREATE TABLE "+LOCAL_GAME_TABLE+"(id INTEGER PRIMARY KEY AUTOINCREMENT,start VARCHAR(87),moves VARCHAR,state VARCHAR);";
@@ -47,6 +55,10 @@ public class DatabaseRepository extends SQLiteOpenHelper implements DataReposito
 
     }
 
+    /**
+     * Save a local game in the database
+     * @param game object representation of the game to be saved
+     */
     @Override
     public void saveLocalGame(LocalGame game) {
         String query="INSERT  INTO "+LOCAL_GAME_TABLE+"(start, moves, state) VALUES('";
@@ -55,13 +67,21 @@ public class DatabaseRepository extends SQLiteOpenHelper implements DataReposito
         query+=game.state+"');";
         getWritableDatabase().execSQL(query);
     }
-
+    /**
+     * Save an online game in the database
+     * @param game object representation of the game to be saved
+     */
     @Override
     public void saveOnlineGame(OnlineGame game) {
         String query="INSERT  INTO "+ONLINE_GAME_TABLE+"(state) VALUES('";
         query+=game.state+"');";
         getWritableDatabase().execSQL(query);
     }
+
+    /**
+     *The following are all methods to save and/or retrieve
+     * data about the games played
+     */
 
     @Override
     public ArrayList<LocalGame> findAllLocalGames() {

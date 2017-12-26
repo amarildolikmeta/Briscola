@@ -1,7 +1,7 @@
 package it.polimi.ma.group07.briscola.controller.persistance;
 
 /**
- * Created by amari on 03-Dec-17.
+ * Object Representation of an online game
  */
 
 public class OnlineGame {
@@ -15,6 +15,9 @@ public class OnlineGame {
     public static final String WON="Won";
     public static final String LOST="Lost";
     public static final String DRAWN="Drawn";
+    /**
+     * State of the game
+     */
     public String state;
 
     public OnlineGame(String state){

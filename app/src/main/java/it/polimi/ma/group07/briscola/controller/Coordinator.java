@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -22,19 +23,41 @@ import it.polimi.ma.group07.briscola.model.PlayerState;
 import it.polimi.ma.group07.briscola.model.StateBundle;
 
 /**
- * Created by amari on 31-Oct-17.
+ * Controller for local games
  */
 
 public class Coordinator implements GameController {
-
+    /**
+     * static reference to the controller
+     */
     private static  Coordinator Instance;
+    /**
+     * originally you could play locally in two players
+     * now obsolete
+     */
     private final boolean singlePlayer;
+    /**
+     * the starting configuration of the current game
+     * and the moves performed since the beginning of the game
+     */
     private String startConfiguration;
     private String movesPerformed;
+    /**
+     * representation of the state of the game {@link PlayerState}
+     */
     private PlayerState state;
+    /**
+     * Handler for Asnchronous tasks
+     */
     private Handler handler ;
+    /**
+     * index of the player
+     */
     private int playerIndex;
-    private DataRepository repository;
+    /**
+     * Represents if a state is playable or no
+     * set to true after animations are finished
+     */
     private boolean playable;
 
     public Coordinator(String startConfiguration,boolean singlePlayer){
@@ -57,20 +80,50 @@ public class Coordinator implements GameController {
         return Instance;
     }
 
+    /**
+     * Perform a move
+     * @param activity reference to the activity of the game
+     * @param index index of card tobe played
+     */
     public void onPerformMove(final GameActivity activity, int index){
         Log.i("Coordinator","Playing index:"+index);
         int player=Briscola.getInstance().getCurrentPlayer();
+        /**
+         * perform the move in the model and set the state
+         * to not playable until all the animations are played
+         */
         String card=Briscola.getInstance().onPerformMove(index);
         playable=false;
+        /**
+         * save the currently made move
+         */
         movesPerformed+=""+index;
         state=Briscola.getInstance().getPlayerState(playerIndex);
+        /**
+         * play the animation of the card
+         * after the animation is finished the view will call the {#onMovePerformed method}
+         * to chek the state of the game after the move is performed
+         */
         activity.playCard(card,player,index);
         Log.i("Coordinator","Card Played:"+card);
         }
+
+    /**
+     * called after the animations in the view are finished
+     * checks the state of the game and performes the next actions
+     * accordingly
+     * @param activity the activity of the game
+     */
     @Override
     public void onMovePerformed(final GameActivity activity){
+        /**
+         * Check if the game is finished
+         */
         if(Briscola.getInstance().isGameFinished())
         {
+            /**
+             * Display the winner and save the game that finished for statistics
+             */
             AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
             alertDialog.setTitle("Game Finished");
             String message="You Won :";
@@ -97,6 +150,9 @@ public class Coordinator implements GameController {
             alertDialog.show();
             return;
         }
+        /**
+         * Check if the round is finished
+         */
         if(Briscola.getInstance().isRoundFinished()){
             Log.i("Round Finished","Finishing");
             handler.postDelayed(new Runnable() {
@@ -109,7 +165,9 @@ public class Coordinator implements GameController {
         else {
             //AIPlays
             if (Briscola.getInstance().getCurrentPlayer() == 1 && singlePlayer) {
-
+                /**
+                 * Delay a bit the action of the AI
+                 */
                 handler.postDelayed(new Runnable() {
                     public void run() {
                         PlayerState state=Briscola.getInstance().getPlayerState(Briscola.getInstance().getCurrentPlayer());
@@ -128,31 +186,54 @@ public class Coordinator implements GameController {
         return playable;
     }
 
+    /**
+     * Go to the next round of the game and show the animations
+     * of the round being finished
+     * @param activity the activity of the game
+     */
     private void finishRound(final GameActivity activity) {
         Briscola.getInstance().finishRound();
         state=Briscola.getInstance().getPlayerState(playerIndex);
+        /**
+         * Deal next batch of cards if any
+         */
         ArrayList<String> cardsDealt=new ArrayList<>();
           if(Briscola.getInstance().hasMoreCards())
               for(int i=0;i<Briscola.getInstance().getNumberPlayers();i++)
                 cardsDealt.add(Briscola.getInstance().dealCard());
           else
               Briscola.getInstance().dealCards();
+
         Log.i("Round Finished","Will Deal"+cardsDealt.toString());
         boolean isLastDraw=!Briscola.getInstance().hasMoreCards();
         Log.i("Round Finished","Round finished:Winner:"+Briscola.getInstance().getCurrentPlayer());
-
+        /**
+         * Show the animations of passing to the next round
+         * and update the scores of the players
+         */
         activity.finishRound(Briscola.getInstance().getCurrentPlayer(),cardsDealt,isLastDraw);
         activity.setScores(Briscola.getInstance().getScores());
     }
 
+    /**
+     * restart the game
+     * kill the current game activity and create a new one
+     * with starting configuration same
+     * but forget all the moves
+     * @param activity activity of the game
+     */
     public void onRestart(GameActivity activity){
         activity.finish();
         MainActivity.getInstance().resumeGame(startConfiguration,"");
     }
-
+    /**
+     * Start a new Game
+     * kill the current game activity and create a new one
+     * @param activity activity of the game
+     */
     public void onNewGame(GameActivity activity){
         activity.finish();
-        //domn't save the finished game
+        //don't save the finished game
         getRepository().deleteCurrentGame();
         MainActivity.getInstance().startNewGame();
     }
@@ -186,9 +267,20 @@ public class Coordinator implements GameController {
         return DatabaseRepository.getInstance();
     }
 
-
+    /**
+     * Undo a move in the current game
+     * @param activity activity of the game
+     */
     public void onUndo(GameActivity activity) {
+        /**
+         * Handle the case there are no moves to undo
+         */
+        if(getMovesPerformed().length()==0)
+            Toast.makeText(activity,"No moves to undo",Toast.LENGTH_SHORT).show();
         Log.i("Undo","moves Performed:"+movesPerformed);
+        /**
+         * Remove moves until it's again the user's turn to play
+         */
         while(true){
             movesPerformed=movesPerformed.substring(0,movesPerformed.length()-1);
             try {
@@ -208,14 +300,6 @@ public class Coordinator implements GameController {
                 e.printStackTrace();
             }
         }
-    }
-
-    public String getStartConfiguration() {
-        return startConfiguration;
-    }
-
-    public void setStartConfiguration(String startConfiguration) {
-        this.startConfiguration = startConfiguration;
     }
 
     public  void setState(GameActivity activity,PlayerState state) {

@@ -5,7 +5,8 @@ import it.polimi.ma.group07.briscola.controller.persistance.DataRepository;
 import it.polimi.ma.group07.briscola.model.PlayerState;
 
 /**
- * Created by amari on 22-Nov-17.
+ *Interface to be implemented by the
+ * controllers of the local and online game
  */
 
 public interface GameController {

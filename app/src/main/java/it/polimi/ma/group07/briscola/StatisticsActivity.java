@@ -21,7 +21,15 @@ import android.widget.TextView;
 
 import it.polimi.ma.group07.briscola.view.PagerAdapter;
 
+/**
+ * Displays the statistics of the game in two tabs
+ * Local Games
+ * Online Games
+ */
 public class StatisticsActivity extends AppCompatActivity {
+    /**
+     * To manage the different tabs
+     */
     private TabLayout tabLayout;
     private PagerAdapter pagerAdapter;
 
@@ -29,13 +37,18 @@ public class StatisticsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_statistics);
-
+        /**
+         * Set the tabs labels and set the listener to switch between them
+         */
         final ViewPager viewPager=(ViewPager) findViewById(R.id.pager);
         tabLayout=(TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText(getResources().getString(R.string.local)));
         tabLayout.addTab(tabLayout.newTab().setText(getResources().getString(R.string.online)));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         pagerAdapter= new PagerAdapter(getSupportFragmentManager());
+        /**
+         * Set the adapter for the viewPager
+         */
         viewPager.setAdapter(pagerAdapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         viewPager.setCurrentItem(0);

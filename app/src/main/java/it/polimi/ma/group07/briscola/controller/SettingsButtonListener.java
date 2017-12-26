@@ -1,5 +1,7 @@
 package it.polimi.ma.group07.briscola.controller;
 
+import android.provider.ContactsContract;
+import android.support.v7.app.AppCompatActivity;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -14,23 +16,45 @@ import java.util.ArrayList;
 
 
 import it.polimi.ma.group07.briscola.GameActivity;
+import it.polimi.ma.group07.briscola.MainActivity;
 import it.polimi.ma.group07.briscola.R;
 
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 
 /**
- * Created by amari on 22-Dec-17.
+ * Displays  a popup window to change the app settings
  */
 
 public class SettingsButtonListener implements View.OnClickListener {
-    private GameActivity activity;
+    /**
+     * Activity from where it's called
+     * can be Game Activity or MainActivity
+     */
+    private AppCompatActivity activity;
+    /**
+     * List of the possible skins of the cards
+     * both as resource id and as skinNames
+     */
     private ArrayList<Integer> skins;
     private ArrayList<String> skinNames;
+    /**
+     * List of the images of cards in the gallery
+     */
     ArrayList<ImageView> images;
+    /**
+     * Id of the different icons for the music and sound
+     */
     int musicOnResourceId,musicOffResourceId,soundEffectOnResourceId,soundEffectOffResourceId;
     boolean soundEffectsOn,musicOn;
-    public SettingsButtonListener(GameActivity activity){
-        this.activity=activity;
+    /**
+     * Two different dimensions for the cards to be displayed
+     * the selected card is slightly bigger to emphasize the
+     * fact it's selected
+     */
+    private int dimensionInDp;
+    private int selectedDimensionInDp;
+    public SettingsButtonListener(AppCompatActivity activity){
+        this.activity= activity;
         skins=new ArrayList<>();
         skinNames=new ArrayList<>();
         for(int i=1;i<5;i++){
@@ -47,9 +71,9 @@ public class SettingsButtonListener implements View.OnClickListener {
         soundEffectOffResourceId=activity.getResources().getIdentifier("effects_off", "drawable",
                 activity.getPackageName());
     }
-
     @Override
     public void onClick(View v) {
+
         // get a reference to the already created main layout
         RelativeLayout mainLayout = (RelativeLayout)
               activity.findViewById(R.id.settingLayout);
@@ -67,15 +91,18 @@ public class SettingsButtonListener implements View.OnClickListener {
         LinearLayout gallery=(LinearLayout) popupView.findViewById(R.id.deck_skins);
         ImageView selectedImage=new ImageView(activity);
         ImageView image;
-        int currentSkin=activity.getResources().getIdentifier(activity.getDeckSkin(), "drawable",
+        int currentSkin=activity.getResources().getIdentifier(SettingsController.getInstance().getDeckSkin(), "drawable",
                 activity.getPackageName());
+
         selectedImage.setImageResource(currentSkin);
         images=new ArrayList<>();
         gallery.addView(selectedImage);
         int dimensionInPixel = 100;
-        int dimensionInDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dimensionInPixel, activity.getResources().getDisplayMetrics());
-        selectedImage.getLayoutParams().height = dimensionInDp;
-        selectedImage.getLayoutParams().width = dimensionInDp;
+        int selectedDimensionInPixel=120;
+        dimensionInDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dimensionInPixel, activity.getResources().getDisplayMetrics());
+        selectedDimensionInDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, selectedDimensionInPixel, activity.getResources().getDisplayMetrics());
+        selectedImage.getLayoutParams().height = selectedDimensionInDp;
+        selectedImage.getLayoutParams().width = selectedDimensionInDp;
         selectedImage.requestLayout();
         deckSkinListener listener=new deckSkinListener();
 
@@ -97,8 +124,8 @@ public class SettingsButtonListener implements View.OnClickListener {
         }
         final Button soundEffectButton=(Button)popupView.findViewById(R.id.sound_effects_button);
         final Button musicButton=(Button)popupView.findViewById(R.id.music_button);
-        musicOn=activity.isMusicOn();
-        soundEffectsOn=activity.isSoundEffectOn();
+        musicOn=SettingsController.getInstance().getBackgroundMusic();
+        soundEffectsOn=SettingsController.getInstance().getSoundEffects();
         if(musicOn)
             musicButton.setBackgroundResource(musicOnResourceId);
         else
@@ -112,12 +139,12 @@ public class SettingsButtonListener implements View.OnClickListener {
             public void onClick(View v) {
                 if(soundEffectsOn) {
                     soundEffectsOn = false;
-                    activity.setSoundEffects(soundEffectsOn);
+                    SettingsController.getInstance().setSoundEffects(soundEffectsOn);
                     soundEffectButton.setBackgroundResource(soundEffectOffResourceId);
                 }
                 else {
                     soundEffectsOn = true;
-                    activity.setSoundEffects(soundEffectsOn);
+                    SettingsController.getInstance().setSoundEffects(soundEffectsOn);
                     soundEffectButton.setBackgroundResource(soundEffectOnResourceId);
                 }
             }
@@ -127,12 +154,12 @@ public class SettingsButtonListener implements View.OnClickListener {
             public void onClick(View v) {
                 if(musicOn) {
                     musicOn = false;
-                    activity.setMusic(musicOn);
+                    SettingsController.getInstance().setBackgroundMusic(musicOn);
                    musicButton.setBackgroundResource(musicOffResourceId);
                 }
                 else {
                     musicOn = true;
-                    activity.setMusic(musicOn);
+                    SettingsController.getInstance().setBackgroundMusic(musicOn);
                     musicButton.setBackgroundResource(musicOnResourceId);
                 }
             }
@@ -152,8 +179,20 @@ public class SettingsButtonListener implements View.OnClickListener {
 
         @Override
         public void onClick(View v) {
+            ImageView im=(ImageView) v;
+            im.getLayoutParams().height = selectedDimensionInDp;
+            im.getLayoutParams().width = selectedDimensionInDp;
+            im.requestLayout();
+            for(ImageView i:images){
+                if(im!=i){
+                    i.getLayoutParams().height = dimensionInDp;
+                    i.getLayoutParams().width = dimensionInDp;
+                    i.requestLayout();
+                }
+
+            }
             int index=images.indexOf(v);
-            activity.setDeckSkin(skinNames.get(index));
+            SettingsController.getInstance().setDeckSkin(skinNames.get(index));
         }
     }
 }

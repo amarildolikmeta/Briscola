@@ -19,14 +19,15 @@ import it.polimi.ma.group07.briscola.R;
 import it.polimi.ma.group07.briscola.controller.persistance.DatabaseRepository;
 import it.polimi.ma.group07.briscola.controller.persistance.LocalGame;
 
-
+/**
+ * Displyas statistics about the games played
+ */
 public class StatisticsFragment extends Fragment {
     String mGameType;
     TextView gamesWon;
     TextView gamesLost;
     TextView gamesPlayed;
     TextView gamesDrawn;
-    PieChart chart;
     public StatisticsFragment() {
 
     }
@@ -57,6 +58,9 @@ public class StatisticsFragment extends Fragment {
         gamesPlayed=(TextView) rootView.findViewById(R.id.games_played);
         gamesDrawn=(TextView) rootView.findViewById(R.id.games_drawn);
         int won,played,lost,draw;
+        /**
+         * Load and display the appropriate statistics
+         */
         if(mGameType != null){
                 if(mGameType=="Local"){
                     Log.i("Statistics","Reading Local");
@@ -86,29 +90,11 @@ public class StatisticsFragment extends Fragment {
             gamesLost.setText(""+lost);
             gamesDrawn.setText(""+draw);
             gamesPlayed.setText(""+played);
-            float values[]={won,lost,draw};
-            values=calculateData(values);
-            //((LinearLayout)rootView).addView(new PieChart(MainActivity.context,values));
 
         }
         return rootView;
     }
-    // Setter methods for keeping track of the list images this fragment can display and which image
-    // in the list is currently being displayed
-    private float[] calculateData(float[] data) {
-        // TODO Auto-generated method stub
-        float total=0;
-        for(int i=0;i<data.length;i++)
-        {
-            total+=data[i];
-        }
-        for(int i=0;i<data.length;i++)
-        {
-            data[i]=360*(data[i]/total);
-        }
-        return data;
 
-    }
     public void setGameType(String mGameType) {
         this.mGameType = mGameType;
     }

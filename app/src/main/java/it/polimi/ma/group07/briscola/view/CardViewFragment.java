@@ -19,7 +19,7 @@ import it.polimi.ma.group07.briscola.R;
  * Activities that contain this fragment must implement the
  * {@link CardViewFragment.OnCardSelectedListener} interface
  * to handle interaction events.
- * Use the {@link CardViewFragment#newInstance} factory method to
+ * Displays a card in the interface
  * create an instance of this fragment.
  */
 public class CardViewFragment extends Fragment {
@@ -69,10 +69,9 @@ public class CardViewFragment extends Fragment {
         // Inflate the layout for this fragment
         final View rootView = inflater.inflate(R.layout.fragment_card_view, container, false);
         imageView = (ImageView) rootView.findViewById(R.id.card_image);
-        // If a list of image ids exists, set the image resource to the correct item in that list
-        // Otherwise, create a Log statement that indicates that the list was not found
+        // If an image id exists, set the image resource to the correct item
         if(mImageId != 0){
-            // Set the image resource to the list item at the stored index
+            // Set the image resource to the image id
             imageView.setImageResource(mImageId);
 
             // Set a click listener on the image view
@@ -87,8 +86,6 @@ public class CardViewFragment extends Fragment {
         return rootView;
     }
     // Setter methods for keeping track of the list images this fragment can display and which image
-    // in the list is currently being displayed
-
     public void setImageId(int mImageId) {
         this.mImageId = mImageId;
     }
@@ -99,7 +96,7 @@ public class CardViewFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-//This is the NoSaveStateFrameLayout - force it to not clip
+        // force it to not clip (for the animations)
         ViewGroup frameLayout = (ViewGroup) view.getParent();
         frameLayout.setClipChildren(false);
         frameLayout.setClipToPadding(false);
@@ -113,13 +110,20 @@ public class CardViewFragment extends Fragment {
             currentState.putInt("mImageId", mImageId);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
+    /**
+     * Call the listener registered
+     * @param card the fragment
+     */
     public void onCardPressed(CardViewFragment card) {
         if (mListener != null) {
             mListener.onCardSelected(card);
         }
     }
 
+    /**
+     * Check if the listener is registered when the fragment is attached to a container
+     * @param context the application context
+     */
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -138,9 +142,10 @@ public class CardViewFragment extends Fragment {
         mListener = null;
     }
 
-    public int getImageId() {
-        return mImageId;
-    }
+    /**
+     * Change the image resource
+     * @param resourceId id of the new resource
+     */
      public void changeImageResource(int resourceId) {
          mImageId=resourceId;
          if(imageView!=null)
@@ -151,10 +156,6 @@ public class CardViewFragment extends Fragment {
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
      * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnCardSelectedListener {
 
