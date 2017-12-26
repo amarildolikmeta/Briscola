@@ -28,6 +28,7 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import it.polimi.ma.group07.briscola.GameActivity;
@@ -178,7 +179,7 @@ public class ServerCoordinator implements GameController {
     }
     /**
      * called after the animations in the view are finished
-     * checks the state of the game and performes the next actions
+     * checks the state of the game and performs the next actions
      * accordingly
      * @param activity the activity of the game
      */
@@ -502,9 +503,26 @@ public class ServerCoordinator implements GameController {
                     }
                 } catch (SocketTimeoutException e) {
                     flag=true;
+                } catch(UnknownHostException e){
+                    Log.i("UnknownHostException", e.getMessage());
+                    errorJSON=new JSONObject();
+                    try {
+                        errorJSON.put("error","Connection Problem");
+                        errorJSON.put("message","Check your internet Connection");
+                    } catch (JSONException e1) {
+                        e1.printStackTrace();
+                    }
+                    return false;
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
                     Log.i("IOException", e.getMessage());
+                    errorJSON=new JSONObject();
+                    try {
+                        errorJSON.put("error","Connection Problem");
+                        errorJSON.put("message","Check your internet Connection");
+                    } catch (JSONException e1) {
+                        e1.printStackTrace();
+                    }
                     return false;
                 }
             }

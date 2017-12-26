@@ -18,9 +18,10 @@ import it.polimi.ma.group07.briscola.MainActivity;
 import it.polimi.ma.group07.briscola.R;
 import it.polimi.ma.group07.briscola.controller.persistance.DatabaseRepository;
 import it.polimi.ma.group07.briscola.controller.persistance.LocalGame;
+import it.polimi.ma.group07.briscola.controller.persistance.OnlineGame;
 
 /**
- * Displyas statistics about the games played
+ * Displays statistics about the games played
  */
 public class StatisticsFragment extends Fragment {
     String mGameType;
@@ -28,6 +29,7 @@ public class StatisticsFragment extends Fragment {
     TextView gamesLost;
     TextView gamesPlayed;
     TextView gamesDrawn;
+    TextView gamesTerminated;
     public StatisticsFragment() {
 
     }
@@ -57,7 +59,8 @@ public class StatisticsFragment extends Fragment {
         gamesLost=(TextView) rootView.findViewById(R.id.games_lost);
         gamesPlayed=(TextView) rootView.findViewById(R.id.games_played);
         gamesDrawn=(TextView) rootView.findViewById(R.id.games_drawn);
-        int won,played,lost,draw;
+        gamesTerminated=(TextView) rootView.findViewById(R.id.games_terminated);
+        int won,played,lost,draw,terminated;
         /**
          * Load and display the appropriate statistics
          */
@@ -67,14 +70,16 @@ public class StatisticsFragment extends Fragment {
                     won= DatabaseRepository.getInstance().getNrLocalGames(LocalGame.WON);
                     lost= DatabaseRepository.getInstance().getNrLocalGames(LocalGame.LOST);
                     draw= DatabaseRepository.getInstance().getNrLocalGames(LocalGame.DRAWN);
+                    terminated=DatabaseRepository.getInstance().getNrLocalGames(LocalGame.TERMINATED);
                     played=DatabaseRepository.getInstance().getNrLocalGames();
                     Log.i("Statistics","Read Local Statistics");
                     }
                else if(mGameType=="Online") {
                     Log.i("Statistics", "Reading Online");
-                    won = DatabaseRepository.getInstance().getNrOnlineGames(LocalGame.WON);
-                    lost = DatabaseRepository.getInstance().getNrOnlineGames(LocalGame.LOST);
-                    draw = DatabaseRepository.getInstance().getNrOnlineGames(LocalGame.DRAWN);
+                    won = DatabaseRepository.getInstance().getNrOnlineGames(OnlineGame.WON);
+                    lost = DatabaseRepository.getInstance().getNrOnlineGames(OnlineGame.LOST);
+                    draw = DatabaseRepository.getInstance().getNrOnlineGames(OnlineGame.DRAWN);
+                    terminated=DatabaseRepository.getInstance().getNrOnlineGames(OnlineGame.TERMINATED);
                     played = DatabaseRepository.getInstance().getNrOnlineGames();
                     Log.i("Statistics","Read Online Statistics");
 
@@ -84,13 +89,14 @@ public class StatisticsFragment extends Fragment {
                     lost= 0;
                     draw= 0;
                     played=0;
+                    terminated=0;
                     Log.i("Statistics","Failed to read Statistics");
             }
             gamesWon.setText(""+won);
             gamesLost.setText(""+lost);
             gamesDrawn.setText(""+draw);
             gamesPlayed.setText(""+played);
-
+            gamesTerminated.setText(""+terminated);
         }
         return rootView;
     }

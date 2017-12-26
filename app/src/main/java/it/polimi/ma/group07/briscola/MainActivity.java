@@ -18,6 +18,7 @@ import java.util.logging.Handler;
 
 import it.polimi.ma.group07.briscola.controller.Coordinator;
 import it.polimi.ma.group07.briscola.controller.SettingsButtonListener;
+import it.polimi.ma.group07.briscola.controller.SettingsController;
 import it.polimi.ma.group07.briscola.controller.persistance.DatabaseRepository;
 import it.polimi.ma.group07.briscola.controller.persistance.LocalGame;
 import it.polimi.ma.group07.briscola.model.Briscola;
@@ -182,7 +183,10 @@ public class MainActivity extends AppCompatActivity {
      * Start the background music
      */
     public static void startMusic() {
-        if(backgroundMusic.isPlaying())
+        /**
+         * return if the music is off or it's already playing
+         */
+        if(backgroundMusic.isPlaying()||!SettingsController.getInstance().getBackgroundMusic())
             return;
         backgroundMusic.seekTo(0);
         backgroundMusic.start();
@@ -198,24 +202,16 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     public void onStart() {
-        if (backgroundMusic != null)
-            backgroundMusic.release();
-        backgroundMusic = MediaPlayer.create(context, R.raw.background_music);
-        backgroundMusic.setLooping(true);
-        backgroundMusic.setVolume(0.15f, 0.15f);
 
         super.onStart();
+        setupMusic();
     }
 
     /**
      * Start a new game and pass the appropriate parameters to the Game Activity
      */
     public void startNewGame(){
-        if (backgroundMusic != null)
-            backgroundMusic.release();
-        backgroundMusic = MediaPlayer.create(context, R.raw.background_music);
-        backgroundMusic.setLooping(true);
-        backgroundMusic.setVolume(0.15f, 0.15f);
+        setupMusic();
         final Intent intent = new Intent(MainActivity.this, GameActivity.class);
         intent.putExtra("singlePlayer", true);
         Briscola.createInstance();
@@ -230,11 +226,7 @@ public class MainActivity extends AppCompatActivity {
      * @param movesPerformed String representing the moves performed until now
      */
     public void resumeGame(String startConfiguration,String movesPerformed){
-        if (backgroundMusic != null)
-            backgroundMusic.release();
-        backgroundMusic = MediaPlayer.create(context, R.raw.background_music);
-        backgroundMusic.setLooping(true);
-        backgroundMusic.setVolume(0.15f, 0.15f);
+        setupMusic();
         final Intent intent = new Intent(MainActivity.this, GameActivity.class);
         /**
          * Create a new game and apply the moves
@@ -255,5 +247,11 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("startConfiguration", startConfiguration);
         startActivity(intent);
     }
-
+    public void setupMusic(){
+        if (backgroundMusic != null)
+            backgroundMusic.release();
+        backgroundMusic = MediaPlayer.create(context, R.raw.background_music);
+        backgroundMusic.setLooping(true);
+        backgroundMusic.setVolume(0.15f, 0.15f);
+    }
 }

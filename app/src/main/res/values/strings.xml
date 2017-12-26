@@ -16,4 +16,5 @@
     <string name="wonGames">Games Won</string>
     <string name="lostGames">Games Lost</string>
     <string name="drawnGames">Games Drawn</string>
+    <string name="terminatedGames">Games Abandoned</string>
 </resources>

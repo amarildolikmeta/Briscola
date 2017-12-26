@@ -11,17 +11,18 @@
         android:layout_width="100dp"
         android:layout_height="120dp">
         <Button
+            android:id="@+id/exitButton"
+            android:layout_width="@dimen/settings_icon_height"
+            android:layout_height="@dimen/settings_icon_height"
+            android:background="@drawable/exit_icon"
+            android:layout_alignParentTop="true"            />
+        <Button
             android:id="@+id/settingsButton"
             android:layout_width="@dimen/settings_icon_height"
             android:layout_height="@dimen/settings_icon_height"
             android:background="@drawable/settings_icon"
-            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"
             />
-        <Button
-            android:layout_width="@dimen/settings_icon_height"
-            android:layout_height="@dimen/settings_icon_height"
-            android:background="@drawable/more"
-            android:layout_alignParentBottom="true"            />
     </RelativeLayout>
     <RelativeLayout
         android:id="@+id/gameView"

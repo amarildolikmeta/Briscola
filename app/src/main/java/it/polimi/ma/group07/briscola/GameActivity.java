@@ -16,6 +16,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -24,6 +26,8 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import android.os.Handler;
 
 import it.polimi.ma.group07.briscola.controller.CardPressedListener;
 import it.polimi.ma.group07.briscola.controller.Coordinator;
@@ -35,6 +39,7 @@ import it.polimi.ma.group07.briscola.controller.ServerCoordinator;
 import it.polimi.ma.group07.briscola.controller.SettingsButtonListener;
 import it.polimi.ma.group07.briscola.controller.SettingsController;
 import it.polimi.ma.group07.briscola.controller.UndoListener;
+import it.polimi.ma.group07.briscola.controller.persistance.ExitButtonListener;
 import it.polimi.ma.group07.briscola.model.Briscola;
 
 import it.polimi.ma.group07.briscola.model.PlayerState;
@@ -67,6 +72,7 @@ public class GameActivity extends AppCompatActivity  {
     Button restartButton;
     Button settingsButton;
     Button undoButton;
+    Button exitButton;
     /**
      * reference to the listener to the cards that are played
      */
@@ -117,6 +123,13 @@ public class GameActivity extends AppCompatActivity  {
      * Listener to the changes of the game settings
      */
     private SharedPreferences.OnSharedPreferenceChangeListener listener;
+    /**
+     * List of all the animations currently being played
+     * Before the activity is destroyed all the animations currently active are ended to avoid
+     * Exceptions caused by them
+     */
+    private ArrayList<ObjectAnimator> animations;
+    private ArrayList<AnimatorSet> animationSets;
 
     /**
      * Start the music if the settings are on
@@ -128,13 +141,12 @@ public class GameActivity extends AppCompatActivity  {
         deckSkin=SettingsController.getInstance().getDeckSkin();
         backgroundMusicOn=SettingsController.getInstance().getBackgroundMusic();
         soundEffectsOn=SettingsController.getInstance().getSoundEffects();
-        Log.i("Game Activity onStart","backgroundMusic"+backgroundMusicOn);
+
         if(backgroundMusicOn)
             MainActivity.startMusic();
         else
             MainActivity.stopMusic();
-
-
+        Log.i("Game Activity onStart","backgroundMusic"+backgroundMusicOn);
     }
 
     /**
@@ -173,6 +185,8 @@ public class GameActivity extends AppCompatActivity  {
         undoButton.setOnClickListener(new UndoListener(GameActivity.this));
         restartButton=(Button) findViewById(R.id.restartButton);
         restartButton.setOnClickListener(new RestartListener(GameActivity.this));
+        exitButton=(Button) findViewById(R.id.exitButton);
+        exitButton.setOnClickListener(new ExitButtonListener(GameActivity.this));
 
         playerViews=new LinearLayout[2];
         gameOptions=(LinearLayout) findViewById(R.id.gameOptions);
@@ -192,6 +206,9 @@ public class GameActivity extends AppCompatActivity  {
         playerFragments=new ArrayList<>();
         playCardMusic= MediaPlayer.create(context, R.raw.play_card);
         dealCardMusic= MediaPlayer.create(context, R.raw.deal_card);
+
+        animations=new ArrayList<>();
+        animationSets=new ArrayList<>();
 
         deckSkin="back1";
         deckSkin=SettingsController.getInstance().getDeckSkin();
@@ -258,6 +275,7 @@ public class GameActivity extends AppCompatActivity  {
                      * Wait for the new game to start
                      */
                     ((ServerCoordinator)controller).startGame(GameActivity.this);
+                    Log.i("Game Activity Online","Starting Online Game");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -287,6 +305,7 @@ public class GameActivity extends AppCompatActivity  {
      */
     @Override
     public void onBackPressed(){
+
         AlertDialog.Builder alert = new AlertDialog.Builder(GameActivity.this);
         alert.setTitle("Quit");
         alert.setMessage("Are you sure you want to quit the game?");
@@ -295,6 +314,12 @@ public class GameActivity extends AppCompatActivity  {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
+                /*new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        finish();
+                    }
+                },1000);*/
                 finish();
             }
         });
@@ -315,9 +340,29 @@ public class GameActivity extends AppCompatActivity  {
      */
     @Override
     public void onDestroy(){
+        /**
+         * stop the Music
+         * stop listening to the changes of the settings
+         * and stop all animations currently running
+         */
         MainActivity.stopMusic();
+        getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(listener);
+        stopAnimations();
         controller.finishGame("abandon");
         super.onDestroy();
+    }
+
+    private void stopAnimations() {
+        for(ObjectAnimator oa:animations) {
+            oa.removeAllListeners();
+            if(oa.isRunning())
+                oa.cancel();
+        }
+        for(AnimatorSet as:animationSets) {
+            as.removeAllListeners();
+            if(as.isRunning())
+                as.cancel();
+        }
     }
 
     /**
@@ -385,6 +430,8 @@ public class GameActivity extends AppCompatActivity  {
      * @param state state of the game
      */
         public void startGame(PlayerState state) {
+            if(backgroundMusicOn)
+                MainActivity.startMusic();
             isReady=false;
             int opponentSize=state.opponentHandSize[0];
             Log.i("deck skin","Current skin:"+deckSkin);
@@ -455,6 +502,7 @@ public class GameActivity extends AppCompatActivity  {
         translation.addListener(new AnimatorListenerAdapter()
         {@Override
         public void onAnimationEnd(Animator animation) {
+            animationSets.remove(translation);
             getSupportFragmentManager().beginTransaction().remove(frag).commit();
             getSupportFragmentManager().beginTransaction().add(GameActivity.this.surface.getId(), newFrag).commit();
             surfaceFragments.add(newFrag);
@@ -472,14 +520,25 @@ public class GameActivity extends AppCompatActivity  {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
+                    animations.remove(oa1);
                     frag.changeImageResource(cardId);
                     final ObjectAnimator oa2 = ObjectAnimator.ofFloat(view, "scaleX", 0f, 1f);
                     oa2.setInterpolator(new AccelerateDecelerateInterpolator());
                     oa2.setDuration(150);
+                    oa2.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            animations.remove(oa2);
+                        }
+                    });
+                    animations.add(oa2);
                     oa2.start();
                 }
             });
-            oa1.start();
+        animations.add(oa1);
+        oa1.start();
+        animationSets.add(translation);
         translation.start();
         onDealCardEffect();
     }
@@ -566,6 +625,7 @@ public class GameActivity extends AppCompatActivity  {
         translation.addListener(new AnimatorListenerAdapter()
             {@Override
             public void onAnimationEnd(Animator animation) {
+                animationSets.remove(translation);
                 Log.i("Dealing","Card Dealt");
                 getSupportFragmentManager().beginTransaction().remove(frag).commit();
                 getSupportFragmentManager().beginTransaction().add(playerViews[player].getId(), newFrag).commit();
@@ -599,23 +659,28 @@ public class GameActivity extends AppCompatActivity  {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
+                    animations.remove(oa1);
                     frag.changeImageResource(cardId);
                     final ObjectAnimator oa2 = ObjectAnimator.ofFloat(view, "scaleX", 0f, 1f);
                     oa2.setInterpolator(new AccelerateDecelerateInterpolator());
                     oa2.setDuration(150);
+                    oa2.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            animations.remove(oa2);
+                        }
+                    });
+                    animations.add(oa2);
                     oa2.start();
                 }
             });
+            animations.add(oa1);
             oa1.start();
         }
         Log.i("Dealing","Starting Animation");
-        try {
-            translation.start();
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-
+        animationSets.add(translation);
+        translation.start();
         onDealCardEffect();
     }
 
@@ -641,7 +706,7 @@ public class GameActivity extends AppCompatActivity  {
         briscolaCard.getLocationOnScreen(locationDestination);
         destinationHeight = briscolaCard.getHeight();
         deckHeight = deck.getHeight();
-        deckWidth = deck.getWidth();
+
         final double translationY=(destinationHeight/2+locationDestination[1])-(deckHeight/2+locationDeck[1]);
         final ObjectAnimator animationY = ObjectAnimator.ofFloat(view, "translationY", 0.F, (int) translationY);
         final AnimatorSet translation = new AnimatorSet();
@@ -650,10 +715,12 @@ public class GameActivity extends AppCompatActivity  {
         translation.addListener(new AnimatorListenerAdapter()
         {@Override
         public void onAnimationEnd(Animator animation) {
+            animationSets.remove(translation);
             getSupportFragmentManager().beginTransaction().remove(frag).commit();
             getSupportFragmentManager().beginTransaction().add(briscolaCard.getId(), newFrag).commit();
             briscolaFragment=newFrag;
             isReady=true;
+            controller.onMovePerformed(GameActivity.this);
         }
         });
             final ObjectAnimator oa1 = ObjectAnimator.ofFloat(view, "scaleX", 1f, 0f);
@@ -663,14 +730,25 @@ public class GameActivity extends AppCompatActivity  {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
+                    animations.remove(oa1);
                     frag.changeImageResource(cardId);
                     final ObjectAnimator oa2 = ObjectAnimator.ofFloat(view, "scaleX", 0f, 1f);
                     oa2.setInterpolator(new AccelerateDecelerateInterpolator());
                     oa2.setDuration(150);
+                    oa2.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            animations.remove(oa2);
+                        }
+                    });
+                    animations.add(oa2);
                     oa2.start();
                 }
             });
-            oa1.start();
+        animations.add(oa1);
+        oa1.start();
+        animationSets.add(translation);
         translation.start();
         onDealCardEffect();
     }
@@ -710,6 +788,7 @@ public class GameActivity extends AppCompatActivity  {
         translation.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
+                    animationSets.remove(translation);
                     getSupportFragmentManager().beginTransaction().remove(fragment).commit();
                     getSupportFragmentManager().beginTransaction().add(surface.getId(), newFrag).commit();
                     surfaceFragments.add(newFrag);
@@ -728,15 +807,26 @@ public class GameActivity extends AppCompatActivity  {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
+                    animations.remove(oa1);
                     fragment.changeImageResource(resourceId);
                     final ObjectAnimator oa2 = ObjectAnimator.ofFloat(view, "scaleX", 0f, 1f);
                     oa2.setInterpolator(new AccelerateDecelerateInterpolator());
+                    oa2.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            animations.remove(oa2);
+                        }
+                    });
+                    animations.add(oa2);
                     oa2.start();
                 }
             });
+            animations.add(oa1);
             oa1.start();
         }
-            translation.start();
+        animationSets.add(translation);
+        translation.start();
         onPlayCardEffect();
     }
 
@@ -762,6 +852,7 @@ public class GameActivity extends AppCompatActivity  {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
+                animationSets.remove(translation);
                 for(int i=0;i<surfaceFragments.size();i++)
                     getSupportFragmentManager().beginTransaction().remove(surfaceFragments.get(i)).commit();
                 surfaceFragments.clear();
@@ -777,6 +868,7 @@ public class GameActivity extends AppCompatActivity  {
                 }
             }
         });
+        animationSets.add(translation);
         translation.start();
         onPlayCardEffect();
 
