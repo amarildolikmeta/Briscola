@@ -130,6 +130,11 @@ public class GameActivity extends AppCompatActivity  {
      */
     private ArrayList<ObjectAnimator> animations;
     private ArrayList<AnimatorSet> animationSets;
+    /**
+     * set to true when the activity is destroyed
+     * now new animations will start if this flag is set to true
+     */
+    private boolean terminated;
 
     /**
      * Start the music if the settings are on
@@ -170,6 +175,8 @@ public class GameActivity extends AppCompatActivity  {
         setContentView(R.layout.activity_game);
 
         fragmentManager=getSupportFragmentManager();
+
+        terminated=false;
 
         gameView=(RelativeLayout) findViewById(R.id.gameView);
         singlePlayer=getIntent().getExtras().getBoolean("singlePlayer");
@@ -343,8 +350,10 @@ public class GameActivity extends AppCompatActivity  {
         /**
          * stop the Music
          * stop listening to the changes of the settings
+         * set the terminated flag to true
          * and stop all animations currently running
          */
+        terminated=true;
         MainActivity.stopMusic();
         getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(listener);
         stopAnimations();
@@ -371,7 +380,8 @@ public class GameActivity extends AppCompatActivity  {
      * @param state State of the game
      */
     public void buildInterface(PlayerState state) {
-
+        if(terminated)
+            return;
         int backCardId = getResources().getIdentifier(deckSkin, "drawable",
                 getPackageName());
         isReady=false;
@@ -430,6 +440,8 @@ public class GameActivity extends AppCompatActivity  {
      * @param state state of the game
      */
         public void startGame(PlayerState state) {
+            if(terminated)
+                return;
             if(backgroundMusicOn)
                 MainActivity.startMusic();
             isReady=false;
@@ -469,6 +481,8 @@ public class GameActivity extends AppCompatActivity  {
      * @param surface list of cards in the surface
      */
     private void fillSurface(final ArrayList<String> surface) {
+        if(terminated)
+            return;
         if(surface.size()==0)
             return;
         String name="";
@@ -532,21 +546,27 @@ public class GameActivity extends AppCompatActivity  {
                             animations.remove(oa2);
                         }
                     });
-                    animations.add(oa2);
-                    oa2.start();
+                    if(!terminated) {
+                        animations.add(oa2);
+                        oa2.start();
+                    }
                 }
             });
-        animations.add(oa1);
-        oa1.start();
-        animationSets.add(translation);
-        translation.start();
-        onDealCardEffect();
+        if(!terminated) {
+            animations.add(oa1);
+            oa1.start();
+            animationSets.add(translation);
+            translation.start();
+            onDealCardEffect();
+        }
     }
 
     /**
      * Delete all the fragments in the interface , emptying it
      */
     public void flushInterface(){
+        if(terminated)
+            return;
         Log.i("Flushing Interface","Flushing");
         List<Fragment> al = getSupportFragmentManager().getFragments();
         if (al == null) {
@@ -577,6 +597,8 @@ public class GameActivity extends AppCompatActivity  {
      * @param player the player that gets the card
      */
     public void drawCard(final ArrayList<String> cards, final int player, final boolean isLastDraw, final boolean isStartGame){
+        if(terminated)
+            return;
         String name="";
         if(player==0){
             name="c"+cards.get(0).toLowerCase();
@@ -671,23 +693,31 @@ public class GameActivity extends AppCompatActivity  {
                             animations.remove(oa2);
                         }
                     });
-                    animations.add(oa2);
-                    oa2.start();
+                    if(!terminated) {
+                        animations.add(oa2);
+                        oa2.start();
+                    }
                 }
             });
-            animations.add(oa1);
-            oa1.start();
+            if(!terminated) {
+                animations.add(oa1);
+                oa1.start();
+            }
         }
-        Log.i("Dealing","Starting Animation");
-        animationSets.add(translation);
-        translation.start();
-        onDealCardEffect();
+        if(!terminated) {
+            Log.i("Dealing", "Starting Animation");
+            animationSets.add(translation);
+            translation.start();
+            onDealCardEffect();
+        }
     }
 
     /**
      * Show animation of the briscola card being drawn from the deck
      */
     private void drawBriscola() {
+        if(terminated)
+            return;
        String name="c"+briscola;
         final CardViewFragment frag;
         frag = new CardViewFragment();
@@ -742,15 +772,19 @@ public class GameActivity extends AppCompatActivity  {
                             animations.remove(oa2);
                         }
                     });
-                    animations.add(oa2);
-                    oa2.start();
+                    if(!terminated) {
+                        animations.add(oa2);
+                        oa2.start();
+                    }
                 }
             });
-        animations.add(oa1);
-        oa1.start();
-        animationSets.add(translation);
-        translation.start();
-        onDealCardEffect();
+        if(!terminated) {
+            animations.add(oa1);
+            oa1.start();
+            animationSets.add(translation);
+            translation.start();
+            onDealCardEffect();
+        }
     }
 
     /**
@@ -759,6 +793,8 @@ public class GameActivity extends AppCompatActivity  {
      * @param player player that plays it
      */
     public  void playCard(final String card, int player,int cardIndex ) {
+        if(terminated)
+            return;
         isReady=false;
         final CardViewFragment fragment=playerFragments.get(player).get(cardIndex);
         playerFragments.get(player).remove(fragment);
@@ -818,16 +854,22 @@ public class GameActivity extends AppCompatActivity  {
                             animations.remove(oa2);
                         }
                     });
-                    animations.add(oa2);
-                    oa2.start();
+                    if(!terminated) {
+                        animations.add(oa2);
+                        oa2.start();
+                    }
                 }
             });
-            animations.add(oa1);
-            oa1.start();
+            if(!terminated) {
+                animations.add(oa1);
+                oa1.start();
+            }
         }
-        animationSets.add(translation);
-        translation.start();
-        onPlayCardEffect();
+        if(!terminated) {
+            animationSets.add(translation);
+            translation.start();
+            onPlayCardEffect();
+        }
     }
 
     /**
@@ -835,6 +877,8 @@ public class GameActivity extends AppCompatActivity  {
      * @param winner the player that gets the cards
      */
     public void finishRound(final int winner, final ArrayList<String> dealtCards, final boolean isLastDraw){
+        if(terminated)
+            return;
         if(surfaceFragments.size()<2)
             return;
         isReady=false;
@@ -868,10 +912,11 @@ public class GameActivity extends AppCompatActivity  {
                 }
             }
         });
-        animationSets.add(translation);
-        translation.start();
-        onPlayCardEffect();
-
+        if(!terminated) {
+            animationSets.add(translation);
+            translation.start();
+            onPlayCardEffect();
+        }
     }
 
     /**

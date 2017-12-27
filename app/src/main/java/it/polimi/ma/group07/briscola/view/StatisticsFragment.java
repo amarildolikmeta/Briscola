@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import it.polimi.ma.group07.briscola.MainActivity;
@@ -30,6 +31,14 @@ public class StatisticsFragment extends Fragment {
     TextView gamesPlayed;
     TextView gamesDrawn;
     TextView gamesTerminated;
+    ProgressBar gamesWonProgress;
+    ProgressBar gamesLostProgress;
+    ProgressBar gamesDrawnProgress;
+    ProgressBar gamesTerminatedProgress;
+    TextView gamesWonPercentage;
+    TextView gamesLostPercentage;
+    TextView gamesDrawnPercentage;
+    TextView gamesTerminatedPercentage;
     public StatisticsFragment() {
 
     }
@@ -60,7 +69,18 @@ public class StatisticsFragment extends Fragment {
         gamesPlayed=(TextView) rootView.findViewById(R.id.games_played);
         gamesDrawn=(TextView) rootView.findViewById(R.id.games_drawn);
         gamesTerminated=(TextView) rootView.findViewById(R.id.games_terminated);
-        int won,played,lost,draw,terminated;
+
+        gamesWonProgress=(ProgressBar) rootView.findViewById(R.id.progress_won);
+        gamesLostProgress=(ProgressBar) rootView.findViewById(R.id.progress_lost);
+        gamesDrawnProgress=(ProgressBar) rootView.findViewById(R.id.progress_drawn);
+        gamesTerminatedProgress=(ProgressBar) rootView.findViewById(R.id.progress_terminated);
+
+        gamesWonPercentage=(TextView) rootView.findViewById(R.id.percentage_games_won);
+        gamesLostPercentage=(TextView) rootView.findViewById(R.id.percentage_games_lost);
+        gamesDrawnPercentage=(TextView) rootView.findViewById(R.id.percentage_games_drawn);
+        gamesTerminatedPercentage=(TextView) rootView.findViewById(R.id.percentage_games_terminated);
+
+        float won,played,lost,draw,terminated;
         /**
          * Load and display the appropriate statistics
          */
@@ -92,11 +112,31 @@ public class StatisticsFragment extends Fragment {
                     terminated=0;
                     Log.i("Statistics","Failed to read Statistics");
             }
-            gamesWon.setText(""+won);
-            gamesLost.setText(""+lost);
-            gamesDrawn.setText(""+draw);
-            gamesPlayed.setText(""+played);
-            gamesTerminated.setText(""+terminated);
+            gamesWon.setText(""+(int)won);
+            gamesLost.setText(""+(int)lost);
+            gamesDrawn.setText(""+(int)draw);
+            gamesPlayed.setText(""+(int)played);
+            gamesTerminated.setText(""+(int)terminated);
+
+            gamesWonProgress.setMax((int)played);
+            gamesWonProgress.setProgress((int)won);
+            gamesLostProgress.setMax((int)played);
+            gamesLostProgress.setProgress((int)lost);
+            gamesWonProgress.setMax((int)played);
+            gamesDrawnProgress.setProgress((int)draw);
+            gamesTerminatedProgress.setMax((int)played);
+            gamesTerminatedProgress.setProgress((int)terminated);
+
+            int percentageWon,percentageLost,percentageDrawn,percentageTerminated;
+            percentageWon=(int)(((won/played))*100);
+            percentageLost=(int)((lost/played)*100);
+            percentageDrawn=(int)((((float)draw/(float)played))*100);
+            percentageTerminated=100-(percentageWon+percentageDrawn+percentageLost);
+
+            gamesWonPercentage.setText(percentageWon+"%");
+            gamesLostPercentage.setText(percentageLost+"%");
+            gamesDrawnPercentage.setText(percentageDrawn+"%");
+            gamesTerminatedPercentage.setText(percentageTerminated+"%");
         }
         return rootView;
     }
