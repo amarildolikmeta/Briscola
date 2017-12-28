@@ -1,7 +1,9 @@
 package it.polimi.ma.group07.briscola.controller;
 
+import android.graphics.Bitmap;
 import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -53,6 +55,14 @@ public class SettingsButtonListener implements View.OnClickListener {
      */
     private int dimensionInDp;
     private int selectedDimensionInDp;
+    private int selectedSpeedDimensionInDp;
+    private int speedDimensionInDp;
+    /**
+     * Buttons to change the animation speed
+     *
+     */
+    private ArrayList<Button> animationButtons;
+    private ArrayList<Integer> animationSpeeds;
     public SettingsButtonListener(AppCompatActivity activity){
         this.activity= activity;
         skins=new ArrayList<>();
@@ -70,6 +80,8 @@ public class SettingsButtonListener implements View.OnClickListener {
                 activity.getPackageName());
         soundEffectOffResourceId=activity.getResources().getIdentifier("effects_off", "drawable",
                 activity.getPackageName());
+        animationButtons=new ArrayList<>();
+        animationSpeeds=new ArrayList<>();
     }
     @Override
     public void onClick(View v) {
@@ -99,8 +111,13 @@ public class SettingsButtonListener implements View.OnClickListener {
         gallery.addView(selectedImage);
         int dimensionInPixel = 100;
         int selectedDimensionInPixel=120;
+        int speedDimensionInPixel=40;
+        int selectedSpeedDimensionInPixel=50;
         dimensionInDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dimensionInPixel, activity.getResources().getDisplayMetrics());
         selectedDimensionInDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, selectedDimensionInPixel, activity.getResources().getDisplayMetrics());
+        speedDimensionInDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, speedDimensionInPixel, activity.getResources().getDisplayMetrics());
+        selectedSpeedDimensionInDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, selectedSpeedDimensionInPixel, activity.getResources().getDisplayMetrics());
+
         selectedImage.getLayoutParams().height = selectedDimensionInDp;
         selectedImage.getLayoutParams().width = selectedDimensionInDp;
         selectedImage.requestLayout();
@@ -164,6 +181,28 @@ public class SettingsButtonListener implements View.OnClickListener {
                 }
             }
         });
+        Log.i("Settings","HandlingAnimations");
+        //handle animationButtons
+        animationButtons.add((Button)popupView.findViewById(R.id.animation_slow_button));
+        animationButtons.add((Button)popupView.findViewById(R.id.animation_medium_button));
+        animationButtons.add((Button)popupView.findViewById(R.id.animation_fast_button));
+        Log.i("Settings","Loaded Buttons");
+        animationSpeeds.add(SettingsController.ANIMATION_SLOW);
+        animationSpeeds.add(SettingsController.ANIMATION_MEDIUM);
+        animationSpeeds.add(SettingsController.ANIMATION_FAST);
+        Log.i("Settings","Loaded speeds");
+        AnimationListener animationListener=new AnimationListener();
+
+        for(Button b:animationButtons)
+            b.setOnClickListener(animationListener);
+        Log.i("Settings","Set Listeners");
+        Button selectedButton=animationButtons.get(
+                animationSpeeds.indexOf(SettingsController.getInstance().getAnimationSpeed()));
+        selectedButton.getLayoutParams().height = selectedSpeedDimensionInDp;
+        selectedButton.getLayoutParams().width = selectedSpeedDimensionInDp;
+        selectedButton.requestLayout();
+
+        Log.i("Settings","Showing PopUp Window");
         // show the popup window
         popupWindow.setAnimationStyle(R.style.Animations_popup);
         popupWindow.showAtLocation(mainLayout, Gravity.CENTER, 0, 0);
@@ -193,6 +232,27 @@ public class SettingsButtonListener implements View.OnClickListener {
             }
             int index=images.indexOf(v);
             SettingsController.getInstance().setDeckSkin(skinNames.get(index));
+        }
+    }
+    private class AnimationListener implements View.OnClickListener {
+
+        @Override
+        public void onClick(View v) {
+            int index=animationButtons.indexOf((Button)v);
+            int speed=animationSpeeds.get(index);
+            SettingsController.getInstance().setAnimationSpeed(speed);
+            for(Button b:animationButtons){
+                if(b==(Button)v){
+                    b.getLayoutParams().height = selectedSpeedDimensionInDp;
+                    b.getLayoutParams().width = selectedSpeedDimensionInDp;
+                    b.requestLayout();
+                }
+                else{
+                    b.getLayoutParams().height = speedDimensionInDp;
+                    b.getLayoutParams().width = speedDimensionInDp;
+                    b.requestLayout();
+                }
+            }
         }
     }
 }

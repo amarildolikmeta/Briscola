@@ -1,4 +1,4 @@
-package it.polimi.ma.group07.briscola.controller.persistance;
+package it.polimi.ma.group07.briscola.controller;
 
 import android.view.View;
 

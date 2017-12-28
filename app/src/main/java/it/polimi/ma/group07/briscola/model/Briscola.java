@@ -963,4 +963,16 @@ public class Briscola {
             scores[i]=players.get(i).getScore();
         return scores;
     }
+
+    /**
+     * Get the cards in the deck as a list of strings
+     * @return list of string representations of the cards in the deck
+     */
+    public ArrayList<String> getDeckAsStrings() {
+        ArrayList<String> cards=new ArrayList<>();
+        for(Card c:deck.getDeck()){
+            cards.add(c.toString());
+        }
+        return cards;
+    }
 }

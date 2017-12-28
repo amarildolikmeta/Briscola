@@ -29,7 +29,7 @@ public class CardPressedListener implements CardViewFragment.OnCardSelectedListe
 
     @Override
     public void onCardSelected(CardViewFragment card) {
-        if(Briscola.getInstance().isGameFinished()||!activity.isReady)
+        if(!activity.isReady||activity.aiPlays)
             return;
         /**
          * get the index of the card played and perform the given move

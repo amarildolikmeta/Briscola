@@ -53,6 +53,7 @@ import static it.polimi.ma.group07.briscola.R.id.deck;
  * Controller for Online games
  */
 public class ServerCoordinator implements GameController {
+    private static int TIME_DELAY=1200;
     /**
      * Representation of the state of the game
      * as seen from the user {@link PlayerState}
@@ -109,7 +110,20 @@ public class ServerCoordinator implements GameController {
     private String response;
     private boolean winner;
     int indexPlayed;
+    /**
+     * true if the ai is gonna play online
+     */
+    private boolean aiPlays;
 
+    private Handler handler;
+    public ServerCoordinator(boolean aiPlays){
+        /**
+         * clear AI from previous games data
+         */
+        AIPlayer.clear();
+        this.aiPlays=aiPlays;
+        handler=new Handler();
+    }
     /**
      * Performs the API call to join a game
      * The call is performed in the background
@@ -138,6 +152,7 @@ public class ServerCoordinator implements GameController {
      * The call is performed in the background
      */
     public void finishGame(String reason){
+        AIPlayer.clear();
         if(state!=null) {
             Log.i("Server Coordinator", "Terminating game");
             getRepository().saveOnlineGame(new OnlineGame(OnlineGame.TERMINATED));
@@ -173,9 +188,15 @@ public class ServerCoordinator implements GameController {
         return DatabaseRepository.getInstance();
     }
 
+    /**
+     * start a new Game
+     * @param activity game activity
+     */
     @Override
     public void onNewGame(GameActivity activity) {
-
+            finishGame("abandon");
+            activity.finish();
+            MainActivity.getInstance().startNewOnlineGame(aiPlays);
     }
     /**
      * called after the animations in the view are finished
@@ -184,23 +205,46 @@ public class ServerCoordinator implements GameController {
      * @param activity the activity of the game
      */
     @Override
-    public void onMovePerformed(GameActivity activity) {
+    public void onMovePerformed(final GameActivity activity) {
         switch(lastMove){
             case "START_GAME":
-                //poll the server if it's not your turn to play
+                /**
+                 * Poll server if it's not your turn to play
+                 * otherwise make AI play if it's AI game
+                 * or wait for input from user
+                 */
                 if(!yourTurn)
                     pollServer();
+                else if(aiPlays){
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            onPerformMove(activity, AIPlayer.getMoveFromState(state));
+                        }
+                    }, TIME_DELAY);
+                }
                 break;
             case "POST":
                 onPostFinished();
                 break;
             case "POST_FINISH":
-                activity.setScores(scores);
                 if(cardsPlayed==40)
                     showWinner();
                 else if(winner){
                     state.playableState=true;
                     playable=true;
+                    /**
+                     * AI makes next move
+                     * otherwise wait for move from user
+                     */
+                    if(aiPlays) {
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                onPerformMove(activity, AIPlayer.getMoveFromState(state));
+                            }
+                        }, TIME_DELAY);
+                    }
                 }
                 else{
                     state.playableState=false;
@@ -213,12 +257,23 @@ public class ServerCoordinator implements GameController {
                 onGetFinished();
                 break;
             case "GET_FINISH":
-                activity.setScores(scores);
                 if(cardsPlayed==40)
                     showWinner();
                 else if(winner){
                     state.playableState=true;
                     playable=true;
+                    /**
+                     * AI makes next move
+                     * otherwise wait for move from user
+                     */
+                    if(aiPlays) {
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                onPerformMove(activity, AIPlayer.getMoveFromState(state));
+                            }
+                        }, TIME_DELAY);
+                    }
                 }
                 else{
                     state.playableState=false;
@@ -245,6 +300,12 @@ public class ServerCoordinator implements GameController {
             state.playableState = true;
             playable=true;
             state.currentPlayer=playerIndex;
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    onPerformMove(activity, AIPlayer.getMoveFromState(state));
+                }
+            }, TIME_DELAY);
         }
         else{
             /**
@@ -267,7 +328,7 @@ public class ServerCoordinator implements GameController {
                 } catch (JSONException e) {
                     Log.i("GET GAME","Card not in response");
                 }
-                if(startedRound&winnerCard==0||!startedRound&&winnerCard==1){
+                if((startedRound&&winnerCard==0)||(!startedRound&&winnerCard==1)){
                     winner=true;
                     state.ownPile.addAll(s);
                     startedRound=true;
@@ -307,9 +368,10 @@ public class ServerCoordinator implements GameController {
                 new Handler().postDelayed(new Runnable() {
                     public void run() {
                         //play the animation of the round being finished
+                        activity.setScores(scores);
                         activity.finishRound(arg0,cardsDealt,isLastDraw);
                     }
-                },700);
+                },TIME_DELAY);
             } catch (InvalidCardDescriptionException e) {
                 e.printStackTrace();
             }
@@ -347,7 +409,7 @@ public class ServerCoordinator implements GameController {
                     e.printStackTrace();
                 }
                 final String finalMyCard = myCard;
-                if(startedRound&winnerCard==0||!startedRound&&winnerCard==1){
+                if((startedRound&&winnerCard==0)||(!startedRound&&winnerCard==1)){
                     state.ownPile.addAll(s);
                     startedRound=true;
                     state.currentPlayer=playerIndex;
@@ -385,9 +447,10 @@ public class ServerCoordinator implements GameController {
                 new Handler().postDelayed(new Runnable() {
                     public void run() {
                         //show the animation of the round finishing
+                        activity.setScores(scores);
                         activity.finishRound(arg0,cardsDealt,isLastDraw);
                     }
-                },700);
+                },TIME_DELAY);
 
 
             } catch (InvalidCardDescriptionException e) {
@@ -399,6 +462,26 @@ public class ServerCoordinator implements GameController {
     @Override
     public boolean isPlayable() {
         return playable;
+    }
+
+    @Override
+    public void setAI(GameActivity activity,boolean aiPlays) {
+        this.aiPlays=aiPlays;
+        if(aiPlays||isPlayable()){
+            onPerformMove(activity,AIPlayer.getMoveFromState(state));
+        }
+    }
+
+    @Override
+    public boolean getAI() {
+        return aiPlays;
+    }
+
+    @Override
+    public void suggestMove(GameActivity activity) {
+        if(aiPlays)
+            return;
+        onPerformMove(activity,AIPlayer.getMoveFromState(state));
     }
 
 

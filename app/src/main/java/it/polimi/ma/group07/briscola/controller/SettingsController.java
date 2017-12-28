@@ -11,17 +11,22 @@ import static android.content.Context.MODE_PRIVATE;
  */
 
 public class SettingsController {
+    public  static int ANIMATION_SLOW=1200;
+    public  static int ANIMATION_MEDIUM=800;
+    public  static int ANIMATION_FAST=400;
+
     private static String MY_PREFERENCES="BRISCOLA_PREFERENCES";
     private static String MUSIC_PREFERENCES="MUSIC";
     private static String SOUND_EFFECTS_PREFERENCES="SOUND_EFFECTS";
     private static String DECK_SKIN_PREFERENCES="DECK_SKIN";
-    private static String GAME_THEME_PREFERENCES="GAME_THEME";
+    private static String ANIMATION_SPEED_PREFERENCES="ANIMATION_SPEED";
     /**
      * internal states
      */
     private static boolean backgroundMusicOn;
     private static boolean soundEffectsOn;
     private static String deckSkin;
+    private static int animationSpeed;
 
     private SharedPreferences.Editor editor;
     private static  SettingsController instance;
@@ -40,6 +45,7 @@ public class SettingsController {
         backgroundMusicOn = prefs.getBoolean(MUSIC_PREFERENCES, true);
         soundEffectsOn= prefs.getBoolean(SOUND_EFFECTS_PREFERENCES, true);
         deckSkin=prefs.getString(DECK_SKIN_PREFERENCES, "back1");
+        animationSpeed=prefs.getInt(ANIMATION_SPEED_PREFERENCES,ANIMATION_MEDIUM);
     }
 
     /**
@@ -57,6 +63,9 @@ public class SettingsController {
         return deckSkin;
     }
 
+    public int getAnimationSpeed(){
+        return animationSpeed;
+    }
     /**
      * Setters for all the state
      * They all change the internal state of the controller
@@ -80,6 +89,12 @@ public class SettingsController {
         soundEffectsOn=mode;
         editor = MainActivity.context.getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE).edit();
         editor.putBoolean(SOUND_EFFECTS_PREFERENCES,soundEffectsOn);
+        editor.apply();
+    }
+    public void setAnimationSpeed(int speed){
+        animationSpeed=speed;
+        editor = MainActivity.context.getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE).edit();
+        editor.putInt(ANIMATION_SPEED_PREFERENCES,animationSpeed);
         editor.apply();
     }
 }

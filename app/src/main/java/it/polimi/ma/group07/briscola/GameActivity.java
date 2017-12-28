@@ -16,8 +16,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -31,15 +29,15 @@ import android.os.Handler;
 
 import it.polimi.ma.group07.briscola.controller.CardPressedListener;
 import it.polimi.ma.group07.briscola.controller.Coordinator;
+import it.polimi.ma.group07.briscola.controller.DeckPressedListener;
 import it.polimi.ma.group07.briscola.controller.GameController;
-import it.polimi.ma.group07.briscola.controller.NewGameListener;
-import it.polimi.ma.group07.briscola.controller.PileButtonListener;
+import it.polimi.ma.group07.briscola.controller.MoreButtonListener;
 import it.polimi.ma.group07.briscola.controller.RestartListener;
+import it.polimi.ma.group07.briscola.controller.RevealButtonListener;
 import it.polimi.ma.group07.briscola.controller.ServerCoordinator;
 import it.polimi.ma.group07.briscola.controller.SettingsButtonListener;
 import it.polimi.ma.group07.briscola.controller.SettingsController;
 import it.polimi.ma.group07.briscola.controller.UndoListener;
-import it.polimi.ma.group07.briscola.controller.persistance.ExitButtonListener;
 import it.polimi.ma.group07.briscola.model.Briscola;
 
 import it.polimi.ma.group07.briscola.model.PlayerState;
@@ -53,6 +51,7 @@ import static it.polimi.ma.group07.briscola.MainActivity.context;
  */
 public class GameActivity extends AppCompatActivity  {
 
+    private static int ANIMATION_DURATION=1000;
     private static String MY_PREFERENCES="BRISCOLA_PREFERENCES";
     /**
      *References to different layouts in the game
@@ -68,16 +67,16 @@ public class GameActivity extends AppCompatActivity  {
     /**
      * Buttons of the interface
      */
-    Button newGameButton;
+    Button revealButton;
     Button restartButton;
     Button settingsButton;
     Button undoButton;
-    Button exitButton;
+    Button moreButton;
     /**
      * reference to the listener to the cards that are played
      */
     CardPressedListener cardPressedListener;
-    boolean singlePlayer;
+    public boolean singlePlayer;
     FragmentManager fragmentManager;
     /**
      * Controller of the game
@@ -135,7 +134,10 @@ public class GameActivity extends AppCompatActivity  {
      * now new animations will start if this flag is set to true
      */
     private boolean terminated;
-
+    /**
+     * used to make AI play online games
+     */
+    public boolean aiPlays;
     /**
      * Start the music if the settings are on
      * and load the saved settings
@@ -146,7 +148,7 @@ public class GameActivity extends AppCompatActivity  {
         deckSkin=SettingsController.getInstance().getDeckSkin();
         backgroundMusicOn=SettingsController.getInstance().getBackgroundMusic();
         soundEffectsOn=SettingsController.getInstance().getSoundEffects();
-
+        ANIMATION_DURATION=SettingsController.getInstance().getAnimationSpeed();
         if(backgroundMusicOn)
             MainActivity.startMusic();
         else
@@ -177,7 +179,7 @@ public class GameActivity extends AppCompatActivity  {
         fragmentManager=getSupportFragmentManager();
 
         terminated=false;
-
+        aiPlays=false;
         gameView=(RelativeLayout) findViewById(R.id.gameView);
         singlePlayer=getIntent().getExtras().getBoolean("singlePlayer");
         briscolaCard=(LinearLayout) findViewById(R.id.briscolaCard);
@@ -186,21 +188,20 @@ public class GameActivity extends AppCompatActivity  {
 
         settingsButton=(Button) findViewById(R.id.settingsButton);
         settingsButton.setOnClickListener(new SettingsButtonListener(GameActivity.this));
-        newGameButton=(Button) findViewById(R.id.newGameButton);
-        newGameButton.setOnClickListener(new NewGameListener(GameActivity.this));
+        revealButton=(Button) findViewById(R.id.revealButton);
+        revealButton.setOnClickListener(new RevealButtonListener(GameActivity.this));
         undoButton=(Button) findViewById(R.id.undoButton);
         undoButton.setOnClickListener(new UndoListener(GameActivity.this));
         restartButton=(Button) findViewById(R.id.restartButton);
         restartButton.setOnClickListener(new RestartListener(GameActivity.this));
-        exitButton=(Button) findViewById(R.id.exitButton);
-        exitButton.setOnClickListener(new ExitButtonListener(GameActivity.this));
+        moreButton=(Button) findViewById(R.id.moreButton);
+        moreButton.setOnClickListener(new MoreButtonListener(GameActivity.this));
 
         playerViews=new LinearLayout[2];
         gameOptions=(LinearLayout) findViewById(R.id.gameOptions);
         scoreViews=new ArrayList<>();
         scoreViews.add((TextView) findViewById(R.id.score1));
         scoreViews.add((TextView) findViewById(R.id.score2));
-        PileButtonListener pileButtonListener=new PileButtonListener(GameActivity.this);
 
         playerViews[0]=(LinearLayout)findViewById(R.id.player1View);
         playerViews[1]=(LinearLayout)findViewById(R.id.player2View);
@@ -230,6 +231,7 @@ public class GameActivity extends AppCompatActivity  {
                 deckSkin=SettingsController.getInstance().getDeckSkin();
                 backgroundMusicOn=SettingsController.getInstance().getBackgroundMusic();
                 soundEffectsOn=SettingsController.getInstance().getSoundEffects();
+                ANIMATION_DURATION=SettingsController.getInstance().getAnimationSpeed();
                 if(!(oldSkin==deckSkin))
                     changeCardsSkin(deckSkin);
                 if(backgroundMusicOn)
@@ -276,15 +278,36 @@ public class GameActivity extends AppCompatActivity  {
                 LinearLayout bottomView=(LinearLayout) findViewById(R.id.player1);
                 RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)bottomView.getLayoutParams();
                 params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-                controller=new ServerCoordinator();
-                try {
+
+
+                if(getIntent().getExtras().containsKey("aiPlays")){
                     /**
-                     * Wait for the new game to start
+                     * Started New Game , remember the previous choice
                      */
-                    ((ServerCoordinator)controller).startGame(GameActivity.this);
-                    Log.i("Game Activity Online","Starting Online Game");
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    aiPlays=getIntent().getExtras().getBoolean("aiPlays");
+                    controller=new ServerCoordinator(aiPlays);
+                    try {
+                        /**
+                         * Wait for the new game to start
+                         */
+                        ((ServerCoordinator)controller).startGame(GameActivity.this);
+                        Log.i("Game Activity Online","Starting Online Game");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                else {
+                            aiPlays = false;
+                            controller = new ServerCoordinator(aiPlays);
+                            try {
+                                /**
+                                 * Wait for the new game to start
+                                 */
+                                ((ServerCoordinator) controller).startGame(GameActivity.this);
+                                Log.i("Game Activity Online", "Starting Online Game");
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                 }
             }
         }
@@ -419,8 +442,10 @@ public class GameActivity extends AppCompatActivity  {
         if(state.deckSize>1){
         CardViewFragment c=new CardViewFragment();
         c.setImageId(backCardId);
+        c.setOnCardSelectedListener(new DeckPressedListener(GameActivity.this));
         fragmentManager.beginTransaction().add(deck.getId(),c).commitNow();
-        deckFragment=c;}
+        deckFragment=c;
+        }
 
         if (state.deckSize > 0) {
             String name = "c" + state.briscola.toLowerCase();
@@ -451,6 +476,7 @@ public class GameActivity extends AppCompatActivity  {
                     getPackageName());
             CardViewFragment c=new CardViewFragment();
             c.setImageId(backCardId);
+            c.setOnCardSelectedListener(new DeckPressedListener(GameActivity.this));
             fragmentManager.beginTransaction().add(deck.getId(),c).commitNow();
             deckFragment=c;
             playerFragments.add(new ArrayList<CardViewFragment>());
@@ -512,7 +538,7 @@ public class GameActivity extends AppCompatActivity  {
         final ObjectAnimator animationX = ObjectAnimator.ofFloat(view, "translationX", 0.F, (int) translationX);
         final AnimatorSet translation = new AnimatorSet();
         translation.play(animationY).with(animationX);
-        translation.setDuration(600);
+        translation.setDuration(ANIMATION_DURATION);
         translation.addListener(new AnimatorListenerAdapter()
         {@Override
         public void onAnimationEnd(Animator animation) {
@@ -529,7 +555,7 @@ public class GameActivity extends AppCompatActivity  {
         });
             final ObjectAnimator oa1 = ObjectAnimator.ofFloat(view, "scaleX", 1f, 0f);
             oa1.setInterpolator(new DecelerateInterpolator());
-            oa1.setDuration(150);
+            oa1.setDuration(ANIMATION_DURATION/4);
             oa1.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
@@ -538,7 +564,7 @@ public class GameActivity extends AppCompatActivity  {
                     frag.changeImageResource(cardId);
                     final ObjectAnimator oa2 = ObjectAnimator.ofFloat(view, "scaleX", 0f, 1f);
                     oa2.setInterpolator(new AccelerateDecelerateInterpolator());
-                    oa2.setDuration(150);
+                    oa2.setDuration(ANIMATION_DURATION/4);
                     oa2.addListener(new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
@@ -637,13 +663,19 @@ public class GameActivity extends AppCompatActivity  {
         deckHeight = deck.getHeight();
         playerWidth = playerViews[player].getWidth();
         deckWidth = deck.getWidth();
+        /**
+         * draw last card from the briscola
+         */
+        if(isLastDraw&&cards.size()==1){
+            briscolaCard.getLocationOnScreen(locationDeck);
+        }
         final double translationY=(playerHeight/2+locationPlayer[1])-(deckHeight/2+locationDeck[1]);
         final double translationX=(playerWidth*0.75+locationPlayer[0])-(deckWidth/2+locationDeck[0]);
         final ObjectAnimator animationY = ObjectAnimator.ofFloat(view, "translationY", 0.F, (int) translationY);
         final ObjectAnimator animationX = ObjectAnimator.ofFloat(view, "translationX", 0.F, (int) translationX);
         final AnimatorSet translation = new AnimatorSet();
         translation.play(animationY).with(animationX);
-        translation.setDuration(600);
+        translation.setDuration(ANIMATION_DURATION);
         translation.addListener(new AnimatorListenerAdapter()
             {@Override
             public void onAnimationEnd(Animator animation) {
@@ -676,7 +708,7 @@ public class GameActivity extends AppCompatActivity  {
         if(player==0&&!isLastDraw){
             final ObjectAnimator oa1 = ObjectAnimator.ofFloat(view, "scaleX", 1f, 0f);
             oa1.setInterpolator(new DecelerateInterpolator());
-            oa1.setDuration(150);
+            oa1.setDuration(ANIMATION_DURATION/4);
             oa1.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
@@ -685,7 +717,7 @@ public class GameActivity extends AppCompatActivity  {
                     frag.changeImageResource(cardId);
                     final ObjectAnimator oa2 = ObjectAnimator.ofFloat(view, "scaleX", 0f, 1f);
                     oa2.setInterpolator(new AccelerateDecelerateInterpolator());
-                    oa2.setDuration(150);
+                    oa2.setDuration(ANIMATION_DURATION/4);
                     oa2.addListener(new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
@@ -741,7 +773,7 @@ public class GameActivity extends AppCompatActivity  {
         final ObjectAnimator animationY = ObjectAnimator.ofFloat(view, "translationY", 0.F, (int) translationY);
         final AnimatorSet translation = new AnimatorSet();
         translation.play(animationY);
-        translation.setDuration(600);
+        translation.setDuration(ANIMATION_DURATION);
         translation.addListener(new AnimatorListenerAdapter()
         {@Override
         public void onAnimationEnd(Animator animation) {
@@ -755,7 +787,7 @@ public class GameActivity extends AppCompatActivity  {
         });
             final ObjectAnimator oa1 = ObjectAnimator.ofFloat(view, "scaleX", 1f, 0f);
             oa1.setInterpolator(new DecelerateInterpolator());
-            oa1.setDuration(150);
+            oa1.setDuration(ANIMATION_DURATION/4);
             oa1.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
@@ -764,7 +796,7 @@ public class GameActivity extends AppCompatActivity  {
                     frag.changeImageResource(cardId);
                     final ObjectAnimator oa2 = ObjectAnimator.ofFloat(view, "scaleX", 0f, 1f);
                     oa2.setInterpolator(new AccelerateDecelerateInterpolator());
-                    oa2.setDuration(150);
+                    oa2.setDuration(ANIMATION_DURATION/4);
                     oa2.addListener(new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
@@ -820,6 +852,7 @@ public class GameActivity extends AppCompatActivity  {
         final ObjectAnimator animationY = ObjectAnimator.ofFloat(view, "translationY", 0.F, (int) translationY);
         final ObjectAnimator animationX = ObjectAnimator.ofFloat(view, "translationX", 0.F, (int) translationX);
         final AnimatorSet translation = new AnimatorSet();
+        translation.setDuration(ANIMATION_DURATION);
         translation.play(animationY).with(animationX);
         translation.addListener(new AnimatorListenerAdapter() {
                 @Override
@@ -839,6 +872,7 @@ public class GameActivity extends AppCompatActivity  {
         if(player==1){
             final ObjectAnimator oa1 = ObjectAnimator.ofFloat(view, "scaleX", 1f, 0f);
             oa1.setInterpolator(new DecelerateInterpolator());
+            oa1.setDuration(ANIMATION_DURATION/4);
             oa1.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
@@ -847,6 +881,7 @@ public class GameActivity extends AppCompatActivity  {
                     fragment.changeImageResource(resourceId);
                     final ObjectAnimator oa2 = ObjectAnimator.ofFloat(view, "scaleX", 0f, 1f);
                     oa2.setInterpolator(new AccelerateDecelerateInterpolator());
+                    oa2.setDuration(ANIMATION_DURATION/4);
                     oa2.addListener(new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
@@ -884,13 +919,14 @@ public class GameActivity extends AppCompatActivity  {
         isReady=false;
         int translationY;
         if(winner==0)
-            translationY=600;
+            translationY=900;
         else
-            translationY=-600;
+            translationY=-900;
 
         final ObjectAnimator animation1 = ObjectAnimator.ofFloat(surfaceFragments.get(0).getView(), "translationY", 0.F, (int) translationY);
         final ObjectAnimator animation2 = ObjectAnimator.ofFloat(surfaceFragments.get(1).getView(), "translationY", 0.F, (int) translationY);
         final AnimatorSet translation = new AnimatorSet();
+        translation.setDuration(ANIMATION_DURATION);
         translation.play(animation1).with(animation2);
         translation.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -979,5 +1015,84 @@ public class GameActivity extends AppCompatActivity  {
             c.changeImageResource(backCardId);
         if(deckFragment!=null)
             deckFragment.changeImageResource(backCardId);
+    }
+
+    public void revealCards(ArrayList<String> opponentCards) {
+        isReady=false;
+        for(int i=0;i<playerFragments.get(1).size();i++){
+            revealCard(i,opponentCards.get(i));
+        }
+    }
+    private void revealCard(int index,String card){
+        final CardViewFragment fragment=playerFragments.get(1).get(index);
+        final int resourceId=getResources().getIdentifier("c"+card.toLowerCase(), "drawable",
+                getPackageName());
+        final View view=fragment.getView();
+        final ObjectAnimator oa1 = ObjectAnimator.ofFloat(view, "scaleX", 1f, 0f);
+        oa1.setInterpolator(new DecelerateInterpolator());
+        oa1.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                animations.remove(oa1);
+                fragment.changeImageResource(resourceId);
+                final ObjectAnimator oa2 = ObjectAnimator.ofFloat(view, "scaleX", 0f, 1f);
+                oa2.setInterpolator(new AccelerateDecelerateInterpolator());
+                oa2.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        animations.remove(oa2);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                hideCard(fragment);
+                            }
+                        },500);
+                    }
+                });
+                if(!terminated) {
+                    animations.add(oa2);
+                    oa2.start();
+                }
+            }
+        });
+        if(!terminated) {
+            animations.add(oa1);
+            oa1.start();
+        }
+    }
+    private void hideCard(final CardViewFragment fragment) {
+        final int resourceId=getResources().getIdentifier(deckSkin, "drawable",
+                getPackageName());
+        final View view=fragment.getView();
+        final ObjectAnimator oa1 = ObjectAnimator.ofFloat(view, "scaleX", 1f, 0f);
+        oa1.setInterpolator(new DecelerateInterpolator());
+        oa1.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                animations.remove(oa1);
+                fragment.changeImageResource(resourceId);
+                final ObjectAnimator oa2 = ObjectAnimator.ofFloat(view, "scaleX", 0f, 1f);
+                oa2.setInterpolator(new AccelerateDecelerateInterpolator());
+                oa2.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        animations.remove(oa2);
+                        isReady=true;
+                    }
+                });
+                if(!terminated) {
+                    animations.add(oa2);
+                    oa2.start();
+                }
+            }
+        });
+        if(!terminated) {
+            animations.add(oa1);
+            oa1.start();
+        }
     }
 }

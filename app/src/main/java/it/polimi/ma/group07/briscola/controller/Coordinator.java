@@ -27,6 +27,7 @@ import it.polimi.ma.group07.briscola.model.StateBundle;
  */
 
 public class Coordinator implements GameController {
+    private static int TIME_DELAY=1200;
     /**
      * static reference to the controller
      */
@@ -59,6 +60,7 @@ public class Coordinator implements GameController {
      * set to true after animations are finished
      */
     private boolean playable;
+    private boolean aiPlays;
 
     public Coordinator(String startConfiguration,boolean singlePlayer){
         this.startConfiguration=startConfiguration;
@@ -67,6 +69,10 @@ public class Coordinator implements GameController {
         this.movesPerformed="";
         playable=true;
         playerIndex=0;
+        /**
+         * clear data from previous games
+         */
+        AIPlayer.clear();
     }
 
     public static Coordinator createInstance(String startConfiguration,boolean singlePlayer){
@@ -115,32 +121,30 @@ public class Coordinator implements GameController {
      * @param activity the activity of the game
      */
     @Override
-    public void onMovePerformed(final GameActivity activity){
+    public void onMovePerformed(final GameActivity activity) {
         /**
          * Check if the game is finished
          */
-        if(Briscola.getInstance().isGameFinished())
-        {
+        if (Briscola.getInstance().isGameFinished()) {
             /**
              * Display the winner and save the game that finished for statistics
              */
             AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
             alertDialog.setTitle("Game Finished");
-            String message="You Won :";
-            String state=LocalGame.WON;
-            if(Briscola.getInstance().getWinner()==-1) {
+            String message = "You Won :";
+            String state = LocalGame.WON;
+            if (Briscola.getInstance().getWinner() == -1) {
                 message = "Draw :";
-                state=LocalGame.DRAWN;
-            }
-            else if(Briscola.getInstance().getWinner()==1) {
+                state = LocalGame.DRAWN;
+            } else if (Briscola.getInstance().getWinner() == 1) {
                 message = "You Lost :";
-                state=LocalGame.LOST;
+                state = LocalGame.LOST;
             }
-            message+=""+Briscola.getInstance().getPlayers().get(0).getScore()+" points";
+            message += "" + Briscola.getInstance().getPlayers().get(0).getScore() + " points";
             alertDialog.setMessage(message);
             //delete previous saved game if any
             getRepository().deleteCurrentGame();
-            getRepository().saveLocalGame(new LocalGame(startConfiguration,movesPerformed,state));
+            getRepository().saveLocalGame(new LocalGame(startConfiguration, movesPerformed, state));
             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
@@ -153,16 +157,15 @@ public class Coordinator implements GameController {
         /**
          * Check if the round is finished
          */
-        if(Briscola.getInstance().isRoundFinished()){
-            Log.i("Round Finished","Finishing");
+        if (Briscola.getInstance().isRoundFinished()) {
+            Log.i("Round Finished", "Finishing");
             handler.postDelayed(new Runnable() {
                 public void run() {
                     finishRound(activity);
                 }
-            },700);
+            }, TIME_DELAY);
 
-        }
-        else {
+        } else {
             //AIPlays
             if (Briscola.getInstance().getCurrentPlayer() == 1 && singlePlayer) {
                 /**
@@ -170,20 +173,46 @@ public class Coordinator implements GameController {
                  */
                 handler.postDelayed(new Runnable() {
                     public void run() {
-                        PlayerState state=Briscola.getInstance().getPlayerState(Briscola.getInstance().getCurrentPlayer());
+                        PlayerState state = Briscola.getInstance().getPlayerState(Briscola.getInstance().getCurrentPlayer());
                         onPerformMove(activity, AIPlayer.getMoveFromState(state));
                     }
-                },700);
+                }, TIME_DELAY);
 
+            } else {
+                playable = true;
+                if(aiPlays){
+                    handler.postDelayed(new Runnable() {
+                        public void run() {
+                            PlayerState state = Briscola.getInstance().getPlayerState(Briscola.getInstance().getCurrentPlayer());
+                            onPerformMove(activity, AIPlayer.getMoveFromState(state));
+                        }
+                    }, TIME_DELAY);
+                }
             }
-            else
-                playable=true;
+        }
+    }
+    @Override
+    public boolean isPlayable() {
+        return playable;
+    }
+
+    @Override
+    public void setAI(GameActivity activity,boolean aiPlays) {
+        this.aiPlays=aiPlays;
+        if(aiPlays&&isPlayable()){
+            onPerformMove(activity,AIPlayer.getMoveFromState(state));
         }
     }
 
     @Override
-    public boolean isPlayable() {
-        return playable;
+    public boolean getAI() {
+        return aiPlays;
+    }
+
+    @Override
+    public void suggestMove(GameActivity activity) {
+        PlayerState state=Briscola.getInstance().getPlayerState(0);
+        onPerformMove(activity,AIPlayer.getMoveFromState(state));
     }
 
     /**
@@ -255,6 +284,7 @@ public class Coordinator implements GameController {
 
     @Override
     public void finishGame(String reason) {
+        AIPlayer.clear();
         //Save game to replay it later
         if(!Briscola.getInstance().isGameFinished()) {
             Log.i("Coordinator","State:"+startConfiguration+" Moves:"+movesPerformed);

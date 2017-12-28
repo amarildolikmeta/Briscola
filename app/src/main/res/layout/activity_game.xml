@@ -11,18 +11,17 @@
         android:layout_width="100dp"
         android:layout_height="120dp">
         <Button
-            android:id="@+id/exitButton"
-            android:layout_width="@dimen/settings_icon_height"
-            android:layout_height="@dimen/settings_icon_height"
-            android:background="@drawable/exit_icon"
-            android:layout_alignParentTop="true"            />
-        <Button
             android:id="@+id/settingsButton"
             android:layout_width="@dimen/settings_icon_height"
             android:layout_height="@dimen/settings_icon_height"
             android:background="@drawable/settings_icon"
-            android:layout_alignParentBottom="true"
-            />
+            android:layout_alignParentTop="true" />
+        <Button
+            android:id="@+id/moreButton"
+            android:layout_width="@dimen/settings_icon_height"
+            android:layout_height="@dimen/settings_icon_height"
+            android:background="@drawable/more"
+            android:layout_alignParentBottom="true"/>
     </RelativeLayout>
     <RelativeLayout
         android:id="@+id/gameView"
@@ -156,7 +155,8 @@
                 />
         </LinearLayout>
         <LinearLayout
-            android:orientation="horizontal" android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:id="@+id/gameOptions">
@@ -184,6 +184,23 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
                 <Button
+                    android:id="@+id/revealButton"
+                    android:layout_width="@dimen/undo_button_dimen"
+                    android:layout_height="@dimen/undo_button_dimen"
+                    android:background="@drawable/reveal_icon"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Peep Cards"
+                    android:textColor="@color/white"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <Button
                     android:id="@+id/restartButton"
                     android:layout_width="@dimen/undo_button_dimen"
                     android:layout_height="@dimen/undo_button_dimen"
@@ -196,24 +213,6 @@
 
 
             </LinearLayout>
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <Button
-                    android:id="@+id/newGameButton"
-                    android:layout_width="@dimen/undo_button_dimen"
-                    android:layout_height="@dimen/undo_button_dimen"
-                    android:background="@drawable/new_game_icon"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="New Game"
-                    android:textColor="@color/white"/>
-            </LinearLayout>
-
         </LinearLayout>
 
     </RelativeLayout>

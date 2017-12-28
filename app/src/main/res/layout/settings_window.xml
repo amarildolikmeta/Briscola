@@ -36,6 +36,64 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textColor="@color/blueVeryLight"
+            android:text="Animations"
+            android:textSize="@dimen/settings_text_size"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center">
+            <Button
+                android:id="@+id/animation_slow_button"
+                android:layout_width="@dimen/sound_button_width"
+                android:layout_height="@dimen/sound_button_width"
+                android:background="@drawable/animation_slow"
+                />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center">
+            <Button
+                android:id="@+id/animation_medium_button"
+                android:layout_width="@dimen/sound_button_width"
+                android:layout_height="@dimen/sound_button_width"
+                android:background="@drawable/animations_medium"
+                />
+                </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:gravity="center">
+            <Button
+                android:id="@+id/animation_fast_button"
+                android:layout_width="@dimen/sound_button_width"
+                android:layout_height="@dimen/sound_button_width"
+                android:background="@drawable/animations_fast"
+                android:gravity="center"
+                android:layout_gravity="center"
+                />
+                </LinearLayout>
+        </LinearLayout>
+        </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
         >
         <TextView
@@ -72,6 +130,8 @@
             android:background="@drawable/effects_on"
             android:layout_marginStart="100dp"/>
     </LinearLayout>
+
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

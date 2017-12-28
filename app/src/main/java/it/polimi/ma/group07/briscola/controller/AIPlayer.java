@@ -45,7 +45,7 @@ public class AIPlayer {
      * @return index of the card to be played
      */
     public static int getMoveFromState(PlayerState state){
-        Log.i("AI","Taking Deision...");
+        Log.i("AI","Taking Decision...");
         /**
          * Populate the lists if theyre are empty
          */
@@ -444,5 +444,13 @@ public class AIPlayer {
             }
         }
         return false;
+    }
+
+    /**
+     * clear data left from previous games
+     */
+    public static void clear() {
+        cards=null;
+        brain=null;
     }
 }

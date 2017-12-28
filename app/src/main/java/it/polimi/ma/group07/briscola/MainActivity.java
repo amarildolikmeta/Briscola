@@ -149,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
                             dialog.dismiss();
                         }
                     });
+                    alert.setCancelable(false);
                     alert.show();
                 }
             }
@@ -253,5 +254,12 @@ public class MainActivity extends AppCompatActivity {
         backgroundMusic = MediaPlayer.create(context, R.raw.background_music);
         backgroundMusic.setLooping(true);
         backgroundMusic.setVolume(0.15f, 0.15f);
+    }
+
+    public void startNewOnlineGame(boolean aiPlays) {
+        Intent intent = new Intent(MainActivity.this, GameActivity.class);
+        intent.putExtra("singlePlayer", false);
+        intent.putExtra("aiPlays",aiPlays);
+        startActivity(intent);
     }
 }
