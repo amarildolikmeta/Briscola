@@ -289,36 +289,16 @@ public class GameActivity extends AppCompatActivity  {
                 LinearLayout bottomView=(LinearLayout) findViewById(R.id.player1);
                 RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)bottomView.getLayoutParams();
                 params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-
-
-                if(getIntent().getExtras().containsKey("aiPlays")){
+                aiPlays = false;
+                controller = new ServerCoordinator(aiPlays);
+                try {
                     /**
-                     * Started New Game , remember the previous choice
+                     * Wait for the new game to start
                      */
-                    aiPlays=getIntent().getExtras().getBoolean("aiPlays");
-                    controller=new ServerCoordinator(aiPlays);
-                    try {
-                        /**
-                         * Wait for the new game to start
-                         */
-                        ((ServerCoordinator)controller).startGame(GameActivity.this);
-                        Log.i("Game Activity Online","Starting Online Game");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                else {
-                            aiPlays = false;
-                            controller = new ServerCoordinator(aiPlays);
-                            try {
-                                /**
-                                 * Wait for the new game to start
-                                 */
-                                ((ServerCoordinator) controller).startGame(GameActivity.this);
-                                Log.i("Game Activity Online", "Starting Online Game");
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                    ((ServerCoordinator) controller).startGame(GameActivity.this);
+                    Log.i("Game Activity Online", "Starting Online Game");
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }
