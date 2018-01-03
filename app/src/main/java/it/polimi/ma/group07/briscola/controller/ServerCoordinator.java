@@ -305,12 +305,14 @@ public class ServerCoordinator implements GameController {
             state.playableState = true;
             playable=true;
             state.currentPlayer=playerIndex;
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    onPerformMove(activity, AIPlayer.getMoveFromState(state));
-                }
-            }, TIME_DELAY);
+            if(aiPlays) {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        onPerformMove(activity, AIPlayer.getMoveFromState(state));
+                    }
+                }, TIME_DELAY);
+            }
         }
         else{
             /**
