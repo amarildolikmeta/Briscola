@@ -474,7 +474,7 @@ public class ServerCoordinator implements GameController {
     @Override
     public void setAI(GameActivity activity,boolean aiPlays) {
         this.aiPlays=aiPlays;
-        if(aiPlays||isPlayable()){
+        if(aiPlays&&isPlayable()){
             onPerformMove(activity,AIPlayer.getMoveFromState(state));
         }
     }

@@ -21,13 +21,6 @@ public class NewGameListener implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         /**
-         * wait if the player doesn't have the turn
-         * avoids exceptions due to animations being performed
-         */
-        if(!activity.isReady||!activity.controller.isPlayable()){
-            Toast.makeText(activity,"Wait Your Turn",Toast.LENGTH_SHORT).show();
-            return;}
-        /**
          * Ask for confirmation before starting a new game
          */
         AlertDialog.Builder alert = new AlertDialog.Builder(activity);
