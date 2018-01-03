@@ -153,16 +153,27 @@ public class GameActivity extends AppCompatActivity  {
             MainActivity.startMusic();
         else
             MainActivity.stopMusic();
-        Log.i("Game Activity onStart","backgroundMusic"+backgroundMusicOn);
+        Log.i("Game Activity onStart","backgroundMusic "+backgroundMusicOn);
+        Log.i("Game Activity onStart","SoundEffects"+soundEffectsOn);
     }
 
+    @Override
+    public void onRestart(){
+        super.onRestart();
+        Log.i("Game Activity ","Restarting Interface");
+        terminated=false;
+        PlayerState state=controller.getState();
+        buildInterface(state);
+    }
     /**
      * Stop the music when the activity stops
      * Manages the cases when the activity is killed or put on background
      */
     @Override
     public void onStop(){
-        MainActivity.stopMusic();
+        stopAnimations();
+        if(!controller.isRestarting())
+            MainActivity.stopMusic();
         super.onStop();
     }
 
@@ -312,6 +323,7 @@ public class GameActivity extends AppCompatActivity  {
             }
         }
         else {
+            Log.i("GameActivity","Rebuilding Interface; terminated:"+terminated);
             state=controller.getState();
             buildInterface(state);
         }
@@ -377,10 +389,12 @@ public class GameActivity extends AppCompatActivity  {
          * and stop all animations currently running
          */
         terminated=true;
-        MainActivity.stopMusic();
+        if(!controller.isRestarting())
+            MainActivity.stopMusic();
         getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(listener);
         stopAnimations();
         controller.finishGame("abandon");
+        Log.i("Game Activity","Destroying Activity");
         super.onDestroy();
     }
 
@@ -458,6 +472,10 @@ public class GameActivity extends AppCompatActivity  {
             briscolaFragment=card;
         }
         isReady=true;
+        if(!state.playableState)
+        {
+            controller.onMovePerformed(GameActivity.this);
+        }
     }
 
     /**

@@ -116,6 +116,8 @@ public class ServerCoordinator implements GameController {
     private boolean aiPlays;
 
     private Handler handler;
+    private boolean restarting;
+
     public ServerCoordinator(boolean aiPlays){
         /**
          * clear AI from previous games data
@@ -123,6 +125,7 @@ public class ServerCoordinator implements GameController {
         AIPlayer.clear();
         this.aiPlays=aiPlays;
         handler=new Handler();
+        restarting=false;
     }
     /**
      * Performs the API call to join a game
@@ -142,6 +145,7 @@ public class ServerCoordinator implements GameController {
      */
     public void pollServer(){
         state.playableState=false;
+        playable=false;
         GetCardTask getCardTask=new GetCardTask(activity);
         getCardTask.execute(gameURL);
     }
@@ -194,6 +198,7 @@ public class ServerCoordinator implements GameController {
      */
     @Override
     public void onNewGame(GameActivity activity) {
+            restarting=true;
             finishGame("abandon");
             activity.finish();
             MainActivity.getInstance().startNewOnlineGame(aiPlays);
@@ -475,6 +480,16 @@ public class ServerCoordinator implements GameController {
     @Override
     public boolean getAI() {
         return aiPlays;
+    }
+
+    @Override
+    public boolean isRestarting() {
+        return restarting;
+    }
+
+    @Override
+    public void finishRound(GameActivity activity) {
+        return;
     }
 
     @Override
@@ -984,6 +999,7 @@ public class ServerCoordinator implements GameController {
                 state.surface.add(opponentCard);
                 state.opponentHandSize[0]--;
                 state.playableState = false;
+                playable=false;
                 lastMove="GET";
                 /**
                  * play the animation of the card being played by opponent
@@ -1039,15 +1055,22 @@ public class ServerCoordinator implements GameController {
         AlertDialog.Builder alert = new AlertDialog.Builder(activity);
         alert.setTitle(message);
         alert.setMessage(scores[0]+" Points");
-        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+        alert.setPositiveButton("New Game", new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                activity.controller.onNewGame(activity);
                 dialog.dismiss();
-                activity.finish();
             }
         });
 
+        alert.setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                activity.finish();
+            }
+        });
         alert.show();
     }
 

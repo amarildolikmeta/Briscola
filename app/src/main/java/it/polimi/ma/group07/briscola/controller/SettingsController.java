@@ -7,7 +7,7 @@ import it.polimi.ma.group07.briscola.MainActivity;
 import static android.content.Context.MODE_PRIVATE;
 
 /**
- * Class that manages saving the game settings
+ * Manages writing and reading the game settings
  */
 
 public class SettingsController {

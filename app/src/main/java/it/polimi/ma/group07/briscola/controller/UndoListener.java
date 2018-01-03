@@ -30,6 +30,12 @@ public class UndoListener implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         /**
+         * Don't undo moves if AI is playing
+         */
+        if(activity.controller.getAI()){
+            Toast.makeText(activity,"Disable AI First",Toast.LENGTH_SHORT).show();
+            return;}
+        /**
          * wait if the player doesn't have the turn
          * avoids exceptions due to animations being performed
          */

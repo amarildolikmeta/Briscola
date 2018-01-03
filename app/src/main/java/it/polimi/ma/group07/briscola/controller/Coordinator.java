@@ -48,7 +48,7 @@ public class Coordinator implements GameController {
      */
     private PlayerState state;
     /**
-     * Handler for Asnchronous tasks
+     * Handler for Asynchronous tasks
      */
     private Handler handler ;
     /**
@@ -61,12 +61,14 @@ public class Coordinator implements GameController {
      */
     private boolean playable;
     private boolean aiPlays;
+    private boolean restarting;
 
     public Coordinator(String startConfiguration,boolean singlePlayer){
         this.startConfiguration=startConfiguration;
         this.singlePlayer=singlePlayer;
         this.handler= new Handler();
         this.movesPerformed="";
+        restarting=false;
         playable=true;
         playerIndex=0;
         /**
@@ -126,32 +128,7 @@ public class Coordinator implements GameController {
          * Check if the game is finished
          */
         if (Briscola.getInstance().isGameFinished()) {
-            /**
-             * Display the winner and save the game that finished for statistics
-             */
-            AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
-            alertDialog.setTitle("Game Finished");
-            String message = "You Won :";
-            String state = LocalGame.WON;
-            if (Briscola.getInstance().getWinner() == -1) {
-                message = "Draw :";
-                state = LocalGame.DRAWN;
-            } else if (Briscola.getInstance().getWinner() == 1) {
-                message = "You Lost :";
-                state = LocalGame.LOST;
-            }
-            message += "" + Briscola.getInstance().getPlayers().get(0).getScore() + " points";
-            alertDialog.setMessage(message);
-            //delete previous saved game if any
-            getRepository().deleteCurrentGame();
-            getRepository().saveLocalGame(new LocalGame(startConfiguration, movesPerformed, state));
-            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            activity.finish();
-                        }
-                    });
-            alertDialog.show();
+            showWinner(activity);
             return;
         }
         /**
@@ -165,7 +142,11 @@ public class Coordinator implements GameController {
                 }
             }, TIME_DELAY);
 
-        } else {
+        } else if(!Briscola.getInstance().isPlayableState()) {
+            finishRound(activity);
+        }
+         else
+            {
             //AIPlays
             if (Briscola.getInstance().getCurrentPlayer() == 1 && singlePlayer) {
                 /**
@@ -191,6 +172,47 @@ public class Coordinator implements GameController {
             }
         }
     }
+
+    private void showWinner(final GameActivity activity) {
+        /**
+         * Display the winner and save the game that finished for statistics
+         */
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
+        alertDialog.setTitle("Game Finished");
+        String message = "You Won :";
+        String state = LocalGame.WON;
+        if (Briscola.getInstance().getWinner() == -1) {
+            message = "Draw :";
+            state = LocalGame.DRAWN;
+        } else if (Briscola.getInstance().getWinner() == 1) {
+            message = "You Lost :";
+            state = LocalGame.LOST;
+        }
+        message += "" + Briscola.getInstance().getPlayers().get(0).getScore() + " points";
+        alertDialog.setMessage(message);
+        //delete previous saved game if any
+        getRepository().deleteCurrentGame();
+        getRepository().saveLocalGame(new LocalGame(startConfiguration, movesPerformed, state));
+        alertDialog.setPositiveButton("New Game", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                activity.controller.onNewGame(activity);
+                dialog.dismiss();
+            }
+        });
+
+        alertDialog.setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                activity.finish();
+            }
+        });
+
+        alertDialog.show();
+    }
+
     @Override
     public boolean isPlayable() {
         return playable;
@@ -210,6 +232,11 @@ public class Coordinator implements GameController {
     }
 
     @Override
+    public boolean isRestarting() {
+        return restarting;
+    }
+
+    @Override
     public void suggestMove(GameActivity activity) {
         PlayerState state=Briscola.getInstance().getPlayerState(0);
         onPerformMove(activity,AIPlayer.getMoveFromState(state));
@@ -220,8 +247,10 @@ public class Coordinator implements GameController {
      * of the round being finished
      * @param activity the activity of the game
      */
-    private void finishRound(final GameActivity activity) {
-        Briscola.getInstance().finishRound();
+    @Override
+    public void finishRound(final GameActivity activity) {
+        if(Briscola.getInstance().isRoundFinished())
+            Briscola.getInstance().finishRound();
         state=Briscola.getInstance().getPlayerState(playerIndex);
         /**
          * Deal next batch of cards if any
@@ -252,6 +281,7 @@ public class Coordinator implements GameController {
      * @param activity activity of the game
      */
     public void onRestart(GameActivity activity){
+        restarting=true;
         activity.finish();
         MainActivity.getInstance().resumeGame(startConfiguration,"");
     }
@@ -261,6 +291,7 @@ public class Coordinator implements GameController {
      * @param activity activity of the game
      */
     public void onNewGame(GameActivity activity){
+        restarting=true;
         activity.finish();
         //don't save the finished game
         getRepository().deleteCurrentGame();

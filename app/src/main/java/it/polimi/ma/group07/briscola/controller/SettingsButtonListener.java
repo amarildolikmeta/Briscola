@@ -112,7 +112,7 @@ public class SettingsButtonListener implements View.OnClickListener {
         int dimensionInPixel = 100;
         int selectedDimensionInPixel=120;
         int speedDimensionInPixel=40;
-        int selectedSpeedDimensionInPixel=50;
+        int selectedSpeedDimensionInPixel=60;
         dimensionInDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dimensionInPixel, activity.getResources().getDisplayMetrics());
         selectedDimensionInDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, selectedDimensionInPixel, activity.getResources().getDisplayMetrics());
         speedDimensionInDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, speedDimensionInPixel, activity.getResources().getDisplayMetrics());

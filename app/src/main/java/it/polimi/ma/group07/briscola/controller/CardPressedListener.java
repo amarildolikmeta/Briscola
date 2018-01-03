@@ -29,7 +29,7 @@ public class CardPressedListener implements CardViewFragment.OnCardSelectedListe
 
     @Override
     public void onCardSelected(CardViewFragment card) {
-        if(!activity.isReady||activity.aiPlays)
+        if(!activity.isReady||activity.aiPlays||!activity.controller.isPlayable())
             return;
         /**
          * get the index of the card played and perform the given move

@@ -23,4 +23,7 @@ public interface GameController {
     void suggestMove(GameActivity activity);
     void setAI(GameActivity activity,boolean aiPlays);
     boolean getAI();
+    boolean isRestarting();
+
+    void finishRound(GameActivity activity);
 }

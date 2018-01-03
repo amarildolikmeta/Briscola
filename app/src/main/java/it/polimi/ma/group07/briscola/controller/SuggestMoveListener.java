@@ -20,8 +20,11 @@ class SuggestMoveListener implements View.OnClickListener {
     }
     @Override
     public void onClick(View v) {
-        if(!activity.isReady||activity.controller.getAI()){
+        if(activity.controller.getAI()){
             Toast.makeText(activity,"Disable AI Play First",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if(!activity.isReady){
             return;
         }
         window.dismiss();
