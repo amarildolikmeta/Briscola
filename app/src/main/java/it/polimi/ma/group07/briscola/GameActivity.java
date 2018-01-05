@@ -192,6 +192,11 @@ public class GameActivity extends AppCompatActivity  {
         terminated=false;
         aiPlays=false;
         gameView=(RelativeLayout) findViewById(R.id.gameView);
+        /**
+         * Keep screen from turning off automatically
+         */
+        gameView.setKeepScreenOn(true);
+
         singlePlayer=getIntent().getExtras().getBoolean("singlePlayer");
         briscolaCard=(LinearLayout) findViewById(R.id.briscolaCard);
         deck=(RelativeLayout) findViewById(R.id.deck);

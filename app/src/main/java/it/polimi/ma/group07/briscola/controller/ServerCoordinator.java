@@ -24,8 +24,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -335,7 +333,7 @@ public class ServerCoordinator implements GameController {
                 } catch (JSONException e) {
                     Log.i("GET GAME","Card not in response");
                 }
-                if((startedRound&&winnerCard==0)||(!startedRound&&winnerCard==1)){
+                if((startedRound&&winnerCard==0)||(startedRound==false&&winnerCard==1)){
                     winner=true;
                     state.ownPile.addAll(s);
                     startedRound=true;
@@ -346,7 +344,7 @@ public class ServerCoordinator implements GameController {
                         cardsDealt.add("");
                     }
                 }
-                else{
+                else if((startedRound&&winnerCard==1)||(startedRound==false&&winnerCard==0)){
                     winner=false;
                     scores[1]+=brain.calculatePointsString(s);
                     state.opponentPiles.get(0).addAll(s);
@@ -356,6 +354,19 @@ public class ServerCoordinator implements GameController {
                         cardsDealt.add("");
                         cardsDealt.add(myCard);
                     }
+                }
+                else
+                {
+                    winner=false;
+                    scores[1]+=brain.calculatePointsString(s);
+                    state.opponentPiles.get(0).addAll(s);
+                    startedRound=false;
+                    state.currentPlayer=(playerIndex+1)%2;
+                    if(myCard!=null){
+                        cardsDealt.add("");
+                        cardsDealt.add(myCard);
+                    }
+                    Log.i("Error","Flags are not set right");
                 }
                 state.playableState=false;
                 playable=false;
@@ -384,6 +395,21 @@ public class ServerCoordinator implements GameController {
             }
         }
     }
+
+    private void showDialog(String title, String message) {
+        AlertDialog.Builder alert = new AlertDialog.Builder(activity);
+        alert.setTitle(title);
+        alert.setMessage(message);
+        alert.setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alert.show();
+    }
+
     /**
      * Method is called after the call to the POST API is performed
      * Method checks the state of the game at this moment
@@ -416,7 +442,7 @@ public class ServerCoordinator implements GameController {
                     e.printStackTrace();
                 }
                 final String finalMyCard = myCard;
-                if((startedRound&&winnerCard==0)||(!startedRound&&winnerCard==1)){
+                if((startedRound&&winnerCard==0)||(startedRound==false&&winnerCard==1)){
                     state.ownPile.addAll(s);
                     startedRound=true;
                     state.currentPlayer=playerIndex;
@@ -426,7 +452,7 @@ public class ServerCoordinator implements GameController {
                         cardsDealt.add(myCard);
                         cardsDealt.add("");}
                 }
-                else{
+                else if((startedRound&&winnerCard==1)||(startedRound==false&&winnerCard==0)){
                     winner=false;
                     scores[1]+=brain.calculatePointsString(s);
                     state.opponentPiles.get(0).addAll(s);
@@ -434,7 +460,21 @@ public class ServerCoordinator implements GameController {
                     state.currentPlayer=(playerIndex+1)%2;
                     if(myCard!=null){
                         cardsDealt.add("");
-                        cardsDealt.add(myCard);}
+                        cardsDealt.add(myCard);
+                    }
+                }
+                else
+                {
+                    winner=false;
+                    scores[1]+=brain.calculatePointsString(s);
+                    state.opponentPiles.get(0).addAll(s);
+                    startedRound=false;
+                    state.currentPlayer=(playerIndex+1)%2;
+                    if(myCard!=null){
+                        cardsDealt.add("");
+                        cardsDealt.add(myCard);
+                    }
+                    Log.i("Error","Flags are not set right");
                 }
                 state.playableState=false;
                 playable=false;
@@ -607,6 +647,10 @@ public class ServerCoordinator implements GameController {
                                 break;
                     }
                 } catch (SocketTimeoutException e) {
+                    /**
+                     * Request timeout
+                     * Repeat Request
+                     */
                     flag=true;
                 } catch(UnknownHostException e){
                     Log.i("UnknownHostException", e.getMessage());
@@ -642,12 +686,12 @@ public class ServerCoordinator implements GameController {
         protected void onPostExecute(Boolean result){
             _progressDialog.dismiss();
             /**
-             * Case the call was succesfull
+             * Case the call was successful
              */
             if(result){
                 try {
                     /**
-                     * Read the response and cuild the object
+                     * Read the response and build the object
                      * representing the state
                      * and start the game based on the index you get
                      */
@@ -677,7 +721,8 @@ public class ServerCoordinator implements GameController {
                     else {
                         playerIndex = 1;
                         startedRound=false;
-
+                        playable=false;
+                        Toast.makeText(activity,"Opponent Starts!!",Toast.LENGTH_LONG).show();
                     }
                     /**
                      * construct the inner state
@@ -826,6 +871,10 @@ public class ServerCoordinator implements GameController {
                             return false;
                     }
                 } catch (SocketTimeoutException e) {
+                    /**
+                     * Request timeout
+                     * Repeat Request
+                     */
                     flag=true;
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -845,7 +894,7 @@ public class ServerCoordinator implements GameController {
             if(result){
                 /**
                  * show the animation of the card being played
-                 * set the flags and apdate the card counter
+                 * set the flags and update the card counter
                  * Control will be returned to OnPerformMove method to
                  * check the state of the game
                  */
@@ -922,7 +971,7 @@ public class ServerCoordinator implements GameController {
                         urlConnection.setRequestMethod("GET");
                         urlConnection.addRequestProperty("Authorization", "APIKey " + activity.getResources().getString(R.string.API_KEY));
                         urlConnection.setReadTimeout(30000 /* milliseconds */);
-                        urlConnection.setConnectTimeout(35000/* milliseconds */);
+                        urlConnection.setConnectTimeout(30000/* milliseconds */);
                     }
                     int code=urlConnection.getResponseCode();
                     Log.i("ResponseCode",""+code);
@@ -964,7 +1013,11 @@ public class ServerCoordinator implements GameController {
                         default:
                             return false;
                     }
-                } catch (SocketTimeoutException e) {
+                } catch (java.net.SocketTimeoutException e) {
+                    /**
+                     * Request timeout
+                     * Repeat Request
+                     */
                     flag=true;
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();

@@ -287,6 +287,26 @@ public class ExampleUnitTest {
             assertEquals(results[i],result);
         }
     }
+    /**
+     * Check of the calculatePointsString() method in the Brain class
+     * that calculates total points of cards on the surfaces
+     * @throws InvalidCardDescriptionException
+     */
+    @Test
+    public void checkCalculatedPointsString() throws InvalidCardDescriptionException {
+        Brain br = new Brain();
+
+        String[] surfaces={"4B5B","4S4B","5GHG","6SKB","3G1G","KCHC","3G3S","2S3B"};
+        int[] results={0,0,3,4,21,7,20,10};
+
+        for(int i=0;i<surfaces.length;i++){
+            ArrayList<String> surface = Parser.splitString(surfaces[i],2);
+            ArrayList<String> s=new ArrayList<String>(surface);
+            surface=new ArrayList<>();
+            int result = br.calculatePointsString(s);
+            assertEquals(results[i],result);
+        }
+    }
 
     /**
      * Checks that the deck throws an exception when trying to draw cards
