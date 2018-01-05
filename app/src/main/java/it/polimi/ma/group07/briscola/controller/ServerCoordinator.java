@@ -879,6 +879,13 @@ public class ServerCoordinator implements GameController {
                 } catch (IOException e) {
                     e.printStackTrace();
                     Log.i("IOException", e.getMessage());
+                    errorJSON=new JSONObject();
+                    try {
+                        errorJSON.put("error","Connection Problem");
+                        errorJSON.put("message","Check your internet Connection");
+                    } catch (JSONException e1) {
+                        e1.printStackTrace();
+                    }
                     return false;
                 }
             }
@@ -954,6 +961,10 @@ public class ServerCoordinator implements GameController {
         @Override
         protected Boolean doInBackground(String... args) {
             String urlString=args[0];
+            /**
+             * count number of timeouts
+             */
+            int count=0;
             boolean flag=true;
             Log.i("Poll","Polling Server");
             while(flag) {
@@ -1018,10 +1029,32 @@ public class ServerCoordinator implements GameController {
                      * Request timeout
                      * Repeat Request
                      */
+                    count++;
+                    /**
+                     * 2 timeouts happened so 2*30 seconds
+                     * Leave Game
+                     */
+                    if(count==2){
+                        errorJSON=new JSONObject();
+                        try {
+                            errorJSON.put("error","Response Timeout");
+                            errorJSON.put("message","Terminating Game");
+                        } catch (JSONException e1) {
+                            e1.printStackTrace();
+                        }
+                        return false;
+                    }
                     flag=true;
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
                     Log.i("IOException", e.getMessage());
+                    errorJSON=new JSONObject();
+                    try {
+                        errorJSON.put("error","Connection Problem");
+                        errorJSON.put("message","Check your internet Connection");
+                    } catch (JSONException e1) {
+                        e1.printStackTrace();
+                    }
                     return false;
                 }
             }
