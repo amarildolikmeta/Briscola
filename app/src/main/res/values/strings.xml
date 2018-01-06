@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Briscola</string>
     <string name="API_KEY">81113e69-5276-4801-a1f0-e2185a27d2a5</string>
-    <string name="start_game_endpoint">http://mobile17.ifmledit.org/api/room/Group07</string>
+    <string name="start_game_endpoint">http://mobile17.ifmledit.org/api/room/Public</string>
     <string name="database_name">Briscola</string>
     <string name="database_version">1</string>
     <string name="title_activity_statistics">StatisticsActivity</string>

@@ -32,6 +32,7 @@ import it.polimi.ma.group07.briscola.controller.Coordinator;
 import it.polimi.ma.group07.briscola.controller.DeckPressedListener;
 import it.polimi.ma.group07.briscola.controller.GameController;
 import it.polimi.ma.group07.briscola.controller.MoreButtonListener;
+import it.polimi.ma.group07.briscola.controller.PileButtonListener;
 import it.polimi.ma.group07.briscola.controller.RestartListener;
 import it.polimi.ma.group07.briscola.controller.RevealButtonListener;
 import it.polimi.ma.group07.briscola.controller.ServerCoordinator;
@@ -215,9 +216,15 @@ public class GameActivity extends AppCompatActivity  {
 
         playerViews=new LinearLayout[2];
         gameOptions=(LinearLayout) findViewById(R.id.gameOptions);
+        /**
+         * Get the references to the point displayer
+         * and add the listeners to show the card collected
+         */
         scoreViews=new ArrayList<>();
         scoreViews.add((TextView) findViewById(R.id.score1));
+        scoreViews.get(0).setOnClickListener(new PileButtonListener(GameActivity.this));
         scoreViews.add((TextView) findViewById(R.id.score2));
+        scoreViews.get(1).setOnClickListener(new PileButtonListener(GameActivity.this));
 
         playerViews[0]=(LinearLayout)findViewById(R.id.player1View);
         playerViews[1]=(LinearLayout)findViewById(R.id.player2View);
@@ -1097,5 +1104,9 @@ public class GameActivity extends AppCompatActivity  {
             animations.add(oa1);
             oa1.start();
         }
+    }
+
+    public int getPileIndex(View v) {
+        return scoreViews.indexOf(v);
     }
 }
