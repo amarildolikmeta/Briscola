@@ -178,7 +178,7 @@ public class ServerCoordinator implements GameController {
         playable=false;
         Log.i("Post","About to post");
         /**
-         * Perform the APi call on the background
+         * Perform the API call on the background
          */
        PostCardTask postCardTask=new PostCardTask(activity);
         postCardTask.execute(gameURL,c);
@@ -323,8 +323,11 @@ public class ServerCoordinator implements GameController {
             try {
                 Log.i("GET","Determining Winner");
                 winnerCard=brain.determineWinnerString(state.surface);
-                ArrayList<String> s=new ArrayList<String>(state.surface);
+                ArrayList<String> s=new ArrayList<String>();
+                for(String c:state.surface)
+                    s.add(c);
                 state.surface=new ArrayList<>();
+                Log.i("Finishing Round","Surface:"+s);
                 final ArrayList<String> cardsDealt=new ArrayList<>();
                 try {
                     resultJSON=new JSONObject(response);
@@ -432,8 +435,11 @@ public class ServerCoordinator implements GameController {
                  * doesn't determine the winner of a round
                  */
                 winnerCard=brain.determineWinnerString(state.surface);
-                ArrayList<String> s=new ArrayList<String>(state.surface);
+                ArrayList<String> s=new ArrayList<String>();
+                for(String c:state.surface)
+                    s.add(c);
                 state.surface=new ArrayList<>();
+                Log.i("Finishing Round","Surface:"+s);
                 final ArrayList<String> cardsDealt=new ArrayList<>();
                 try{
                     resultJSON=new JSONObject(response);
@@ -696,8 +702,8 @@ public class ServerCoordinator implements GameController {
                      * and start the game based on the index you get
                      */
                     ArrayList<String> hand = new ArrayList<>(Parser.splitString(resultJSON.getString("cards"), 2));
-                    ArrayList<String> surface = new ArrayList<>(Parser.splitString("", 2));
-                    ArrayList<String> ownPile = new ArrayList<>(Parser.splitString("", 2));
+                    ArrayList<String> surface = new ArrayList<>();
+                    ArrayList<String> ownPile = new ArrayList<>();
                     ArrayList<ArrayList<String>> opponentPiles = new ArrayList<ArrayList<String>>();
                     Card briscola = new Card(resultJSON.getString("last_card"));
                     scores=new int[]{0,0};

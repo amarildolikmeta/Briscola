@@ -19,6 +19,10 @@ class AIPlaysListener implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+        /**
+         * Play Button Sound
+         */
+        SettingsController.getInstance().playButtonClickSound();
         window.dismiss();
         boolean aiPlays=activity.controller.getAI();
         aiPlays=!aiPlays;

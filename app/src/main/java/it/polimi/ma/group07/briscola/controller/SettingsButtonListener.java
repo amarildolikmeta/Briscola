@@ -8,6 +8,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -28,6 +29,7 @@ import static android.content.Context.LAYOUT_INFLATER_SERVICE;
  */
 
 public class SettingsButtonListener implements View.OnClickListener {
+    private final AlphaAnimation buttonClick;
     /**
      * Activity from where it's called
      * can be Game Activity or MainActivity
@@ -67,6 +69,7 @@ public class SettingsButtonListener implements View.OnClickListener {
         this.activity= activity;
         skins=new ArrayList<>();
         skinNames=new ArrayList<>();
+        buttonClick = new AlphaAnimation(1F, 0.8F);
         for(int i=1;i<5;i++){
             skins.add(activity.getResources().getIdentifier("back"+i, "drawable",
                     activity.getPackageName()));
@@ -85,7 +88,11 @@ public class SettingsButtonListener implements View.OnClickListener {
     }
     @Override
     public void onClick(View v) {
-
+        /**
+         * Play simple animation and sound
+         */
+        v.startAnimation(buttonClick);
+        SettingsController.getInstance().playButtonClickSound();
         // get a reference to the already created main layout
         RelativeLayout mainLayout = (RelativeLayout)
               activity.findViewById(R.id.settingLayout);

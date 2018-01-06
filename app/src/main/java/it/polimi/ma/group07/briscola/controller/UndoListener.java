@@ -30,6 +30,10 @@ public class UndoListener implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         /**
+         * Play Button Sound
+         */
+        SettingsController.getInstance().playButtonClickSound();
+        /**
          * Don't undo moves if AI is playing
          */
         if(activity.controller.getAI()){

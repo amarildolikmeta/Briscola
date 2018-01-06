@@ -37,6 +37,10 @@ public class PileButtonListener implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+        /**
+         * Play Button Sound
+         */
+        SettingsController.getInstance().playButtonClickSound();
         Log.i("PileListener","Displaying player Piles");
         ArrayList<String> pile;
         PlayerState state=activity.controller.getState();

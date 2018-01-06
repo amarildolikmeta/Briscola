@@ -20,6 +20,10 @@ class SuggestMoveListener implements View.OnClickListener {
     }
     @Override
     public void onClick(View v) {
+        /**
+         * Play Button Sound
+         */
+        SettingsController.getInstance().playButtonClickSound();
         if(activity.controller.getAI()){
             Toast.makeText(activity,"Disable AI Play First",Toast.LENGTH_SHORT).show();
             return;

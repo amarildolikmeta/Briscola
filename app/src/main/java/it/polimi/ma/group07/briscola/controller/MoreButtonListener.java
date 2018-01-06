@@ -31,6 +31,10 @@ public class MoreButtonListener implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+        /**
+         * Play Button Sound
+         */
+        SettingsController.getInstance().playButtonClickSound();
         // get a reference to the already created main layout
         RelativeLayout mainLayout = (RelativeLayout)
                 activity.findViewById(R.id.settingLayout);

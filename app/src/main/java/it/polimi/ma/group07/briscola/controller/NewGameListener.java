@@ -21,6 +21,10 @@ public class NewGameListener implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         /**
+         * Play Button Sound
+         */
+        SettingsController.getInstance().playButtonClickSound();
+        /**
          * Ask for confirmation before starting a new game
          */
         AlertDialog.Builder alert = new AlertDialog.Builder(activity);

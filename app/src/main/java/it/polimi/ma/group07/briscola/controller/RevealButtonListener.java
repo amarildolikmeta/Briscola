@@ -24,6 +24,10 @@ public class RevealButtonListener implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         /**
+         * Play Button Sound
+         */
+        SettingsController.getInstance().playButtonClickSound();
+        /**
          * wait if the player doesn't have the turn
          * avoids exceptions due to animations being performed
          */

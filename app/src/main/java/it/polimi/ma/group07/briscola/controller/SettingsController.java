@@ -1,10 +1,13 @@
 package it.polimi.ma.group07.briscola.controller;
 
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 
 import it.polimi.ma.group07.briscola.MainActivity;
+import it.polimi.ma.group07.briscola.R;
 
 import static android.content.Context.MODE_PRIVATE;
+import static it.polimi.ma.group07.briscola.MainActivity.context;
 
 /**
  * Manages writing and reading the game settings
@@ -30,6 +33,7 @@ public class SettingsController {
 
     private SharedPreferences.Editor editor;
     private static  SettingsController instance;
+    private MediaPlayer buttonClickSound;
 
     public static SettingsController getInstance(){
         if(instance==null)
@@ -96,5 +100,14 @@ public class SettingsController {
         editor = MainActivity.context.getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE).edit();
         editor.putInt(ANIMATION_SPEED_PREFERENCES,animationSpeed);
         editor.apply();
+    }
+
+    public  void playButtonClickSound() {
+        if(soundEffectsOn){
+            if(buttonClickSound!=null)
+                buttonClickSound.release();
+            buttonClickSound= MediaPlayer.create(context, R.raw.button_click);
+            buttonClickSound.start();
+        }
     }
 }

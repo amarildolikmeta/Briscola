@@ -91,6 +91,10 @@ public class MainActivity extends AppCompatActivity {
         multiplayerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /**
+                 * Play Button Sound and animation
+                 */
+                SettingsController.getInstance().playButtonClickSound();
                 v.startAnimation(buttonClick);
                 Intent intent = new Intent(MainActivity.this, GameActivity.class);
                 intent.putExtra("singlePlayer", false);
@@ -104,6 +108,10 @@ public class MainActivity extends AppCompatActivity {
         singlePlayerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /**
+                 * Play Button Sound and animation
+                 */
+                SettingsController.getInstance().playButtonClickSound();
                 v.startAnimation(buttonClick);
                 Briscola.deleteInstance();
                 /**
@@ -160,6 +168,10 @@ public class MainActivity extends AppCompatActivity {
         statisticsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /**
+                 * Play Button Sound and animation
+                 */
+                SettingsController.getInstance().playButtonClickSound();
                 v.startAnimation(buttonClick);
                 Intent intent = new Intent(MainActivity.this, StatisticsActivity.class);
                 startActivity(intent);
@@ -262,4 +274,5 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("aiPlays",aiPlays);
         startActivity(intent);
     }
+
 }
