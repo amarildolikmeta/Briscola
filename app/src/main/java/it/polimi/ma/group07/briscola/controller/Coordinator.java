@@ -315,6 +315,9 @@ public class Coordinator implements GameController {
 
     @Override
     public void finishGame(String reason) {
+        /**
+         * Remove Data about the current game in the AI
+         */
         AIPlayer.clear();
         //Save game to replay it later
         if(!Briscola.getInstance().isGameFinished()) {

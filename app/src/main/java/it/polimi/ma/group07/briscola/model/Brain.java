@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import it.polimi.ma.group07.briscola.model.Exceptions.InvalidCardDescriptionException;
@@ -198,6 +199,14 @@ public class Brain implements RuleApplier {
     }
 
     public int calculatePointsString(ArrayList<String> s) throws InvalidCardDescriptionException {
+        /**
+         * remove duplicates from the list of cards
+         */
+        HashSet h=new HashSet();
+        h.addAll(s);
+        s.clear();
+        s.addAll(h);
+
         ArrayList<Card> surface=new ArrayList<>();
         for(String c:s){
             surface.add(new Card(c));
